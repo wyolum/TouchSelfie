@@ -1,0 +1,15 @@
+# ignore specific files
+scripts/openselfie.conf
+
+
+# ignore compiled python files
+scripts/*.pyc
+
+# ignore emacs backupfiles
+scripts/*.py~
+
+
+# ignore credentials
+scripts/*.cred
+scripts/*.json
+scripts/*.dat
