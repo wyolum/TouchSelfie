@@ -18,16 +18,16 @@ from constants import *
 
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
-
+root.attributes("-fullscreen",True)
 ### booth cam may need to present a file dialog gui.  So import after root is defined.
 from boothcam import *
 
 ## set display geometry
-WIDTH = 1366
-HEIGHT = 788
+WIDTH = 800
+HEIGHT = 480
 
 ## set photo size to fit nicely in screen
-SCALE = 1.25 ### was 2
+SCALE = 2.0
 
 ## the countdown starting value
 # COUNTDOWN1 = custom.countdown1 ### use custom.countdown1 reference directly
@@ -116,8 +116,8 @@ def check_and_snap(force=False, countdown1=None):
         
         if timelapse_due():
             countdown1 = 0
-        im = snap(can, countdown1=countdown1, effect=effect_var.get())
-        setLights(r_var.get(), g_var.get(), b_var.get())
+        im = snap(can, countdown1=countdown1, effect='None')
+#        setLights(r_var.get(), g_var.get(), b_var.get())
         if im is not None:
             last_snap = time.time()
             display_image(im)
@@ -244,22 +244,7 @@ def labeled_slider(parent, label, from_, to, side, variable):
 ## add a software button in case hardware button is not available
 interface_frame = Frame(root)
 
-effect_var = StringVar()
-effect_var.set("0") # initialize
-
-for effect in EFFECTS:
-    b = Radiobutton(interface_frame, text=effect,
-                    variable=effect_var, value=effect)
-    b.pack(anchor=W)
-effect_var.set('None')
-
-rgb_frame = Frame(interface_frame)
-r_slider = labeled_slider(rgb_frame, 'R', from_=0, to=255, side=LEFT, variable=r_var)
-g_slider = labeled_slider(rgb_frame, 'G', from_=0, to=255, side=LEFT, variable=g_var)
-b_slider = labeled_slider(rgb_frame, 'B', from_=0, to=255, side=LEFT, variable=b_var)
-
-rgb_frame.pack(side=TOP)
-snap_button = Button(interface_frame, text="*snap*", command=force_snap, font=custom.BUTTON_FONT)
+snap_button = Button(interface_frame, text="snap", command=force_snap, font=custom.BUTTON_FONT)
 snap_button.pack(side=RIGHT)
 interface_frame.pack(side=RIGHT)
 
