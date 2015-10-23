@@ -106,7 +106,8 @@ def check_and_snap(force=False, countdown1=None):
         # can.update()
         
     ## get command string from alamode
-    command = ser.readline().strip()
+#    command = ser.readline().strip()
+    command=""
     if Button_enabled and (force or command == "snap" or timelapse_due()):
         ## take a photo and display it
         Button_enabled = False
@@ -183,7 +184,7 @@ def sendPic(*args):
     else:
         print 'Not signed in'
 
-ser = findser()
+#ser = findser()
 
 def delay_timelapse(*args):
     '''

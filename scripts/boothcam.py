@@ -107,9 +107,9 @@ def countdown(camera, can, countdown1):
     camera.stop_preview()
 
 def setLights(r, g, b):
-    ser = findser()
+#    ser = findser()
     rgb_command = 'c%s%s%s' % (chr(r), chr(g), chr(b))
-    ser.write(rgb_command)
+#    ser.write(rgb_command)
 
 def snap(can, countdown1, effect='None'):
     global image_idx
