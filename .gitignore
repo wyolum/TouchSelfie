@@ -1,6 +1,8 @@
 # ignore specific files
 scripts/openselfie.conf
-
+scripts/.credentials
+scripts/*.jpg
+scripts/*.LOG
 
 # ignore compiled python files
 scripts/*.pyc
