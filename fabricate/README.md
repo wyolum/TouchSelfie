@@ -5,5 +5,7 @@ PiTouchScreenStand.stl is by Thingiverse user matt448
 You need to print Two of them. The bottom two screws are M3x10.
 The top two screws are M3x12 if you use the camera mount and it's cut from 1/16" material.
 
-## Laser
+## Laser (Camera Mount)
 The Camera mount gets screwed to the back of the top holes in the two stand legs. Cut it from 1/16" (1.5mm) acrylic
+
+The pi camera takes 1.5mm screws, and I didn't have any so I just use double stick foam poster tape
