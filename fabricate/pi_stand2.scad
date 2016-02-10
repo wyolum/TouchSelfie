@@ -6,6 +6,7 @@ baseheight = .6*inch;
 standheight = 3.2 * inch;
 railsep = 58;
 
+tripod_mount_width = 100;
 
 screw_radius=4/2;
 screwsep = 49;
@@ -62,7 +63,7 @@ module square(w=11.15, screw=6){
 		    [r * cos(2*90), r * sin(2*90)],
 		    [r * cos(3*90), r * sin(3*90)],
 		    ],
-	    paths=[[0, 1, 2, 3, 4, 5]]);
+	    paths=[[0, 1, 2, 3]]);
 	    
   }
   translate([0, 0, -20])cylinder(d=screw, h=20, $fn=30);
@@ -178,5 +179,6 @@ union(){
       rotate(v=[0, 1, 0], a=-90)
       cylinder(h=railsep + baseheight, r=basewidth/2);
     translate([-railsep/2, basewidth/2, 0])square();
+    translate([-tripod_mount_width/2 - railsep/2, 0, -13])cube([tripod_mount_width, 50, 10]);
   }
 }
