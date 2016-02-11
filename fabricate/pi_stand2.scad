@@ -2,7 +2,7 @@ inch=25.4;
 
 baselength=3*inch;
 basewidth = .5*inch;
-baseheight = .6*inch;
+baseheight = .3*inch;
 standheight = 3.2 * inch;
 railsep = 58;
 
@@ -97,7 +97,7 @@ module mount(screw=true){
 }
 
 module rail(){
-  translate([-baseheight/2, 0, 0])
+  translate([-baseheight/2, 5, 0])
   difference(){
     union(){
       translate([baseheight, 10-mountdepth, 20])mount(screw=false);
@@ -108,6 +108,8 @@ module rail(){
 	//quarter_round(radius=basewidth, length=baseheight);
       translate([0, 10, 0])
 	cube([baseheight, mountdepth, screwsep + .8*inch]);
+      translate([0, -5.5, -3])
+	cube([baseheight, 18, 7]);
     }
     union(){
       translate([baseheight, basewidth-mountdepth, 20])mount();
@@ -175,10 +177,12 @@ union(){
   translate([-railsep, 0, 0]) rail();
   difference(){
     scale([1, 1, 1])
-      translate([baseheight/2, basewidth/2, -2])
+      translate([baseheight/2, basewidth/2-6, -2])
       rotate(v=[0, 1, 0], a=-90)
       cylinder(h=railsep + baseheight, r=basewidth/2);
-    translate([-railsep/2, basewidth/2, 0])square();
-    translate([-tripod_mount_width/2 - railsep/2, 0, -13])cube([tripod_mount_width, 50, 10]);
+    translate([-railsep/2, basewidth/2-6, 0])
+      square();
+    translate([-tripod_mount_width/2 - railsep/2, -10, -13])
+      cube([tripod_mount_width, 50, 10]);
   }
 }
