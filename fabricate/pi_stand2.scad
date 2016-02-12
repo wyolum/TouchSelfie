@@ -97,19 +97,35 @@ module mount(screw=true){
 }
 
 module rail(){
-  translate([-baseheight/2, 5, 0])
+  translate([-baseheight/2, 5, 20])
   difference(){
     union(){
       translate([baseheight, 10-mountdepth, 20])mount(screw=false);
       translate([baseheight, 10-mountdepth, 20 + screwsep])mount(screw=false);
+      translate([0, -5.5, -23])cube([baseheight, 18, 5]); 
+
       //translate([baseheight, basewidth, standheight - baseheight*1.5])
       //rotate(v=[0, 0, -1], a=90)
       //rotate(v=[1, 0, 0], a=90)
 	//quarter_round(radius=basewidth, length=baseheight);
-      translate([0, 10, 0])
-	cube([baseheight, mountdepth, screwsep + .8*inch]);
-      translate([0, -5.5, -3])
-	cube([baseheight, 18, 7]);
+      translate([0, 10, -20])
+	cube([baseheight, mountdepth, screwsep + .8*inch + 20]);
+      translate([0, -5.5, -3-20])
+	difference()
+	{
+	  intersection(){
+	    cube([baseheight, 18, 30]);
+	    translate([0, 0, 3.5])
+	      rotate(a=30, v=[-1, 0, 0])
+	      cube([baseheight, 18, 50]);
+	  }
+	  translate([0,0, -5])intersection(){
+	    cube([baseheight, 18, 30]);
+	    translate([0, 0, 3.5])
+	      rotate(a=30, v=[-1, 0, 0])
+	      cube([baseheight, 18, 50]); 
+	  }
+	}
     }
     union(){
       translate([baseheight, basewidth-mountdepth, 20])mount();
