@@ -187,7 +187,7 @@ difference(){
   translate([-50, 0, 0])rotate(v=[0, 1, 0], a=90)cylinder(h=100, r=screw_radius, $fn=100);
 }
 */
-
+difference(){
 union(){
   rail();
   translate([-railsep, 0, 0]) rail();
@@ -201,4 +201,6 @@ union(){
     translate([-tripod_mount_width/2 - railsep/2, -10, -13])
       cube([tripod_mount_width, 50, 10]);
   }
+}
+translate([-52.5,-6,-10])cylinder(d=7,h=20);
 }
