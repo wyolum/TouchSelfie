@@ -37,9 +37,9 @@ module quarter_round(radius, length){
 }
 
 
-module hex(w=8, screw=4){
+module hex(w=7 * inch / 16, screw=inch/4.){
   r = w * sqrt(3)/4;
-  linear_extrude(h=100){
+  linear_extrude(h=7 * inch / 16.){
     polygon(points=[
 		    [r * cos(0*60), r * sin(0*60)],
 		    [r * cos(1*60), r * sin(1*60)],
@@ -51,7 +51,7 @@ module hex(w=8, screw=4){
 	    paths=[[0, 1, 2, 3, 4, 5]]);
 	    
   }
-  translate([0, 0, -20])cylinder(d=screw, h=20, $fn=30);
+  translate([0, 0, -10])cylinder(d=screw, h=20, $fn=30);
 }
 
 module square(w=11.15, screw=6){
@@ -197,7 +197,8 @@ union(){
       rotate(v=[0, 1, 0], a=-90)
       cylinder(h=railsep + baseheight, r=basewidth/2);
     translate([-railsep/2, basewidth/2-6, 0])
-      square();
+      // square();
+      hex();
     translate([-tripod_mount_width/2 - railsep/2, -10, -13])
       cube([tripod_mount_width, 50, 10]);
   }
