@@ -52,11 +52,14 @@ def launch_tkkb():
     '''
     global tkkb
     if tkkb is None:
-        tkkb = Toplevel()
+        tkkb = Toplevel(root)
         Tkkb(tkkb, etext)
         etext.config(state=NORMAL)
+        tkkb.wm_attributes("-topmost", 1)
+        tkkb.transient(root)
         tkkb_button.config(command=kill_tkkb, text="Close KB")
-
+        tkkb.protocol("WM_DELETE_WINDOW", kill_tkkb)
+        
 def kill_tkkb():
     '''
     Delete on screen keyboard program called tkkb-keyboard.
