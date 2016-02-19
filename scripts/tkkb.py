@@ -16,14 +16,9 @@ for ls, ss in zip(button_labels, shifted_labels):
 
 top_row, second_row, third_row, bottom_row = rows
 
-r = Tk()
-width=375
+# r = Tk()
+width=385
 height=120
-c = Canvas(r, width=width, height=height)
-c.pack()
-entry = Entry(r, width=20)
-entry.pack()
-
 key_dim = 20
 pad = 4
 fontsize=12
@@ -32,23 +27,24 @@ offy = 10
 
 class Key:
     keymaps = {}
-    def __init__(self, label, shifted, bbox, entry, anchor='center', 
+    def __init__(self, can, label, shifted, bbox, entry, anchor='center', 
                  offx=offx, offy=offy, fontsize=fontsize):
-        c.create_text(bbox[0] + offx, bbox[1] + offy, text=label, 
-                      font=fontsize,
-                      anchor=anchor, tag='lower')
-        c.create_text(bbox[0] + offx, bbox[1] + offy, text=shifted, 
-                      font=fontsize,
-                      anchor=anchor, tag='upper')
-        c.create_rectangle(bbox[0], bbox[1], 
-                           bbox[2] + bbox[0], 
-                           bbox[3] + bbox[1])
+        can.create_text(bbox[0] + offx, bbox[1] + offy, text=label, 
+                        font=fontsize,
+                        anchor=anchor, tag='lower')
+        can.create_text(bbox[0] + offx, bbox[1] + offy, text=shifted, 
+                        font=fontsize,
+                        anchor=anchor, tag='upper')
+        can.create_rectangle(bbox[0], bbox[1], 
+                             bbox[2] + bbox[0], 
+                             bbox[3] + bbox[1])
         self.bbox = bbox
         self.keymaps[label] = bbox
         self.label = label
         self.shifted = shifted
         self.entry = entry
         self.state = 'lower'
+        self.c = can
 
     def onPress(self):
         if self.state == 'lower':
@@ -60,84 +56,21 @@ class Key:
     def shift(self, state):
         self.state = state
 
-def find_key(event):
-    found = False
-    ## find row
-    for row in rows:
-        if(event.y > row[0].bbox[1] and
-           event.y < row[0].bbox[3] + row[1].bbox[1]):
-             ## find key
-            for key in row:
-                if (event.x > key.bbox[0] and
-                    event.x < key.bbox[2] + key.bbox[0]):
-                    key.onPress()
-                    found = True
-                    break
-        if found:
-            break
-    
-    else:
-        ### try special keys
-        pass
-    return found
-
-c.bind('<Button-1>', find_key)
-
-rows = []
-row = []
-for i, (l, s) in enumerate(top_row):
-    row.append(Key(l, s,
-                   (
-                       (i + 1) * (key_dim + pad),
-                       pad,
-                       key_dim, key_dim
-                   ),
-                   entry))
-rows.append(row)
-row = []
-for i, (l, s) in enumerate(second_row):
-    row.append(Key(l, s,
-                   (
-                       (i + 1) * (key_dim + pad) + .5 * (key_dim + pad),
-                       1 * (key_dim + pad) + pad,
-                       key_dim, key_dim
-                   ),
-                   entry))
-rows.append(row)
-row = []
-for i, (l, s) in enumerate(third_row):
-    row.append(Key(l, s,
-                   (
-                       (i + 1) * (key_dim + pad) + 1.0 * (key_dim + pad),
-                       2 * (key_dim + pad) + pad,
-                       key_dim, key_dim
-                   ),
-                   entry))
-rows.append(row)
-row = []
-for i, (l, s) in enumerate(bottom_row):
-    row.append(Key(l, s,
-                   (
-                       (i + 1) * (key_dim + pad) + 1.5 * (key_dim + pad),
-                       3 * (key_dim + pad) + pad,
-                       key_dim, key_dim
-                   ),
-                   entry))
-rows.append(row)
-
 class Shift(Key):
-    def __init__(self, *args, **kw):
+    def __init__(self, parent, *args, **kw):
         Key.__init__(self, *args, **kw)
+        self.parent = parent
+
     def onPress(self):
         if self.state == 'lower':
             self.state = 'upper'
-            c.itemconfig('lower', state=HIDDEN)
-            c.itemconfig('upper', state=NORMAL)
+            self.c.itemconfig('lower', state=HIDDEN)
+            self.c.itemconfig('upper', state=NORMAL)
         else:
             self.state = 'lower'
-            c.itemconfig('upper', state=HIDDEN)
-            c.itemconfig('lower', state=NORMAL)
-        for row in rows:
+            self.c.itemconfig('upper', state=HIDDEN)
+            self.c.itemconfig('lower', state=NORMAL)
+        for row in self.parent.rows:
             for k in row:
                 k.shift(self.state)
 class Gmail(Key):
@@ -149,42 +82,123 @@ class BackSpace(Key):
         l = len(self.entry.get())
         self.entry.delete(l-1, END)
         
-shift = Shift('caps', 'CAPS',
-            (1.5 * key_dim + pad, 4 * (key_dim + pad) + pad,
-             2.5 * (key_dim + pad), key_dim),
-            entry,
-            anchor='w', offx=5)
-space = Key(' ', ' ',
-            (4.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
-             4 * (key_dim + pad) - pad, key_dim),
-            entry)
-dotcom = Key('.com', '.com',
-                (11.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
-                 2 * (key_dim + pad) - pad, key_dim),
-                entry,
-                offx=20,
-                fontsize=8)
+class Tkkb:
+    def __init__(self, r, entry):
+        c = Canvas(r, width=width, height=height)
+        c.pack()
 
-gmail = Gmail('@gmail', '@gmail',
-                (8.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
-                 3 * (key_dim + pad) - pad, key_dim),
-              entry,
-            offx=30,
-              fontsize=8)
-backspace = BackSpace('del', 'del',
-                      (
-                          14 * (key_dim + pad),
-                          pad,
-                          2 * key_dim, key_dim
-                    ),
-                      entry, fontsize=3, anchor='center', offx=15)
+        rows = []
+        row = []
+        for i, (l, s) in enumerate(top_row):
+            row.append(Key(c, l, s,
+                           (
+                               (i + 1) * (key_dim + pad),
+                               pad,
+                               key_dim, key_dim
+                           ),
+                           entry))
+        rows.append(row)
+        row = []
+        for i, (l, s) in enumerate(second_row):
+            row.append(Key(c, l, s,
+                           (
+                               (i + 1) * (key_dim + pad) + .5 * (key_dim + pad),
+                               1 * (key_dim + pad) + pad,
+                               key_dim, key_dim
+                           ),
+                           entry))
+        rows.append(row)
+        row = []
+        for i, (l, s) in enumerate(third_row):
+            row.append(Key(c, l, s,
+                           (
+                               (i + 1) * (key_dim + pad) + 1.0 * (key_dim + pad),
+                               2 * (key_dim + pad) + pad,
+                               key_dim, key_dim
+                           ),
+                           entry))
+        rows.append(row)
+        row = []
+        for i, (l, s) in enumerate(bottom_row):
+            row.append(Key(c, l, s,
+                           (
+                               (i + 1) * (key_dim + pad) + 1.5 * (key_dim + pad),
+                               3 * (key_dim + pad) + pad,
+                               key_dim, key_dim
+                           ),
+                           entry))
+        rows.append(row)
 
-rows[0].append(backspace)
-rows.append([shift, space, gmail, dotcom])
+        shift = Shift(self, c, 'caps', 'CAPS',
+                    (1.5 * key_dim + pad, 4 * (key_dim + pad) + pad,
+                     2.5 * (key_dim + pad), key_dim),
+                    entry,
+                    anchor='w', offx=5)
+        space = Key(c, ' ', ' ',
+                    (4.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
+                     4 * (key_dim + pad) - pad, key_dim),
+                    entry)
+        dotcom = Key(c, '.com', '.com',
+                        (11.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
+                         2 * (key_dim + pad) - pad, key_dim),
+                        entry,
+                        offx=20,
+                        fontsize=8)
 
-c.itemconfig('upper', state=HIDDEN)
-entry.focus_set()            
-r.mainloop()
+        gmail = Gmail(c, '@gmail', '@gmail',
+                        (8.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
+                         3 * (key_dim + pad) - pad, key_dim),
+                      entry,
+                    offx=30,
+                      fontsize=8)
+        rows.append([shift, space, gmail, dotcom])
+        backspace = BackSpace(c, 'del', 'del',
+                              (
+                                  14 * (key_dim + pad),
+                                  pad,
+                                  2 * key_dim, key_dim
+                              ),
+                              entry, fontsize=3, anchor='center', offx=15)
+
+        rows[0].append(backspace)
+
+        c.itemconfig('upper', state=HIDDEN)
+        entry.focus_set()            
+
+        c.bind('<Button-1>', self.find_key)
+        self.rows = rows
+    def find_key(self, event):
+        found = False
+        ## find row
+        for row in self.rows:
+            if(event.y > row[0].bbox[1] and
+               event.y < row[0].bbox[3] + row[1].bbox[1]):
+                 ## find key
+                for key in row:
+                    if (event.x > key.bbox[0] and
+                        event.x < key.bbox[2] + key.bbox[0]):
+                        key.onPress()
+                        found = True
+                        break
+            if found:
+                break
+
+        else:
+            ### try special keys
+            pass
+        return found
+
+
+def main():
+    r = Tk()
+    entry = Entry(r, width=20)
+    entry.pack()
+
+    Tkkb(r, entry)
+    r.mainloop()
+
+if __name__ == '__main__':
+    main()
 
         
 
