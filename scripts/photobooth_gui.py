@@ -6,6 +6,7 @@ WyoLum.com
 '''
 
 ## imports
+from tkkb import Tkkb
 import time
 from Tkinter import *
 import tkMessageBox
@@ -42,6 +43,34 @@ import signal
 TIMEOUT = .3 # number of seconds your want for timeout
 
 last_snap = time.time()
+
+tkkb = None
+def launch_tkkb():
+    '''
+    Launch on screen keyboard program called tkkb-keyboard.
+    install with '$ sudo apt-get install tkkb-keyboard'
+    '''
+    global tkkb
+    if tkkb is None:
+        tkkb = Toplevel()
+        Tkkb(tkkb, etext)
+        etext.config(state=NORMAL)
+        tkkb_button.config(command=kill_tkkb, text="Close KB")
+        etext.focus_set()
+
+def kill_tkkb():
+    '''
+    Delete on screen keyboard program called tkkb-keyboard.
+    '''
+    global tkkb
+    if tkkb is not None:
+        tkkb.destroy()
+        try:
+            tkkb_button.config(command=launch_tkkb, text="Open KB")
+            tkkb = None
+        except:
+            pass
+
 
 def interrupted(signum, frame):
     "called when serial read times out"
@@ -96,7 +125,7 @@ def check_and_snap(force=False, countdown1=None):
         etext.config(state=NORMAL)
     else:
         send_button.config(state=DISABLED)
-        etext.config(state=DISABLED)
+        # etext.config(state=DISABLED)
     if (Button_enabled == False):
         ## inform alamode that we are ready to receive button press events
         ## ser.write('e') #enable button (not used)
@@ -220,6 +249,8 @@ frame = Frame(root)
 
 # Button(frame, text="Exit", command=on_close).pack(side=LEFT)
 Button(frame, text="Customize", command=lambda *args: custom.customize(root)).pack(side=LEFT)
+tkkb_button = Button(frame, command=launch_tkkb, text="Launch-KB")
+tkkb_button.pack(side=LEFT)
 send_button = Button(frame, text="SendEmail", command=sendPic, font=custom.BUTTON_FONT)
 send_button.pack(side=RIGHT)
 
