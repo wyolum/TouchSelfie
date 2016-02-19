@@ -17,9 +17,9 @@ for ls, ss in zip(button_labels, shifted_labels):
 top_row, second_row, third_row, bottom_row = rows
 
 # r = Tk()
-width=385
-height=120
-key_dim = 20
+width=510
+height=170
+key_dim = 30
 pad = 4
 fontsize=12
 offx = 10
@@ -93,7 +93,7 @@ class Tkkb:
         for i, (l, s) in enumerate(top_row):
             row.append(Key(c, l, s,
                            (
-                               (i + 1) * (key_dim + pad),
+                               (i + 0) * (key_dim + pad) + pad,
                                pad,
                                key_dim, key_dim
                            ),
@@ -103,7 +103,7 @@ class Tkkb:
         for i, (l, s) in enumerate(second_row):
             row.append(Key(c, l, s,
                            (
-                               (i + 1) * (key_dim + pad) + .5 * (key_dim + pad),
+                               (i + 0) * (key_dim + pad) + .5 * (key_dim + pad),
                                1 * (key_dim + pad) + pad,
                                key_dim, key_dim
                            ),
@@ -113,7 +113,7 @@ class Tkkb:
         for i, (l, s) in enumerate(third_row):
             row.append(Key(c, l, s,
                            (
-                               (i + 1) * (key_dim + pad) + 1.0 * (key_dim + pad),
+                               (i + 0) * (key_dim + pad) + 1.0 * (key_dim + pad),
                                2 * (key_dim + pad) + pad,
                                key_dim, key_dim
                            ),
@@ -123,7 +123,7 @@ class Tkkb:
         for i, (l, s) in enumerate(bottom_row):
             row.append(Key(c, l, s,
                            (
-                               (i + 1) * (key_dim + pad) + 1.5 * (key_dim + pad),
+                               (i + 0) * (key_dim + pad) + 1.5 * (key_dim + pad),
                                3 * (key_dim + pad) + pad,
                                key_dim, key_dim
                            ),
@@ -131,23 +131,23 @@ class Tkkb:
         rows.append(row)
 
         shift = Shift(self, c, 'caps', 'CAPS',
-                    (1.5 * key_dim + pad, 4 * (key_dim + pad) + pad,
+                    (.5 * key_dim + pad, 4 * (key_dim + pad) + pad,
                      2.5 * (key_dim + pad), key_dim),
                     entry,
                     anchor='w', offx=5)
         space = Key(c, ' ', ' ',
-                    (4.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
+                    (3.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
                      4 * (key_dim + pad) - pad, key_dim),
                     entry)
         dotcom = Key(c, '.com', '.com',
-                        (11.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
+                        (10.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
                          2 * (key_dim + pad) - pad, key_dim),
                         entry,
                         offx=20,
                         fontsize=8)
 
         gmail = Gmail(c, '@gmail', '@gmail',
-                        (8.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
+                        (7.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
                          3 * (key_dim + pad) - pad, key_dim),
                       entry,
                     offx=30,
@@ -155,7 +155,7 @@ class Tkkb:
         rows.append([shift, space, gmail, dotcom])
         backspace = BackSpace(c, 'del', 'del',
                               (
-                                  14 * (key_dim + pad),
+                                  13 * (key_dim + pad) + pad,
                                   pad,
                                   2 * key_dim, key_dim
                               ),
