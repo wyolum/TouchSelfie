@@ -56,7 +56,6 @@ def launch_tkkb():
         Tkkb(tkkb, etext)
         etext.config(state=NORMAL)
         tkkb_button.config(command=kill_tkkb, text="Close KB")
-        etext.focus_set()
 
 def kill_tkkb():
     '''
@@ -125,7 +124,7 @@ def check_and_snap(force=False, countdown1=None):
         etext.config(state=NORMAL)
     else:
         send_button.config(state=DISABLED)
-        # etext.config(state=DISABLED)
+        etext.config(state=DISABLED)
     if (Button_enabled == False):
         ## inform alamode that we are ready to receive button press events
         ## ser.write('e') #enable button (not used)
