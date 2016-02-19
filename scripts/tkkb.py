@@ -79,8 +79,9 @@ class Gmail(Key):
         ## change labels to shifted keys
 class BackSpace(Key):
     def onPress(self):
-        l = len(self.entry.get())
-        self.entry.delete(l-1, END)
+        p = self.entry.index(INSERT)
+        if p > 0:
+            self.entry.delete(p - 1)
         
 class Tkkb:
     def __init__(self, r, entry):
