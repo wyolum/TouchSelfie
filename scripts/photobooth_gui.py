@@ -162,7 +162,7 @@ def check_and_snap(force=False, countdown1=None):
                     tkMessageBox.showinfo("Upload Error", str(e) + '\nalbumID set?')
                     # signed_in = False
             can.delete("text")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+            # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         ### what command did we get?
