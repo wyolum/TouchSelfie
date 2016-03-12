@@ -78,7 +78,11 @@ def setup_google():
     return out
 
 def countdown(camera, can, countdown1):
-    camera.start_preview()
+    # camera.start_preview()
+    camera.start_preview(fullscreen=False,
+                         crop=(200, 150, 800, 480),
+                         window=(0, 0, 800, 480),
+                         hflip=True)
     can.delete("image")
     led_state = False
     safe_set_led(camera, led_state)

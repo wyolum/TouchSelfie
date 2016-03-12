@@ -201,6 +201,7 @@ def sendPic(*args):
             sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg, custom.PROC_FILENAME)
             etext.delete(0, END)
             etext.focus_set()
+            kill_tkkb()
         except Exception, e:
             print 'Send Failed'
             can.delete("all")
