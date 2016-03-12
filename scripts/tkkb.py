@@ -17,11 +17,11 @@ for ls, ss in zip(button_labels, shifted_labels):
 top_row, second_row, third_row, bottom_row = rows
 
 # r = Tk()
-key_dim = 40
+key_dim = 50
 pad = 4
 width=(len(button_labels[0]) + 2) * (key_dim + pad)
 height=(len(button_labels) + 1) * (key_dim + pad)
-fontsize=12
+fontsize = 24
 offx = 10
 offy = 10
 
