@@ -17,10 +17,10 @@ for ls, ss in zip(button_labels, shifted_labels):
 top_row, second_row, third_row, bottom_row = rows
 
 # r = Tk()
-width=510
-height=170
-key_dim = 30
+key_dim = 40
 pad = 4
+width=(len(button_labels[0]) + 2) * (key_dim + pad)
+height=(len(button_labels) + 1) * (key_dim + pad)
 fontsize=12
 offx = 10
 offy = 10
@@ -195,7 +195,7 @@ class Tkkb:
 
 def main():
     r = Tk()
-    entry = Entry(r, width=20)
+    entry = Entry(r, width=20, font=fontsize)
     entry.pack()
 
     Tkkb(r, entry)
