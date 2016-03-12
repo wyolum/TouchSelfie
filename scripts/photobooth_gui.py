@@ -193,6 +193,8 @@ def force_snap(countdown1=None):
         countdown1 = custom.countdown1
     check_and_snap(force=True, countdown1=countdown1)
 
+
+
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
     if signed_in:
@@ -285,6 +287,9 @@ interface_frame.pack(side=RIGHT)
 ## the canvas will display the images
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
+def snap_callback(*args):
+    force_snap()
+can.bind('<Button-1>', snap_callback)
 
 ## sign in to google?
 if custom.SIGN_ME_IN:

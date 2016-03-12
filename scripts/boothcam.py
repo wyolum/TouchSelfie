@@ -95,7 +95,7 @@ def countdown(camera, can, countdown1):
     for i in range(countdown1):
         can.delete("text")
         can.update()
-        can.create_text(SCREEN_W/2 - 50, 300, text=str(countdown1 - i), font=font, tags="text")
+        can.create_text(SCREEN_W/2 - 50, 200, text=str(countdown1 - i), font=font, tags="text")
         can.update()
         if i < countdown1 - 2:
             time.sleep(1)
@@ -168,7 +168,11 @@ def snap(can, countdown1, effect='None'):
     
         if custom.logo is not None:
             # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
-            snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,SCREEN_H -custom.lysize ),custom.logo)
+            # snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,
+            #                             SCREEN_H -custom.lysize ),
+            #                             custom.logo)
+            snapshot.paste(custom.logo,(10, 580),
+                           custom.logo)
         snapshot.save(custom.PROC_FILENAME)
     except Exception, e:
         print e
