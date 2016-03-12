@@ -28,7 +28,7 @@ WIDTH = 800
 HEIGHT = 480
 
 ## set photo size to fit nicely in screen
-SCALE = 2.0
+SCALE = 1.8
 
 ## the countdown starting value
 # COUNTDOWN1 = custom.countdown1 ### use custom.countdown1 reference directly
@@ -281,7 +281,7 @@ def labeled_slider(parent, label, from_, to, side, variable):
 interface_frame = Frame(root)
 
 snap_button = Button(interface_frame, text="snap", command=force_snap, font=custom.BUTTON_FONT)
-snap_button.pack(side=RIGHT)
+# snap_button.pack(side=RIGHT) ## moved to canvas
 interface_frame.pack(side=RIGHT)
 
 ## the canvas will display the images

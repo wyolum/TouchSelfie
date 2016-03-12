@@ -78,11 +78,11 @@ def setup_google():
     return out
 
 def countdown(camera, can, countdown1):
-    # camera.start_preview()
-    camera.start_preview(fullscreen=False,
-                         crop=(200, 150, 800, 480),
-                         window=(0, 0, 800, 480),
-                         hflip=True)
+    camera.start_preview()
+    # camera.start_preview(fullscreen=False,
+    #                     crop=(50, 150, 800, 480),
+    #                      window=(0, 0, 800, 480),
+    #                      hflip=True)
     can.delete("image")
     led_state = False
     safe_set_led(camera, led_state)
@@ -95,7 +95,7 @@ def countdown(camera, can, countdown1):
     for i in range(countdown1):
         can.delete("text")
         can.update()
-        can.create_text(SCREEN_W/2 - 50, 200, text=str(countdown1 - i), font=font, tags="text")
+        can.create_text(SCREEN_W/2 - 0, 200, text=str(countdown1 - i), font=font, tags="text")
         can.update()
         if i < countdown1 - 2:
             time.sleep(1)
