@@ -37,8 +37,9 @@ module quarter_round(radius, length){
 }
 
 
-module hex(w=7 * inch / 16, screw=inch/4.){
+module hex(w=.5 * inch, screw=inch/4.){
   r = w * sqrt(3)/4;
+  r = w/2.;
   linear_extrude(h=7 * inch / 16.){
     polygon(points=[
 		    [r * cos(0*60), r * sin(0*60)],
@@ -69,6 +70,7 @@ module square(w=11.15, screw=6){
   translate([0, 0, -20])cylinder(d=screw, h=20, $fn=30);
 }
 
+//translate([-35.2, 0, 0])cube(.489 * inch); test for bolt size
 //rotate(a=90, v=[1, 0, 0])hex();
 module mount(screw=true){
   translate([.01, mountdepth + .01, 0])scale([1.01, 1.01, 1])

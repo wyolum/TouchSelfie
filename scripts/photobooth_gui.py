@@ -28,7 +28,7 @@ WIDTH = 800
 HEIGHT = 480
 
 ## set photo size to fit nicely in screen
-SCALE = 2.0
+SCALE = 1.8
 
 ## the countdown starting value
 # COUNTDOWN1 = custom.countdown1 ### use custom.countdown1 reference directly
@@ -162,7 +162,7 @@ def check_and_snap(force=False, countdown1=None):
                     tkMessageBox.showinfo("Upload Error", str(e) + '\nalbumID set?')
                     # signed_in = False
             can.delete("text")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+            # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         ### what command did we get?
@@ -193,6 +193,8 @@ def force_snap(countdown1=None):
         countdown1 = custom.countdown1
     check_and_snap(force=True, countdown1=countdown1)
 
+
+
 #if they enter an email address send photo. add error checking
 def sendPic(*args):
     if signed_in:
@@ -201,6 +203,7 @@ def sendPic(*args):
             sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg, custom.PROC_FILENAME)
             etext.delete(0, END)
             etext.focus_set()
+            kill_tkkb()
         except Exception, e:
             print 'Send Failed'
             can.delete("all")
@@ -278,12 +281,15 @@ def labeled_slider(parent, label, from_, to, side, variable):
 interface_frame = Frame(root)
 
 snap_button = Button(interface_frame, text="snap", command=force_snap, font=custom.BUTTON_FONT)
-snap_button.pack(side=RIGHT)
+# snap_button.pack(side=RIGHT) ## moved to canvas
 interface_frame.pack(side=RIGHT)
 
 ## the canvas will display the images
 can = Canvas(root, width=WIDTH, height=HEIGHT)
 can.pack()
+def snap_callback(*args):
+    force_snap()
+can.bind('<Button-1>', snap_callback)
 
 ## sign in to google?
 if custom.SIGN_ME_IN:

@@ -116,7 +116,9 @@ def display_logo(parent, logopng):
 def customize(master):
     global logo_label
     self = Tkinter.Toplevel(master)
-
+    self.master = master
+    def close_master():
+        self.master.destroy()
     def string_customizer(label, initial_val, listener):
         label = ' ' * (20 - len(label)) + label
         frame = Tkinter.Frame(self)
@@ -280,6 +282,7 @@ def customize(master):
     buttonbox = Tkinter.Frame(self)
     ##  Tkinter.Button(buttonbox, text='Cancel', command=self.destroy).pack(side=Tkinter.LEFT) changes are stored when they are made. cancel is harder than this
     Tkinter.Button(buttonbox, text='Done', command=update_and_close).pack(side=Tkinter.LEFT)
+    Tkinter.Button(buttonbox, text='Quit TouchSelfie', command=quit).pack(side=Tkinter.LEFT)
     buttonbox.pack()
     
     if True: # DISPLAY_LOGO:
