@@ -200,7 +200,7 @@ def customize(master):
             logopng = 'None'
 
     def update_and_close(*argss):
-        global logo_label, lxsize, lysize
+        global logo,logo_label, lxsize, lysize
         if os.path.exists(logopng):
             logo = Image.open(logopng)
             lxsize, lysize = logo.size
@@ -234,6 +234,7 @@ def customize(master):
         
 
     def logo_dialog():
+        global logopng
         options = {}
         options['defaultextension'] = '.txt'
         options['filetypes'] = [('Images', '.png'), ('all files', '.*')]
@@ -243,6 +244,7 @@ def customize(master):
         options['parent'] = self
         logo_file = tkFileDialog.askopenfilename(**options)
         logo_var.set(logo_file)
+        logopng = logo_file
 
     def archive_dialog():
         options = {}
