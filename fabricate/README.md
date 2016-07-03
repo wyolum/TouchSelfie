@@ -3,6 +3,8 @@
 Print camera_mount.stl, pi_stand2.stl, and 4 of the hex standoffs (hexstandoff.stl has 4 to print together. You can use the scad file to do them individually if you want.
 
 
+PiCameraMount.stl and PiTouchScreenMount.stl are the new and improved tripod stand from the Make Magazine Article.
+
 ## Laser (Camera Mount)
 The Camera mount gets screwed to the back of the top holes in the two stand legs. Cut it from 1/16" (1.5mm) acrylic
 
