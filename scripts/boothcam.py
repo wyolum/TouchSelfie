@@ -19,6 +19,7 @@ from PIL import Image
 import serial
 import config
 import custom
+import httplib2
 
 from constants import SCREEN_W, SCREEN_H, WHITE, BLACK
 
@@ -72,9 +73,10 @@ def setup_google():
 
     except KeyboardInterrupt:
         raise
-    except:
-        print 'could not login to Google, check .credential file'
+    except Exception, e:
+        print 'could not login to Google, check .credential file\n   %s' % e
         out = False
+        # raise ### uncomment to debug google oauth shiz
     return out
 
 def countdown(camera, can, countdown1):
