@@ -13,7 +13,7 @@ conf_filename = os.path.join(install_dir, 'scripts', 'openselfie.conf')
 
 def restore_conf():
     global emailSubject, emailMsg, photoCaption, logopng, albumID, countdown1, countdown2
-    global TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize
+    global TIMELAPSE, SIGN_ME_IN, ARCHIVE, archive_dir, logo, lxsize, lysize, oauth2_refresh_period
 
     if not os.path.exists(conf_filename):
         conf_file = open(conf_filename, 'w')
@@ -30,6 +30,7 @@ timelapse = 0
 sign_me_in = True
 archive = True
 archive_dir = %s/Photos/
+oauth2_refresh_period = 1800000
 ''' % install_dir
         conf_file.write(default_conf)
         conf_file.close()
@@ -64,6 +65,7 @@ archive_dir = %s/Photos/
 
     ARCHIVE = bool(conf.get('main', 'ARCHIVE')) # True ## archive photos?
     archive_dir = conf.get('main', 'archive_dir') # './'
+    oauth2_refresh_period = int(conf.get('main', 'oauth2_refresh_period')) # 180000
 
 restore_conf()
 
@@ -225,6 +227,7 @@ def customize(master):
             conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
             conf.set('main', 'ARCHIVE', ARCHIVE)
             conf.set('main', 'archive_dir', archive_dir)
+            conf.set('main', 'oauth2_refresh_period', archive_dir)
             f = open(conf_filename, 'w')
             conf.write(f)
             print 'wrote', f.name
