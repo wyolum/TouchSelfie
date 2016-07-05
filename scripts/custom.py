@@ -65,7 +65,7 @@ oauth2_refresh_period = 1800000
 
     ARCHIVE = bool(conf.get('main', 'ARCHIVE')) # True ## archive photos?
     archive_dir = conf.get('main', 'archive_dir') # './'
-    oauth2_refresh_period = int(conf.get('main', 'oauth2_refresh_period')) # 180000
+    oauth2_refresh_period = int(conf.get('main', 'oauth2_refresh_period')) # 1800000
 
 restore_conf()
 

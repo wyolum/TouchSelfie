@@ -112,11 +112,12 @@ def timelapse_due():
     return out
 
 def refresh_oauth2_credentials():
-    if setup_google():
-        print 'refreshed!', custom.oauth2_refresh_period
-    else:
-        print 'refresh failed'
-    root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
+    if custom.SIGN_ME_IN:
+        if setup_google():
+            print 'refreshed!', custom.oauth2_refresh_period
+        else:
+            print 'refresh failed'
+        root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
     
 def check_and_snap(force=False, countdown1=None):
     '''
@@ -315,7 +316,8 @@ force_snap(countdown1=0)
 
 ### check button after waiting for 200 ms
 root.after(200, check_and_snap)
-root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
+if custom.SIGN_ME_IN:
+    root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
 # etext.bind("<Enter>", sendPic)
