@@ -323,3 +323,5 @@ etext.focus_set()
 # etext.bind("<Enter>", sendPic)
 on_rgb_change()
 root.mainloop()
+
+
