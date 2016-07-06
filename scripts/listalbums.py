@@ -6,18 +6,24 @@ class AlbumSelect:
     '''
     GUI to select an album from a list, update entry with album id
     '''
+    fontsize=20
     def __init__(self, root, entrybox, entries):
         master = Tkinter.Toplevel(root)
+        Tkinter.Button(master, text="Select", command=self.push_result).pack()
         my_text = Tkinter.StringVar()
         my_text.trace('w', self.filter_entries)
-        local_entry = Tkinter.Entry(master, width=80, textvariable=my_text)
+        local_entry = Tkinter.Entry(master, width=80, textvariable=my_text,
+                                    font=self.fontsize)
         local_entry.pack()
         local_entry.bind('<Return>', self.push_result)
         local_entry.bind('<Down>', self.select_next)
         scrollbar = Tkinter.Scrollbar(master)
         scrollbar.pack(side=Tkinter.RIGHT, fill=Tkinter.Y)
 
-        self.listbox = Tkinter.Listbox(master, yscrollcommand=scrollbar.set, width=80)
+        self.listbox = Tkinter.Listbox(master,
+                                       yscrollcommand=scrollbar.set,
+                                       width=80,
+                                       font=self.fontsize)
         self.listbox.bind('<Double-Button-1>', self.picker)
         self.listbox.bind('<Return>', self.picker)
         self.all_entries = entries
@@ -48,11 +54,12 @@ class AlbumSelect:
             self.local_entry.insert(0, choice)
             self.local_entry.focus_set()
 
-    def push_result(self, event):
-        self.entrybox.delete(0, Tkinter.END)
+    def push_result(self, event=None):
         value = self.local_entry.get()
         id = value.split('::')[-1]
-        self.entrybox.insert(0, id)
+        if self.entrybox is not None:
+            self.entrybox.delete(0, Tkinter.END)
+            self.entrybox.insert(0, id)
         self.master.destroy()
         
     def update_list(self):
@@ -79,20 +86,6 @@ class AlbumSelect:
             self.local_entry.delete(0, Tkinter.END)
             self.local_entry.insert(Tkinter.END, choice)
         
-def test(root, entrybox, entries):
-    master = Tkinter.Frame(root)
-    scrollbar = Tkinter.Scrollbar(master)
-    scrollbar.pack(side=Tkinter.RIGHT, fill=Tkinter.Y)
-
-    listbox = Tkinter.Listbox(master, yscrollcommand=scrollbar.set)
-    for i in range(100):
-        listbox.insert(Tkinter.END, str(i))
-    listbox.pack(side=Tkinter.LEFT, fill=Tkinter.BOTH)
-
-    scrollbar.config(command=listbox.yview)
-    master.pack()
-
-
 def getAlbums(email):
 
     # options for oauth2 login
@@ -112,8 +105,8 @@ def getAlbums(email):
         entries.append(entry)
     return entries
 
-if __name__ == '__main__':
-    if True:
+def test():
+    if False:
         entries = getAlbums(email="kevin.osborn@gmail.com")
     else:
         entries = map(str, range(1000))
@@ -123,3 +116,12 @@ if __name__ == '__main__':
     entrybox.pack()
     AlbumSelect(root, entrybox, entries)
     root.mainloop()
+    
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'gui':
+            test()
+    else:
+        for l in getAlbums(email="kevin.osborn@gmail.com"):
+            print l
