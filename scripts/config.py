@@ -18,7 +18,6 @@ class Credential:
             f.write(self.key + '\n')
             f.write(self.value + '\n')
 
-
 cred = Credential()
 username = cred.key
 password = cred.value

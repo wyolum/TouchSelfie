@@ -60,8 +60,11 @@ oauth2_refresh_period = 1800000
     countdown2 = int(conf.get('main', 'countdown2')) # 3 ## how many seconds to count down before subsequent photos are taken
 
     TIMELAPSE = int(conf.get('main', 'TIMELAPSE')) # 0 ## use 0 for no time lapse photos, at least 3 (seconds)
-    SIGN_ME_IN = bool(conf.get('main', 'SIGN_ME_IN')) # True
-
+    SIGN_ME_IN = conf.get('main', 'SIGN_ME_IN')
+    if SIGN_ME_IN == "True":
+        SIGN_ME_IN = True
+    else:
+        SIGN_ME_IN = False
     ARCHIVE = bool(conf.get('main', 'ARCHIVE')) # True ## archive photos?
     archive_dir = conf.get('main', 'archive_dir') # './'
     oauth2_refresh_period = int(conf.get('main', 'oauth2_refresh_period')) # 1800000
@@ -182,7 +185,12 @@ def customize(master):
             TIMELAPSE = int(var.get())
         except:
             wid.config(bg='red')
-
+    def update_sign_me_in(var, wid):
+        global SIGN_ME_IN
+        wid.config(bg='white')
+        
+        SIGN_ME_IN = var.get()
+        
     def update_archive(var):
         global ARCHIVE, archive_dir
         archive_dir = var.get()
@@ -275,7 +283,7 @@ def customize(master):
     string_customizer('Countdown1', countdown1, update_countdown1)
     string_customizer('Countdown2', countdown2, update_countdown2)
     string_customizer('Timelapse', TIMELAPSE, update_timelapse)
-
+    bool_customizer('Sign me in', SIGN_ME_IN, update_sign_me_in)
     archive_var = Tkinter.StringVar()
     archive_var.set(archive_dir)
     archive_frame = Tkinter.Frame(self)
