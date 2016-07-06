@@ -1,3 +1,4 @@
+import tkkb
 import os
 from credentials import OAuth2Login
 import Tkinter
@@ -9,24 +10,28 @@ class AlbumSelect:
     fontsize=20
     def __init__(self, root, entrybox, entries):
         master = Tkinter.Toplevel(root)
-        frame = Tkinter.Frame(master)
-        Tkinter.Button(frame, text="Reset", command=self.reset).pack(side=Tkinter.LEFT)
-        Tkinter.Button(frame, text="Select",
+        button_frame = Tkinter.Frame(master)
+        list_frame = Tkinter.Frame(master)
+        kb_frame = Tkinter.Frame(master)
+        
+        Tkinter.Button(button_frame, text="Reset", command=self.reset).pack(side=Tkinter.LEFT)
+        Tkinter.Button(button_frame, text="Select",
                        command=self.select_and_push_result).pack(side=Tkinter.RIGHT)
-        frame.pack()
+        button_frame.pack()
         my_text = Tkinter.StringVar()
         my_text.trace('w', self.filter_entries)
-        local_entry = Tkinter.Entry(master, width=80, textvariable=my_text,
+        local_entry = Tkinter.Entry(list_frame, width=80, textvariable=my_text,
                                     font=self.fontsize)
         local_entry.pack()
         local_entry.bind('<Return>', self.push_result)
         local_entry.bind('<Down>', self.select_next)
-        scrollbar = Tkinter.Scrollbar(master)
+        scrollbar = Tkinter.Scrollbar(list_frame)
         scrollbar.pack(side=Tkinter.RIGHT, fill=Tkinter.Y)
 
-        self.listbox = Tkinter.Listbox(master,
+        self.listbox = Tkinter.Listbox(list_frame,
                                        yscrollcommand=scrollbar.set,
                                        width=80,
+                                       height=5,
                                        font=self.fontsize)
         self.listbox.bind('<Double-Button-1>', self.picker)
         self.listbox.bind('<Return>', self.picker)
@@ -44,7 +49,14 @@ class AlbumSelect:
         self.scrollbar = scrollbar
         self.current = None
         self.local_entry.focus_set()
+        
+        kb_frame = Tkinter.Frame(master)
+        kb = tkkb.Tkkb(kb_frame, local_entry)
+        kb_frame.pack(side=Tkinter.TOP)
 
+        button_frame.pack()
+        list_frame.pack()
+        kb_frame.pack(side=Tkinter.BOTTOM)
     def select_next(self, event):
         self.listbox.selection_set(0)
         self.listbox.focus_set()
