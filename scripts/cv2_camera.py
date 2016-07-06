@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import cv2
 
@@ -7,6 +8,7 @@ class Camera:
     '''
     def __init__(self):
         self.cam = cv2.VideoCapture(0)
+        time.sleep(.3) ## wait for auto adjust
         self.led = False
     def start_preview(self):
         pass

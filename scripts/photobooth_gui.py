@@ -213,7 +213,7 @@ def sendPic(*args):
             etext.focus_set()
             kill_tkkb()
         except Exception, e:
-            print 'Send Failed'
+            print 'Send Failed::', e
             can.delete("all")
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
             can.update()
