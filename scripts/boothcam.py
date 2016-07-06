@@ -4,7 +4,10 @@ import glob
 import os
 import os.path
 import time
-import picamera
+try:
+    import picamera as mycamera
+except ImportError:
+    import cv2_camera as mycamera
 from time import sleep
 import gdata
 import gdata.photos.service
@@ -127,7 +130,7 @@ def snap(can, countdown1, effect='None'):
             new_filename = os.path.join(custom.archive_dir, '%s_%05d.%s' % (custom.PROC_FILENAME[:-4], image_idx, custom.EXT))
             command = (['cp', custom.PROC_FILENAME, new_filename])
             call(command)
-        camera = picamera.PiCamera()
+        camera = mycamera.PiCamera()
         countdown(camera, can, countdown1)
         if effect == 'None':
             camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
