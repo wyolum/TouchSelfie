@@ -9,7 +9,11 @@ class AlbumSelect:
     fontsize=20
     def __init__(self, root, entrybox, entries):
         master = Tkinter.Toplevel(root)
-        Tkinter.Button(master, text="Select", command=self.push_result).pack()
+        frame = Tkinter.Frame(master)
+        Tkinter.Button(frame, text="Reset", command=self.reset).pack(side=Tkinter.LEFT)
+        Tkinter.Button(frame, text="Select",
+                       command=self.select_and_push_result).pack(side=Tkinter.RIGHT)
+        frame.pack()
         my_text = Tkinter.StringVar()
         my_text.trace('w', self.filter_entries)
         local_entry = Tkinter.Entry(master, width=80, textvariable=my_text,
@@ -45,7 +49,7 @@ class AlbumSelect:
         self.listbox.selection_set(0)
         self.listbox.focus_set()
         
-    def picker(self, event):
+    def picker(self, event=None):
         selected = self.listbox.curselection()
         if selected:
             idx = selected[0]
@@ -53,7 +57,15 @@ class AlbumSelect:
             self.local_entry.delete(0, Tkinter.END)
             self.local_entry.insert(0, choice)
             self.local_entry.focus_set()
-
+        else:
+            choice = None
+        return choice
+    
+    def select_and_push_result(self, event=None):
+        choice = self.picker()
+        if choice:
+            self.push_result()
+            
     def push_result(self, event=None):
         value = self.local_entry.get()
         id = value.split('::')[-1]
@@ -71,11 +83,16 @@ class AlbumSelect:
         text = self.local_entry.get()
         self.current_entries = [e for e in self.all_entries if text.lower() in e.lower()]
         self.update_list()
-
+        
+    def reset(self, *args):
+        self.local_entry.delete(0, Tkinter.END)
+        self.filter_entries()
+        self.update_list()
+        
     def poll(self):
         now = self.listbox.curselection()
         if now != self.current:
-            # self.list_has_changed(now)
+            self.list_has_changed(now)
             self.current = now
         self.master.after(250, self.poll)
 
