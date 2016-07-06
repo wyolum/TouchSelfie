@@ -48,9 +48,9 @@ class Key:
 
     def onPress(self):
         if self.state == 'lower':
-            self.entry.insert(END, self.label)
+            self.entry.insert(INSERT, self.label)
         else:
-            self.entry.insert(END, self.shifted)
+            self.entry.insert(INSERT, self.shifted)
 
 
     def shift(self, state):
@@ -75,7 +75,7 @@ class Shift(Key):
                 k.shift(self.state)
 class Gmail(Key):
     def onPress(self):
-        self.entry.insert(END, '@gmail.com')
+        self.entry.insert(INSERT, '@gmail.com')
         ## change labels to shifted keys
 class BackSpace(Key):
     def onPress(self):
