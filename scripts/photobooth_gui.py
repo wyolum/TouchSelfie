@@ -208,7 +208,10 @@ def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
         try:
-            sendMail(email_addr.get().strip(),custom.emailSubject,custom.emailMsg, custom.PROC_FILENAME)
+            sendMail(email_addr.get().strip(),
+                     custom.emailSubject,
+                     custom.emailMsg,
+                     custom.PROC_FILENAME)
             etext.delete(0, END)
             etext.focus_set()
             kill_tkkb()

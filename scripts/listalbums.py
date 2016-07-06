@@ -95,6 +95,8 @@ class AlbumSelect:
         text = self.local_entry.get()
         self.current_entries = [e for e in self.all_entries if text.lower() in e.lower()]
         self.update_list()
+        if len(self.current_entries) == 1:
+            self.listbox.selection_set(0)
         
     def reset(self, *args):
         self.local_entry.delete(0, Tkinter.END)
