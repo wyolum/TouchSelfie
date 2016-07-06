@@ -257,8 +257,9 @@ def customize(master):
         archive_dir = tkFileDialog.askdirectory(**options)
         archive_var.set(archive_dir)
     def launch_album_select(*args):
-        albums = listalbums.getAlbums("kevin.osborn@gmail.com")
-        listalbums.AlbumSelect(self, self.album_entry, albums)
+        if not hasattr(self, 'albums'):
+            self.albums = listalbums.getAlbums("kevin.osborn@gmail.com")
+        listalbums.AlbumSelect(self, self.album_entry, self.albums)
         
     string_customizer('Email Subject', emailSubject, update_subj)
     string_customizer('Email Msg', emailMsg, update_msg)
