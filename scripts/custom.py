@@ -1,3 +1,4 @@
+import listalbums
 import Tkinter
 import tkFileDialog
 import tkSimpleDialog
@@ -53,8 +54,6 @@ oauth2_refresh_period = 1800000
         lysize = 0
 
     photoCaption = conf.get('main', 'photoCaption') # "postcard from the xxxx event"
-    # albumID='6066338417811409889' ### Kevin
-    # albumID='5991903863088919889' ### WyoLum
     albumID = conf.get('main', 'albumID') # None ### Put your own album ID here in single quotes like '5991903863088919889'
 
     countdown1 = int(conf.get('main', 'countdown1')) # 5 ## how many seconds to count down before a photo is taken
@@ -131,7 +130,8 @@ def customize(master):
         var.trace('w', lambda *args:listener(var, entry))
         entry.pack(side=Tkinter.RIGHT)
         frame.pack()
-
+        return frame, entry
+    
     def bool_customizer(label, initial_val, listener):
         frame = Tkinter.Frame(self)
         var = Tkinter.BooleanVar()
@@ -227,7 +227,7 @@ def customize(master):
             conf.set('main', 'SIGN_ME_IN', SIGN_ME_IN)
             conf.set('main', 'ARCHIVE', ARCHIVE)
             conf.set('main', 'archive_dir', archive_dir)
-            conf.set('main', 'oauth2_refresh_period', archive_dir)
+            conf.set('main', 'oauth2_refresh_period', oauth2_refresh_period)
             f = open(conf_filename, 'w')
             conf.write(f)
             print 'wrote', f.name
@@ -256,11 +256,21 @@ def customize(master):
         options['parent'] = self
         archive_dir = tkFileDialog.askdirectory(**options)
         archive_var.set(archive_dir)
-
+    def launch_album_select(*args):
+        albums = listalbums.getAlbums("kevin.osborn@gmail.com")
+        listalbums.AlbumSelect(self, self.album_entry, albums)
+        
     string_customizer('Email Subject', emailSubject, update_subj)
     string_customizer('Email Msg', emailMsg, update_msg)
     string_customizer('Caption', photoCaption, update_caption)
-    string_customizer('albumID', albumID, update_albumID)
+    album_frame, self.album_entry = string_customizer('albumID',
+                                                      albumID,
+                                                      update_albumID)
+    ### add in Album selector
+    Tkinter.Button(album_frame,
+                   text="Lookup",
+                   command=launch_album_select).pack()
+    
     string_customizer('Countdown1', countdown1, update_countdown1)
     string_customizer('Countdown2', countdown2, update_countdown2)
     string_customizer('Timelapse', TIMELAPSE, update_timelapse)
