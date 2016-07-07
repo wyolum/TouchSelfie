@@ -59,7 +59,7 @@ oauth2_refresh_period = 1800000
     countdown1 = int(conf.get('main', 'countdown1')) # 5 ## how many seconds to count down before a photo is taken
     countdown2 = int(conf.get('main', 'countdown2')) # 3 ## how many seconds to count down before subsequent photos are taken
 
-    TIMELAPSE = int(conf.get('main', 'TIMELAPSE')) # 0 ## use 0 for no time lapse photos, at least 3 (seconds)
+    TIMELAPSE = float(conf.get('main', 'TIMELAPSE')) # 0 ## use 0 for no time lapse photos, at least 3 (seconds)
     SIGN_ME_IN = conf.get('main', 'SIGN_ME_IN')
     if SIGN_ME_IN == "True":
         SIGN_ME_IN = True
@@ -182,7 +182,7 @@ def customize(master):
         global TIMELAPSE
         try:
             wid.config(bg='white')
-            TIMELAPSE = int(var.get())
+            TIMELAPSE = float(var.get())
         except:
             wid.config(bg='red')
     def update_sign_me_in(var, wid):

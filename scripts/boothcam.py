@@ -152,7 +152,11 @@ def snap(can, countdown1, effect='None'):
             # snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,
             #                             SCREEN_H -custom.lysize ),
             #                             custom.logo)
-            snapshot.paste(custom.logo,(10, 580),
+            size = snapshot.size
+            logo_size = custom.logo.size
+            yoff = size[1] - logo_size[1]
+            xoff = (size[0] - logo_size[0]) // 2
+            snapshot.paste(custom.logo,(xoff, yoff),
                            custom.logo)
         snapshot.save(custom.PROC_FILENAME)
     except Exception, e:

@@ -10,16 +10,23 @@ class Camera:
         self.cam = cv2.VideoCapture(0)
         time.sleep(.3) ## wait for auto adjust
         self.led = False
+        self.previewing = False
+        
     def start_preview(self):
         pass
+            
     def stop_preview(self):
-        pass
+        self.previewing = False
+        
     def capture(self, filename, resize=None):
         '''
         resize not supported
         '''
+        self.cam.set(cv2.cv.CV_CAP_PROP_FRAME_WIDTH, 1600)
+        self.cam.set(cv2.cv.CV_CAP_PROP_FRAME_HEIGHT,1200)
         ret, frame = self.cam.read()
         cv2.imwrite(filename, frame)
+        
     def close(self):
         del self.cam
 

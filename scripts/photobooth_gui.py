@@ -158,6 +158,10 @@ def check_and_snap(force=False, countdown1=None):
         im = snap(can, countdown1=countdown1, effect='None')
 #        setLights(r_var.get(), g_var.get(), b_var.get())
         if im is not None:
+            if custom.TIMELAPSE > 0:
+                togo = custom.TIMELAPSE - (time.time() - last_snap)
+            else:
+                togo = 1e8
             last_snap = time.time()
             display_image(im)
             can.delete("text")
