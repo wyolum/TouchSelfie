@@ -20,6 +20,12 @@ from constants import *
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
 root.attributes("-fullscreen",True)
+
+def screenshot(*args):
+    import screenshot
+    screenshot.snap()
+root.bind('<F12>', screenshot)
+
 ### booth cam may need to present a file dialog gui.  So import after root is defined.
 from boothcam import *
 
