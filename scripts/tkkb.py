@@ -75,7 +75,6 @@ class Shift(Key):
                 k.shift(self.state)
 class Gmail(Key):
     def __init__(self, *args, **kw):
-        print kw['offx']
         Key.__init__(self, *args, **kw)
     def onPress(self):
         self.entry.insert(INSERT, '@gmail.com')
