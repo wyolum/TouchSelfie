@@ -52,7 +52,7 @@ TIMEOUT = .3 # number of seconds your want for timeout
 last_snap = time.time()
 
 tkkb = None
-def launch_tkkb():
+def launch_tkkb(*args):
     '''
     Launch on screen keyboard program called tkkb-keyboard.
     install with '$ sudo apt-get install tkkb-keyboard'
@@ -178,10 +178,11 @@ def check_and_snap(force=False, countdown1=None):
                 if custom.albumID == 'None':
                     global albumID_informed
                     if not albumID_informed:
-                        import tkMessageBox
                         tkMessageBox.showinfo(
                             'Album ID not set',
-                            'Click Customize to select albumID')
+                            'Click Customize to select albumID',
+                            parent=root
+                        )
                         albumID_informed = True
                 else:
                     try:
@@ -302,6 +303,7 @@ timelapse_label.pack(side=LEFT)
 etext = Entry(frame,width=40, textvariable=email_addr, font=custom.BUTTON_FONT)
 etext.pack()
 frame.pack()
+etext.bind('<Button-1>', launch_tkkb)
 
 def labeled_slider(parent, label, from_, to, side, variable):
     frame = Frame(parent)
