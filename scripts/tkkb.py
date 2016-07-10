@@ -126,13 +126,14 @@ class Tkkb:
                                key_dim, key_dim
                            ),
                            entry))
-        enter = Enter(c, 'Enter', 'Enter',
-                      (12. * (key_dim + pad), 2 * (key_dim + pad) + pad,
-                       2 * (key_dim + pad) - pad, key_dim),
-                      entry,
-                      offx=30,
-                      fontsize=12)
-        row.append(enter)
+        if onEnter is not None:
+            enter = Enter(c, 'Enter', 'Enter',
+                          (12. * (key_dim + pad), 2 * (key_dim + pad) + pad,
+                           2 * (key_dim + pad) - pad, key_dim),
+                          entry,
+                          offx=30,
+                          fontsize=12)
+            row.append(enter)
         rows.append(row)
         row = []
         for i, (l, s) in enumerate(bottom_row):
