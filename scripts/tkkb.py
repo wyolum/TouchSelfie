@@ -74,9 +74,16 @@ class Shift(Key):
             for k in row:
                 k.shift(self.state)
 class Gmail(Key):
+    def __init__(self, *args, **kw):
+        print kw['offx']
+        Key.__init__(self, *args, **kw)
     def onPress(self):
         self.entry.insert(INSERT, '@gmail.com')
         ## change labels to shifted keys
+class Enter(Key):
+    def onPress(self):
+        if self.c.onEnter is not None:
+            self.c.onEnter()
 class BackSpace(Key):
     def onPress(self):
         p = self.entry.index(INSERT)
@@ -84,9 +91,10 @@ class BackSpace(Key):
             self.entry.delete(p - 1)
         
 class Tkkb:
-    def __init__(self, r, entry):
+    def __init__(self, r, entry, onEnter=None):
         c = Canvas(r, width=width, height=height)
         c.pack()
+        c.onEnter = onEnter
 
         rows = []
         row = []
@@ -118,6 +126,13 @@ class Tkkb:
                                key_dim, key_dim
                            ),
                            entry))
+        enter = Enter(c, 'Enter', 'Enter',
+                      (12. * (key_dim + pad), 2 * (key_dim + pad) + pad,
+                       2 * (key_dim + pad) - pad, key_dim),
+                      entry,
+                      offx=30,
+                      fontsize=12)
+        row.append(enter)
         rows.append(row)
         row = []
         for i, (l, s) in enumerate(bottom_row):
@@ -146,11 +161,11 @@ class Tkkb:
                         offx=20,
                         fontsize=12)
 
-        gmail = Gmail(c, '@gmail', '@gmail',
+        gmail = Gmail(c, '@gmail.com', '@gmail.com',
                         (7.5 * (key_dim + pad), 4 * (key_dim + pad) + pad,
                          3 * (key_dim + pad) - pad, key_dim),
                       entry,
-                      offx=30,
+                      offx=60,
                       fontsize=12)
         rows.append([shift, space, gmail, dotcom])
         backspace = BackSpace(c, 'backspace', 'backspace',
@@ -196,10 +211,12 @@ class Tkkb:
 
 def main():
     r = Tk()
+    def onEnter():
+        print 'Enter Pressed'
     entry = Entry(r, width=20, font=fontsize)
     entry.pack()
 
-    Tkkb(r, entry)
+    Tkkb(r, entry, onEnter=onEnter)
     r.mainloop()
 
 if __name__ == '__main__':

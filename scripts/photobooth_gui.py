@@ -60,7 +60,10 @@ def launch_tkkb(*args):
     global tkkb
     if tkkb is None:
         tkkb = Toplevel(root)
-        Tkkb(tkkb, etext)
+        def onEnter(*args):
+            kill_tkkb()
+            sendPic()
+        Tkkb(tkkb, etext, onEnter=onEnter)
         etext.config(state=NORMAL)
         tkkb.wm_attributes("-topmost", 1)
         tkkb.transient(root)
