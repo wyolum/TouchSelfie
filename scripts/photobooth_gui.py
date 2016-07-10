@@ -32,6 +32,7 @@ from boothcam import *
 ## set display geometry
 WIDTH = 800
 HEIGHT = 480
+albumID_informed = False ### only show albumID customize info once
 
 ## set photo size to fit nicely in screen
 SCALE = 1.8
@@ -174,10 +175,21 @@ def check_and_snap(force=False, countdown1=None):
             can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
             can.update()
             if signed_in:
-                try:
-                    googleUpload(custom.PROC_FILENAME)
-                except Exception, e:
-                    tkMessageBox.showinfo("Upload Error", str(e) + '\nalbumID set?')
+                if custom.albumID == 'None':
+                    global albumID_informed
+                    if not albumID_informed:
+                        import tkMessageBox
+                        tkMessageBox.showinfo(
+                            'Album ID not set',
+                            'Click Customize to select albumID')
+                        albumID_informed = True
+                else:
+                    try:
+                        googleUpload(custom.PROC_FILENAME)
+                    except Exception, e:
+                        tkMessageBox.showinfo("Upload Error", str(e) +
+                                              '\nUpload Failed:%s' % e)
+                    
                     # signed_in = False
             can.delete("text")
             # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")

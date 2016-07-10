@@ -220,8 +220,9 @@ def customize(master):
             lysize = 0
 
         ## save popup dialog
-        save_dialog = AskBoolean(self, title='Save configuration?')
-        if save_dialog.result:
+        # save_dialog = AskBoolean(self, title='Save configuration?')
+        # if save_dialog.result:
+        if True:
             conf = ConfigParser.ConfigParser()
             conf.add_section('main')
             conf.set('main', 'emailSubject', emailSubject)
@@ -241,8 +242,9 @@ def customize(master):
             print 'wrote', f.name
         else:
             restore_conf()
+        close()
+    def close():
         self.destroy()
-        
 
     def logo_dialog():
         global logopng
@@ -305,8 +307,12 @@ def customize(master):
     logo_frame.pack(side=Tkinter.TOP)
     buttonbox = Tkinter.Frame(self)
     ##  Tkinter.Button(buttonbox, text='Cancel', command=self.destroy).pack(side=Tkinter.LEFT) changes are stored when they are made. cancel is harder than this
-    Tkinter.Button(buttonbox, text='Done', command=update_and_close).pack(side=Tkinter.LEFT)
-    Tkinter.Button(buttonbox, text='Quit TouchSelfie', command=quit).pack(side=Tkinter.LEFT)
+    Tkinter.Button(buttonbox, text='Save', command=update_and_close).pack(
+        side=Tkinter.LEFT)
+    Tkinter.Button(buttonbox, text='Cancel', command=close).pack(
+        side=Tkinter.LEFT)
+    Tkinter.Button(buttonbox, text='Quit TouchSelfie', command=quit).pack(
+        side=Tkinter.LEFT)
     buttonbox.pack()
     
     if True: # DISPLAY_LOGO:
