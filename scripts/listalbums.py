@@ -2,7 +2,6 @@ import tkkb
 import os
 from credentials import OAuth2Login
 import Tkinter
-from pydrive.auth import GoogleAuth
 
 
 class AlbumSelect:
@@ -119,7 +118,7 @@ class AlbumSelect:
             self.local_entry.delete(0, Tkinter.END)
             self.local_entry.insert(Tkinter.END, choice)
         
-def getAlbums():
+def getAlbums(client):
     file_list = client.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
     for file1 in file_list:
         title = file1['title']
