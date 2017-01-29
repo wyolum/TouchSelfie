@@ -56,7 +56,7 @@ def setup_google():
     except Exception, e:
         print 'could not login to Google, check .credential file\n   %s' % e
         out = False
-        # raise ### uncomment to debug google oauth shiz
+        raise ### uncomment to debug google oauth shiz
     return client
 
 def countdown(camera, can, countdown1):
