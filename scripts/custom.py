@@ -268,7 +268,7 @@ def customize(master):
         archive_var.set(archive_dir)
     def launch_album_select(*args):
         if not hasattr(self, 'albums'):
-            self.albums = listalbums.getAlbums("kevin.osborn@gmail.com")
+            self.albums = listalbums.getAlbums()
         listalbums.AlbumSelect(self, self.album_entry, self.albums)
         
     string_customizer('Email Subject', emailSubject, update_subj)
