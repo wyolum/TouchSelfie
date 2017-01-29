@@ -45,7 +45,6 @@ def safe_set_led(camera, state):
 def setup_google():
     global client
 
-    out = True
     try:
         # Initial Setup & Authorization using PyDrive
         gauth = GoogleAuth()
@@ -58,7 +57,7 @@ def setup_google():
         print 'could not login to Google, check .credential file\n   %s' % e
         out = False
         # raise ### uncomment to debug google oauth shiz
-    return out
+    return client
 
 def countdown(camera, can, countdown1):
     camera.start_preview()
