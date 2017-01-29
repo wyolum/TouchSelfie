@@ -117,7 +117,7 @@ class AlbumSelect:
             self.local_entry.delete(0, Tkinter.END)
             self.local_entry.insert(Tkinter.END, choice)
         
-def getAlbums(drive):
+def getAlbums():
     
     gauth = GoogleAuth()
     gauth.LocalWebserverAuth()
