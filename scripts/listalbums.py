@@ -119,6 +119,9 @@ class AlbumSelect:
         
 def getAlbums(drive):
     
+    gauth = GoogleAuth()
+    gauth.LocalWebserverAuth()
+    drive = GoogleDrive(gauth)
     file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
         for file1 in file_list:
         title = file1['title']
