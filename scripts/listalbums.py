@@ -120,6 +120,7 @@ class AlbumSelect:
         
 def getAlbums(client):
     file_list = client.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
+    entries = []
     for file1 in file_list:
         title = file1['title']
         title = ''.join([c for c in title if ord(c) < 128])
