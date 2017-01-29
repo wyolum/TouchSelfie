@@ -331,7 +331,8 @@ can.bind('<Button-1>', snap_callback)
 
 ## sign in to google?
 if custom.SIGN_ME_IN:
-    signed_in = setup_google()
+    global client
+    client = setup_google()
 else:
     signed_in = False
 if not signed_in:
