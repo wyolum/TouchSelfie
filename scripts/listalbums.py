@@ -2,6 +2,8 @@ import tkkb
 import os
 from credentials import OAuth2Login
 import Tkinter
+from pydrive.auth import GoogleAuth
+
 
 class AlbumSelect:
     '''
