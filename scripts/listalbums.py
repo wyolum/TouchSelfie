@@ -117,21 +117,13 @@ class AlbumSelect:
             self.local_entry.delete(0, Tkinter.END)
             self.local_entry.insert(Tkinter.END, choice)
         
-def getAlbums(email):
-
-    # options for oauth2 login
-    configdir = os.path.expanduser('./')
-    client_secrets = os.path.join(configdir, 'OpenSelfie.json')
-    credential_store = os.path.join(configdir, 'credentials.dat')
-
-    gd_client = OAuth2Login(client_secrets, credential_store, email)
-
-    albums = gd_client.GetUserFeed()
-    entries = []
-    for album in albums.entry:
-        title = album.title.text
+def getAlbums(drive):
+    
+    file_list = drive.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
+        for file1 in file_list:
+        title = file1['title']
         title = ''.join([c for c in title if ord(c) < 128])
-        id = album.gphoto_id.text
+        id =  file1['id']
         entry = '%s::%s' % (title, id)
         entries.append(entry)
     return entries
