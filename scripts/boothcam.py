@@ -188,7 +188,7 @@ def findser():
 
 def googleUpload(filen):
     if custom.albumID != 'None':
-        photo = drive.CreateFile({"parents": [{"kind": "drive#fileLink", "id":custom.albumID}]})
+        photo = client.CreateFile({"parents": [{"kind": "drive#fileLink", "id":custom.albumID}]})
         photo.SetContentFile(filen)
         photo.Upload()
     else:
