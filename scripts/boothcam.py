@@ -115,7 +115,7 @@ def snap(can, countdown1, effect='None'):
         elif effect == 'Warhol': 
             #  set light to R, take photo, G, take photo, B, take photo, Y, take photo
             # merge results into one image
-            setL683, 384ED
+            setLights(255, 0, 0) ## RED
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
             setLights(0, 255, 0) ## GREEN
             camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
@@ -186,6 +186,7 @@ def findser():
 
 
 def googleUpload(filen):
+    # Upload to GoogleDrive
     if custom.albumID != 'None':
         photo = client.CreateFile({"parents": [{"kind": "drive#fileLink", "id":custom.albumID}]})
         photo.SetContentFile(filen)
