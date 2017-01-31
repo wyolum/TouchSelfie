@@ -119,13 +119,13 @@ class AlbumSelect:
             self.local_entry.insert(Tkinter.END, choice)
         
 def getAlbums(client):
-    print "Getting Albums"
+    # print "Getting Albums"
     file_list = client.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
     entries = []
     for file1 in file_list:
         title = file1['title']
         title = ''.join([c for c in title if ord(c) < 128])
-        print title
+        # print title
         id =  file1['id']
         entry = '%s::%s' % (title, id)
         entries.append(entry)
