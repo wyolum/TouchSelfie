@@ -120,7 +120,7 @@ class AlbumSelect:
         
 def getAlbums(client):
     # print "Getting Albums"
-    file_list = client.ListFile({'q': "'root' in parents and trashed=false"}).GetList()
+    file_list = client.ListFile().GetList()
     entries = []
     for file1 in file_list:
         title = file1['title']

@@ -7,7 +7,7 @@ Install PyDrive
 Then follow the tutorial on [Make Magazine](http://makezine.com/projects/raspberry-pi-photo-booth/)
 
 ## If you have an existing Photobooth
-You can keep all your configuration files! Just install `PyDrive` and pull my code into your existing Photobooth code
+You can keep all your configuration files! Just install `PyDrive` and pull this code into your existing Photobooth folder.
 
 ## GoogleDrive Folder Selection
 When you get the "Album ID Not Set" dialog you can try to list the albums from the customize pane. This doesn't seem to be 100% reliable at the moment though. As a fallback, open GoogleDrive, go into the album you want to use, and look at the URL. It should look like:
