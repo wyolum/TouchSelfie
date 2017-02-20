@@ -16,7 +16,7 @@ import custom
 import Image
 import config
 from constants import *
-import validate_email
+from validate_email import validate_email
 
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
