@@ -16,6 +16,7 @@ import custom
 import Image
 import config
 from constants import *
+import validate_email
 
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
@@ -233,7 +234,8 @@ def force_snap(countdown1=None):
 def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
-        if not email_addr.get().strip():
+        if not validate_email(email_addr.get().strip()):
+            print "Bad Email"
             pass
         else: 
             try:
