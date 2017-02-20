@@ -2,6 +2,9 @@
 Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 ## Instructions
+Install validate_email
+sudo pip install validate_email
+
 Install PyDrive
 `sudo pip install --upgrade PyDrive`
 Then follow the tutorial on [Make Magazine](http://makezine.com/projects/raspberry-pi-photo-booth/)
