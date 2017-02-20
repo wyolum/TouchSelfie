@@ -234,10 +234,7 @@ def force_snap(countdown1=None):
 def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
-        if not validate_email(email_addr.get().strip()):
-            print "Bad Email"
-            pass
-        else: 
+        if validate_email(email_addr.get().strip()):
             try:
                 sendMail(email_addr.get().strip(),
                          custom.emailSubject,
@@ -355,7 +352,7 @@ force_snap(countdown1=0)
 root.after(200, check_and_snap)
 if custom.SIGN_ME_IN:
     root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
-root.wm_title("Wyolum Photobooth")
+root.wm_title("Photobooth")
 etext.focus_set()
 # etext.bind("<Enter>", sendPic)
 on_rgb_change()
