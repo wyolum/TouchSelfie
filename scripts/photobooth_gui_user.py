@@ -233,25 +233,28 @@ def force_snap(countdown1=None):
 def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
-        try:
-            sendMail(email_addr.get().strip(),
-                     custom.emailSubject,
-                     custom.emailMsg,
-                     custom.PROC_FILENAME)
-            etext.delete(0, END)
-            etext.focus_set()
-            kill_tkkb()
-        except Exception, e:
-            print 'Send Failed::', e
-            can.delete("all")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
-            can.update()
-            time.sleep(1)
-            can.delete("all")
-            im = Image.open(custom.PROC_FILENAME)
-            display_image(im)
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
-            can.update()
+        if not email_addr.get().strip():
+            pass
+        else: 
+            try:
+                sendMail(email_addr.get().strip(),
+                         custom.emailSubject,
+                         custom.emailMsg,
+                         custom.PROC_FILENAME)
+                etext.delete(0, END)
+                etext.focus_set()
+                kill_tkkb()
+            except Exception, e:
+                print 'Send Failed::', e
+                can.delete("all")
+                can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
+                can.update()
+                time.sleep(1)
+                can.delete("all")
+                im = Image.open(custom.PROC_FILENAME)
+                display_image(im)
+                can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+                can.update()
     else:
         print 'Not signed in'
 
