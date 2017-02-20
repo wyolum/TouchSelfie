@@ -8,6 +8,8 @@ import ImageTk
 import ConfigParser
 import os.path
 from constants import SCREEN_W, SCREEN_H
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
 
 install_dir = os.path.abspath(os.path.join(os.path.split(os.path.abspath(__file__))[0],  '..'))
 conf_filename = os.path.join(install_dir, 'scripts', 'openselfie.conf')
@@ -268,7 +270,10 @@ def customize(master):
         archive_var.set(archive_dir)
     def launch_album_select(*args):
         if not hasattr(self, 'albums'):
-            self.albums = listalbums.getAlbums("kevin.osborn@gmail.com")
+            gauth = GoogleAuth()
+            gauth.LocalWebserverAuth()
+            drive = GoogleDrive(gauth)
+            self.albums = listalbums.getAlbums(drive)
         listalbums.AlbumSelect(self, self.album_entry, self.albums)
         
     string_customizer('Email Subject', emailSubject, update_subj)
@@ -333,8 +338,3 @@ if __name__ == '__main__':
     print ARCHIVE
     print archive_dir
     print logopng
-    
-
-
-
-    
