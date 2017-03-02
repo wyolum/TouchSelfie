@@ -250,7 +250,7 @@ def sendPic(*args):
                 can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Sending Email", font=custom.CANVAS_FONT, tags="text")
                 can.update()
                 time.sleep(1)
-                can.delete("all")
+                can.delete("text")
             except Exception, e:
                 print 'Send Failed::', e
                 can.delete("all")
