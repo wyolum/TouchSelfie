@@ -238,7 +238,7 @@ def sendPic(*args):
         if validate_email(email_addr.get().strip()):
             try:
                 # Build non-blocking thread
-                thread = threading.Thread(target=sendMail, args(email_addr.get().strip(), custom.emailSubject, custom.emailMsg, custom.PROC_FILENAME)))
+                thread = threading.Thread(target=sendMail, args(email_addr.get().strip(), custom.emailSubject, custom.emailMsg, custom.PROC_FILENAME))
                 thread.start()
                 # sendMail(email_addr.get().strip(),
                 #          custom.emailSubject,
