@@ -17,6 +17,7 @@ import Image
 import config
 from constants import *
 from validate_email import validate_email
+import threading
 
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
@@ -166,7 +167,7 @@ def check_and_snap(force=False, countdown1=None):
         
         if timelapse_due():
             countdown1 = 0
-        im = snap(can, countdown1=countdown1, effect='None')
+        im = snap(can, countdown1=countdown1, effect='Four')
 #        setLights(r_var.get(), g_var.get(), b_var.get())
         if im is not None:
             if custom.TIMELAPSE > 0:
@@ -236,10 +237,17 @@ def sendPic(*args):
         print 'sending photo by email to %s' % email_addr.get()
         if validate_email(email_addr.get().strip()):
             try:
-                sendMail(email_addr.get().strip(),
-                         custom.emailSubject,
-                         custom.emailMsg,
-                         custom.PROC_FILENAME)
+                # Build non-blocking thread
+                thread = threading.Thread(target=sendMail, args(email_addr.get().strip(), custom.emailSubject, custom.emailMsg, custom.PROC_FILENAME)))
+                thread.start()
+                # sendMail(email_addr.get().strip(),
+                #          custom.emailSubject,
+                #          custom.emailMsg,
+                #          custom.PROC_FILENAME)
+                can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Sending Email", font=custom.CANVAS_FONT, tags="text")
+                can.update()
+                time.sleep(1)
+                can.delete("all")
                 etext.delete(0, END)
                 etext.focus_set()
                 kill_tkkb()
