@@ -1,6 +1,25 @@
 # TouchSelfie
 Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
+## Why use my fork?
+My fork has been updated to use Google Drive via the `PyDrive`. If you read the comments on the [Make Magazine](http://makezine.com/projects/raspberry-pi-photo-booth/) article you can see there are a lot of issues with the Google Photos implementation, since this is FOSS I improved it.
+
+The email sending feature was a little buggy. It would not allow another picture to be taken while the previous email picture was being sent. I use the `validate_email` library to sanitize input and break email sending into it's own thread. This makes everything much more seamless.
+
+I created the `photobooth_gui_user.py` mode. This removes the `admin` features from the interface and only shows the email bar.
+
+The `openselfie.conf` file has been expanded to include a `style` option that was previously hidden in the settings by a hardcoded value. An example can be seen below.
+```
+# Style of photo to take, options are:
+#    * None   - Take a single picture
+#    * Four   - Take four images and stitch them together
+# Make sure to use a leading capitol letter!
+style = Four
+```
+
+## Is it stable?
+Yes, maybe even more than the original. I actually used it at my wedding and it worked flawlessly all night.
+
 ## Instructions
 Follow the tutorial on [Make Magazine](http://makezine.com/projects/raspberry-pi-photo-booth/), but use this repo instead!
 
