@@ -21,6 +21,10 @@ if False:
     from oauth2client.file import Storage
 from credentials import OAuth2Login
 
+from pydrive.auth import GoogleAuth
+from pydrive.drive import GoogleDrive
+
+
 from PIL import Image
 import serial
 import config
@@ -41,22 +45,19 @@ def safe_set_led(camera, state):
 def setup_google():
     global client
 
-    out = True
     try:
-        # Create a client class which will make HTTP requests with Google Docs server.
-        configdir = os.path.expanduser('./')
-        client_secrets = os.path.join(configdir, 'OpenSelfie.json')
-        credential_store = os.path.join(configdir, 'credentials.dat')
-
-        client = OAuth2Login(client_secrets, credential_store, config.username)
+        # Initial Setup & Authorization using PyDrive
+        gauth = GoogleAuth()
+        gauth.LocalWebserverAuth()
+        client = GoogleDrive(gauth)
 
     except KeyboardInterrupt:
         raise
     except Exception, e:
         print 'could not login to Google, check .credential file\n   %s' % e
         out = False
-        # raise ### uncomment to debug google oauth shiz
-    return out
+        raise ### uncomment to debug google oauth shiz
+    return client
 
 def countdown(camera, can, countdown1):
     camera.start_preview()
@@ -185,10 +186,10 @@ def findser():
 
 
 def googleUpload(filen):
-    #upload to picasa album
+    # Upload to GoogleDrive
     if custom.albumID != 'None':
-        album_url ='/data/feed/api/user/%s/albumid/%s' % (config.username, custom.albumID)
-        photo = client.InsertPhotoSimple(album_url,'NoVa Snap',custom.photoCaption, filen ,content_type='image/jpeg')
+        photo = client.CreateFile({"parents": [{"kind": "drive#fileLink", "id":custom.albumID}]})
+        photo.SetContentFile(filen)
+        photo.Upload()
     else:
         raise ValueError("albumID not set")
-        

@@ -16,6 +16,8 @@ import custom
 import Image
 import config
 from constants import *
+from validate_email import validate_email
+import threading
 
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
@@ -69,7 +71,7 @@ def launch_tkkb(*args):
         tkkb.transient(root)
         tkkb_button.config(command=kill_tkkb, text="Close KB")
         tkkb.protocol("WM_DELETE_WINDOW", kill_tkkb)
-        
+
 def kill_tkkb():
     '''
     Delete on screen keyboard program called tkkb-keyboard.
@@ -94,7 +96,7 @@ def display_image(im=None):
     display image im in GUI window
     '''
     global image_tk
-    
+
     x,y = im.size
     x = int(x / SCALE)
     y = int(y / SCALE)
@@ -105,8 +107,8 @@ def display_image(im=None):
     ## delete all canvas elements with "image" in the tag
     can.delete("image")
     can.create_image([(WIDTH + x) / 2 - x/2,
-                      0 + y / 2], 
-                     image=image_tk, 
+                      0 + y / 2],
+                     image=image_tk,
                      tags="image")
 
 def timelapse_due():
@@ -128,7 +130,7 @@ def refresh_oauth2_credentials():
         else:
             print 'refresh failed'
         root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
-    
+
 def check_and_snap(force=False, countdown1=None):
     '''
     Check button status and snap a photo if button has been pressed.
@@ -137,7 +139,7 @@ def check_and_snap(force=False, countdown1=None):
     countdown1 -- starting value for countdown timer
     '''
     global  image_tk, Button_enabled, last_snap, signed_in
-    
+
     if countdown1 is None:
         countdown1 = custom.countdown1
     if signed_in:
@@ -153,7 +155,7 @@ def check_and_snap(force=False, countdown1=None):
         # can.delete("text")
         # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
         # can.update()
-        
+
     ## get command string from alamode
 #    command = ser.readline().strip()
     command=""
@@ -162,10 +164,10 @@ def check_and_snap(force=False, countdown1=None):
         Button_enabled = False
         can.delete("text")
         can.update()
-        
+
         if timelapse_due():
             countdown1 = 0
-        im = snap(can, countdown1=countdown1, effect='None')
+        im = snap(can, countdown1=countdown1, effect=custom.style)
 #        setLights(r_var.get(), g_var.get(), b_var.get())
         if im is not None:
             if custom.TIMELAPSE > 0:
@@ -193,7 +195,7 @@ def check_and_snap(force=False, countdown1=None):
                     except Exception, e:
                         tkMessageBox.showinfo("Upload Error", str(e) +
                                               '\nUpload Failed:%s' % e)
-                    
+
                     # signed_in = False
             can.delete("text")
             # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
@@ -233,25 +235,33 @@ def force_snap(countdown1=None):
 def sendPic(*args):
     if signed_in:
         print 'sending photo by email to %s' % email_addr.get()
-        try:
-            sendMail(email_addr.get().strip(),
-                     custom.emailSubject,
-                     custom.emailMsg,
-                     custom.PROC_FILENAME)
-            etext.delete(0, END)
-            etext.focus_set()
-            kill_tkkb()
-        except Exception, e:
-            print 'Send Failed::', e
-            can.delete("all")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
-            can.update()
-            time.sleep(1)
-            can.delete("all")
-            im = Image.open(custom.PROC_FILENAME)
-            display_image(im)
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
-            can.update()
+        if validate_email(email_addr.get().strip()):
+            try:
+                # Build non-blocking thread
+                thread = threading.Thread(target=sendMail, args=(email_addr.get().strip(), custom.emailSubject, custom.emailMsg, custom.PROC_FILENAME))
+                thread.start()
+                # sendMail(email_addr.get().strip(),
+                #          custom.emailSubject,
+                #          custom.emailMsg,
+                #          custom.PROC_FILENAME)
+                etext.delete(0, END)
+                etext.focus_set()
+                kill_tkkb()
+                can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Sending Email", font=custom.CANVAS_FONT, tags="text")
+                can.update()
+                time.sleep(3)
+                can.delete("text")
+            except Exception, e:
+                print 'Send Failed::', e
+                can.delete("all")
+                can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
+                can.update()
+                time.sleep(1)
+                can.delete("all")
+                im = Image.open(custom.PROC_FILENAME)
+                display_image(im)
+                can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+                can.update()
     else:
         print 'Not signed in'
 
@@ -290,7 +300,7 @@ root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 
 # Button(frame, text="Exit", command=on_close).pack(side=LEFT)
-Button(frame, text="Customize", command=lambda *args: custom.customize(root)).pack(side=LEFT)
+# Button(frame, text="Customize", command=lambda *args: custom.customize(root)).pack(side=LEFT)
 tkkb_button = Button(frame, command=launch_tkkb, text="Launch-KB")
 # tkkb_button.pack(side=LEFT)
 send_button = Button(frame, text="SendEmail", command=sendPic, font=custom.BUTTON_FONT)
@@ -350,7 +360,7 @@ force_snap(countdown1=0)
 root.after(200, check_and_snap)
 if custom.SIGN_ME_IN:
     root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
-root.wm_title("Wyolum Photobooth")
+root.wm_title("Photobooth")
 etext.focus_set()
 # etext.bind("<Enter>", sendPic)
 on_rgb_change()
