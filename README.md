@@ -2,14 +2,26 @@
 Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 ## Instructions
-Install validate_email
-sudo pip install validate_email
 
-Install PyDrive
-`sudo pip install --upgrade PyDrive`
+Two additional libraries are required:
+* `validate_email`
+* `PyDrive`
+
+I use a simple python library to check for valid email addresses.
+To install [`validate_email`](https://pypi.python.org/pypi/validate_email)
+```
+sudo pip install validate_email
+```
+
+Use Google Drive instead of Google Photos.
+To install [`PyDrive`](https://pypi.python.org/pypi/PyDrive/1.3.1_)
+```
+sudo pip install PyDrive
+```
+
 Then follow the tutorial on [Make Magazine](http://makezine.com/projects/raspberry-pi-photo-booth/)
 
-## If you have an existing Photobooth
+## What if I have an existing Photobooth setup?
 You can keep all your configuration files! Just install `PyDrive` and pull this code into your existing Photobooth folder.
 
 ## GoogleDrive Folder Selection
