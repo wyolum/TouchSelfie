@@ -15,3 +15,5 @@ scripts/*.py~
 scripts/*.cred
 scripts/*.json
 scripts/*.dat
+
+Photos/
