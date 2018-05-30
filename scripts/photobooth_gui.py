@@ -29,13 +29,7 @@ root.bind('<F12>', screenshot)
 ### booth cam may need to present a file dialog gui.  So import after root is defined.
 from boothcam import *
 
-## set display geometry
-WIDTH = 800
-HEIGHT = 480
 albumID_informed = False ### only show albumID customize info once
-
-## set photo size to fit nicely in screen
-SCALE = 1.8
 
 ## the countdown starting value
 # COUNTDOWN1 = custom.countdown1 ### use custom.countdown1 reference directly
@@ -96,15 +90,15 @@ def display_image(im=None):
     global image_tk
     
     x,y = im.size
-    x = int(x / SCALE)
-    y = int(y / SCALE)
+    x = int(x / SNAP_TO_SCREEN_SCALE)
+    y = int(y / SNAP_TO_SCREEN_SCALE)
 
     im = im.resize((x,y));
     image_tk = ImageTk.PhotoImage(im)
 
     ## delete all canvas elements with "image" in the tag
     can.delete("image")
-    can.create_image([(WIDTH + x) / 2 - x/2,
+    can.create_image([(SCREEN_W + x) / 2 - x/2,
                       0 + y / 2], 
                      image=image_tk, 
                      tags="image")
@@ -151,7 +145,7 @@ def check_and_snap(force=False, countdown1=None):
         ## ser.write('e') #enable button (not used)
         Button_enabled = True
         # can.delete("text")
-        # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+        # can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
         # can.update()
         
     ## get command string from alamode
@@ -175,7 +169,7 @@ def check_and_snap(force=False, countdown1=None):
             last_snap = time.time()
             display_image(im)
             can.delete("text")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
+            can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
             can.update()
             if signed_in:
                 if custom.albumID == 'None':
@@ -196,7 +190,7 @@ def check_and_snap(force=False, countdown1=None):
                     
                     # signed_in = False
             can.delete("text")
-            # can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+            # can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         ### what command did we get?
@@ -244,13 +238,13 @@ def sendPic(*args):
         except Exception, e:
             print 'Send Failed::', e
             can.delete("all")
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
+            can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Send Failed", font=custom.CANVAS_FONT, tags="text")
             can.update()
             time.sleep(1)
             can.delete("all")
             im = Image.open(custom.PROC_FILENAME)
             display_image(im)
-            can.create_text(WIDTH/2, HEIGHT - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
+            can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         print 'Not signed in'
@@ -285,7 +279,7 @@ b_var.trace('w', on_rgb_change)
 w, h = root.winfo_screenwidth(), root.winfo_screenheight()
 
 # root.overrideredirect(1)
-root.geometry("%dx%d+0+0" % (WIDTH, HEIGHT))
+root.geometry("%dx%d+0+0" % (SCREEN_W, SCREEN_H))
 root.focus_set() # <-- move focus to this widget
 frame = Frame(root)
 
@@ -323,7 +317,7 @@ snap_button = Button(interface_frame, text="snap", command=force_snap, font=cust
 interface_frame.pack(side=RIGHT)
 
 ## the canvas will display the images
-can = Canvas(root, width=WIDTH, height=HEIGHT)
+can = Canvas(root, width=SCREEN_W, height=SCREEN_H)
 can.pack()
 def snap_callback(*args):
     force_snap()
@@ -340,7 +334,7 @@ if not signed_in:
 
 ### take the first photo (no delay)
 can.delete("text")
-can.create_text(WIDTH/2, HEIGHT/2, text="SMILE ;-)", font=custom.CANVAS_FONT, tags="splash")
+can.create_text(SCREEN_W/2, SCREEN_H/2, text="SMILE ;-)", font=custom.CANVAS_FONT, tags="splash")
 can.update()
 force_snap(countdown1=0)
 
