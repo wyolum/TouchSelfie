@@ -27,7 +27,7 @@ import config
 import custom
 import httplib2
 
-from constants import SCREEN_W, SCREEN_H, WHITE, BLACK
+from constants import SCREEN_W, SCREEN_H, WHITE, BLACK, SNAP_W, SNAP_H, LOGO_MAX_SIZE, LOGO_PADDING, SNAP_TO_SCREEN_SCALE 
 
 FONTSIZE=100
 font = ('Times', FONTSIZE)
@@ -109,40 +109,44 @@ def snap(can, countdown1, effect='None'):
         camera = mycamera.PiCamera()
         countdown(camera, can, countdown1)
         if effect == 'None':
-            camera.capture(custom.RAW_FILENAME, resize=(1366, 768))
+            camera.capture(custom.RAW_FILENAME, resize=(SNAP_W, SNAP_H))
             snapshot = Image.open(custom.RAW_FILENAME)
         elif effect == 'Warhol': 
+            w = int(SNAP_W/2)
+            h = int(SNAP_H/2)
             #  set light to R, take photo, G, take photo, B, take photo, Y, take photo
             # merge results into one image
             setLights(255, 0, 0) ## RED
-            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(w,h))
             setLights(0, 255, 0) ## GREEN
-            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(w, h))
             setLights(0, 0, 255) ## BLUE
-            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(w, h))
             setLights(180, 180, 0) ## yellow of same intensity
-            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(w, h))
 
             snapshot = Image.new('RGBA', (1366, 768))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((683, 384)), (  0,   0,  683, 384))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((683, 384)), (683,   0, 1366, 384))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((683, 384)), (  0, 384,  683, 768))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((683, 384)), (683, 384, 1366, 768))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((w, h)), (  0,   0,  w, h))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((w, h)), (w,   0, SNAP_W, h))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((w, h)), (w, h, SNAP_W, SNAP_H))
         elif effect == "Four":
+            w = int(SNAP_W/2)
+            h = int(SNAP_H/2)
             # take 4 photos and merge into one image.
-            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(w, h))
             countdown(camera, can, custom.countdown2)
-            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(w, h))
             countdown(camera, can, custom.countdown2)
-            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(w, h))
             countdown(camera, can, custom.countdown2)
-            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(683, 384))
+            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(w, h))
 
             snapshot = Image.new('RGBA', (1366, 768))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((683, 384)), (  0,   0,  683, 384))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((683, 384)), (683,   0, 1366, 384))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((683, 384)), (  0, 384,  683, 768))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((683, 384)), (683, 384, 1366, 768))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((683, 384)), (  0,   0,  w, h))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((683, 384)), (w,   0, SNAP_W, h))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((683, 384)), (  0, h,  w, SNAP_H))
+            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((683, 384)), (w, h, SNAP_W, SNAP_H))
             
         camera.close()
             
@@ -153,11 +157,15 @@ def snap(can, countdown1, effect='None'):
             #                             SCREEN_H -custom.lysize ),
             #                             custom.logo)
             size = snapshot.size
+            #resize logo to the wanted size
+            custom.logo.thumbnail(LOGO_MAX_SIZE) 
             logo_size = custom.logo.size
-            yoff = size[1] - logo_size[1]
-            xoff = (size[0] - logo_size[0]) // 2
-            snapshot.paste(custom.logo,(xoff, yoff),
-                           custom.logo)
+            
+            #put logo on bottom right with padding
+            yoff = size[1] - logo_size[1] - LOGO_PADDING
+            xoff = size[0] - logo_size[0] - LOGO_PADDING
+            snapshot.paste(custom.logo,(xoff, yoff), custom.logo)
+            
         snapshot.save(custom.PROC_FILENAME)
     except Exception, e:
         print e
