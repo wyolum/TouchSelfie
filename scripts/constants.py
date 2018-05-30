@@ -12,6 +12,7 @@ SNAP_W = 1640
 SNAP_H = 1232
 #Desired size of the embedded logo
 LOGO_MAX_SIZE = 256
+LOGO_PADDING = 64
 
 # Snapshot to screen scale
 # Based on width
