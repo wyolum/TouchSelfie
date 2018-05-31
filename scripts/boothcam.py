@@ -148,13 +148,9 @@ def snap(can, countdown1, effect='None'):
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((w, h)), (w, h, SNAP_W, SNAP_H))
         elif effect == "Animation":
-            GIF_FRAMES_NUMBER = 10
-            GIF_ACQ_INTERFRAME_DELAY_MILLIS = 400
-            GIF_INTERFRAME_DELAY_MILLIS     = 100
-            GIF_OUT_FILENAME = "animation.gif"
             # below is taken from official PiCamera doc and adapted
             for i, filename in enumerate(
-                camera.capture_continuous('animframe-{counter:03d}.jpg', resize=(800,800))):
+                camera.capture_continuous('animframe-{counter:03d}.jpg', resize= GIF_SIZE)):
                 # print(filename)
                 time.sleep(GIF_ACQ_INTERFRAME_DELAY_MILLIS / 1000.0)
                 if i == GIF_FRAMES_NUMBER:
