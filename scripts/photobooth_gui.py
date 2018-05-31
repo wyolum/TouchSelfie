@@ -17,6 +17,17 @@ import Image
 import config
 from constants import *
 
+## Hardware buttons interface
+# Will be used in "check_and_snap"
+# TODO move this in another module
+import RPi.GPIO as GPIO
+
+# BUTTON#_PIN are defined in constants.py
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(BUTTON1_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(BUTTON2_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+GPIO.setup(BUTTON3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
 ## This is a simple GUI, so we allow the root singleton to do the legwork
 root = Tk()
 root.attributes("-fullscreen",True)
@@ -148,10 +159,22 @@ def check_and_snap(force=False, countdown1=None):
         # can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
         # can.update()
         
+    # Check for hardware button (priority from button 1 to button 3)
+    hardware_button_state = 0
+    if GPIO.input(BUTTON1_PIN) == BUTTON_IS_ACTIVE:
+        hardware_button_state = 1
+    elseif GPIO.input(BUTTON2_PIN) == BUTTON_IS_ACTIVE:
+        hardware_button_state = 2
+    elseif GPIO.input(BUTTON3_PIN) == BUTTON_IS_ACTIVE:
+        hardware_button_state = 2
+    # Here, hardware_button_state contains the state of the command
+    # 0     -> no button pressed
+    # 1,2,3 -> index of the button pressed
+        
     ## get command string from alamode
 #    command = ser.readline().strip()
     command=""
-    if Button_enabled and (force or command == "snap" or timelapse_due()):
+    if Button_enabled and (force or command == "snap" or timelapse_due() or hardware_button_state != 0):
         ## take a photo and display it
         Button_enabled = False
         can.delete("text")
@@ -159,18 +182,28 @@ def check_and_snap(force=False, countdown1=None):
         
         if timelapse_due():
             countdown1 = 0
-        im = snap(can, countdown1=countdown1, effect='None')
-#        setLights(r_var.get(), g_var.get(), b_var.get())
+        if hardware_button_state != 0:
+            # TODO: change snap effect depending on hardware_button_state
+            im = snap(can, countdown1=countdown1, effect='None')
+        else:
+            im = snap(can, countdown1=countdown1, effect='None')
+
         if im is not None:
+            # If we're timelapsing, reset the number of millis to wait
             if custom.TIMELAPSE > 0:
                 togo = custom.TIMELAPSE - (time.time() - last_snap)
             else:
                 togo = 1e8
             last_snap = time.time()
+            
+            # display the picture we've just taken
             display_image(im)
+            
+            # attempt to upload image
             can.delete("text")
             can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
             can.update()
+            
             if signed_in:
                 if custom.albumID == 'None':
                     global albumID_informed
@@ -190,7 +223,6 @@ def check_and_snap(force=False, countdown1=None):
                     
                     # signed_in = False
             can.delete("text")
-            # can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
             can.update()
     else:
         ### what command did we get?
