@@ -142,6 +142,7 @@ def check_and_snap(force=False, countdown1=None):
     countdown1 -- starting value for countdown timer
     '''
     global  image_tk, Button_enabled, last_snap, signed_in
+    processed_file_name = custom.PROC_FILENAME
     
     if countdown1 is None:
         countdown1 = custom.countdown1
@@ -189,8 +190,10 @@ def check_and_snap(force=False, countdown1=None):
             # four photos
             im = snap(can, countdown1=countdown1, effect='Four')
         elseif hardware_button_state == 3:
-            # TODO: implement animated gifs
-            im = snap(can, countdown1=countdown1, effect='None')
+            # Gif animation
+            im = snap(can, countdown1=countdown1, effect='Animation')
+            # change processed image file name for upload
+            processed_file_name = GIF_OUT_FILENAME 
         else:
             # wasn't called from a hardware button, default behaviour
             im = snap(can, countdown1=countdown1, effect='None')
@@ -223,7 +226,7 @@ def check_and_snap(force=False, countdown1=None):
                         albumID_informed = True
                 else:
                     try:
-                        googleUpload(custom.PROC_FILENAME)
+                        googleUpload(processed_file_name)
                     except Exception, e:
                         tkMessageBox.showinfo("Upload Error", str(e) +
                                               '\nUpload Failed:%s' % e)
