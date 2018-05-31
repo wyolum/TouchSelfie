@@ -21,3 +21,9 @@ SNAP_TO_SCREEN_SCALE = int(SNAP_W / SCREEN_W)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
+
+## GPIO pin definition for hardware buttons
+BUTTON1_PIN = 10
+BUTTON2_PIN = 8
+BUTTON3_PIN = 12
+BUTTON_IS_ACTIVE = 1 # active 1 GPIO (pull_down with switch to VDD)
