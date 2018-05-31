@@ -182,10 +182,17 @@ def check_and_snap(force=False, countdown1=None):
         
         if timelapse_due():
             countdown1 = 0
-        if hardware_button_state != 0:
-            # TODO: change snap effect depending on hardware_button_state
+        if hardware_button_state == 1:
+            # standard photo
+            im = snap(can, countdown1=countdown1, effect='None')
+        elseif hardware_button_state == 2:
+            # four photos
+            im = snap(can, countdown1=countdown1, effect='Four')
+        elseif hardware_button_state == 3:
+            # TODO: implement animated gifs
             im = snap(can, countdown1=countdown1, effect='None')
         else:
+            # wasn't called from a hardware button, default behaviour
             im = snap(can, countdown1=countdown1, effect='None')
 
         if im is not None:
