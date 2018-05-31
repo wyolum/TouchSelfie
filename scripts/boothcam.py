@@ -147,26 +147,45 @@ def snap(can, countdown1, effect='None'):
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((w, h)), (w,   0, SNAP_W, h))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((w, h)), (w, h, SNAP_W, SNAP_H))
+        elif effect == "Animation":
+            GIF_FRAMES_NUMBER = 10
+            GIF_ACQ_INTERFRAME_DELAY_MILLIS = 400
+            GIF_INTERFRAME_DELAY_MILLIS     = 100
+            GIF_OUT_FILENAME = "animation.gif"
+            # below is taken from official PiCamera doc and adapted
+            for i, filename in enumerate(
+                camera.capture_continuous('animframe-{counter:03d}.jpg', resize=(800,800))):
+                # print(filename)
+                time.sleep(GIF_ACQ_INTERFRAME_DELAY_MILLIS / 1000.0)
+                if i == GIF_FRAMES_NUMBER:
+                    break
+            command_string = "convert -delay " + str(GIF_INTERFRAME_DELAY_MILLIS) + " " + "animframe-*.jpg " + GIF_OUT_FILENAME 
+            os.system(command_string)
+            snapshot = Image.open(GIF_OUT_FILENAME)
+            #os.system("rm ./*.jpg") # cleanup source images
             
         camera.close()
             
-    
-        if custom.logo is not None:
-            # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
-            # snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,
-            #                             SCREEN_H -custom.lysize ),
-            #                             custom.logo)
-            size = snapshot.size
-            #resize logo to the wanted size
-            custom.logo.thumbnail(LOGO_MAX_SIZE) 
-            logo_size = custom.logo.size
+        if effect != "Animation"    
+            if custom.logo is not None :
+                # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
+                # snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,
+                #                             SCREEN_H -custom.lysize ),
+                #                             custom.logo)
+                size = snapshot.size
+                #resize logo to the wanted size
+                custom.logo.thumbnail(LOGO_MAX_SIZE) 
+                logo_size = custom.logo.size
+
+                #put logo on bottom right with padding
+                yoff = size[1] - logo_size[1] - LOGO_PADDING
+                xoff = size[0] - logo_size[0] - LOGO_PADDING
+                snapshot.paste(custom.logo,(xoff, yoff), custom.logo)
+
+            snapshot.save(custom.PROC_FILENAME)
+        else:
+            #Animation
             
-            #put logo on bottom right with padding
-            yoff = size[1] - logo_size[1] - LOGO_PADDING
-            xoff = size[0] - logo_size[0] - LOGO_PADDING
-            snapshot.paste(custom.logo,(xoff, yoff), custom.logo)
-            
-        snapshot.save(custom.PROC_FILENAME)
     except Exception, e:
         print e
         snapshot = None
