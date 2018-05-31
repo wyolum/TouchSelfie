@@ -101,10 +101,12 @@ def display_image(im=None):
     global image_tk
     
     x,y = im.size
+    print((x,y,SNAP_TO_SCREEN_SCALE))
     x = int(x / SNAP_TO_SCREEN_SCALE)
     y = int(y / SNAP_TO_SCREEN_SCALE)
-
+    print( "x: %d, y:%d\n"%(x,y))
     im = im.resize((x,y));
+
     image_tk = ImageTk.PhotoImage(im)
 
     ## delete all canvas elements with "image" in the tag

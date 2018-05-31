@@ -16,7 +16,7 @@ LOGO_PADDING = 64
 
 # Snapshot to screen scale
 # Based on width
-SNAP_TO_SCREEN_SCALE = int(SNAP_W / SCREEN_W)
+SNAP_TO_SCREEN_SCALE = max([1.0 * SNAP_W / SCREEN_W, 1.0 * SNAP_H / SCREEN_H])
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
