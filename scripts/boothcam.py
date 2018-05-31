@@ -100,12 +100,19 @@ def snap(can, countdown1, effect='None'):
     global image_idx
 
     try:
-        if custom.ARCHIVE and os.path.exists(custom.archive_dir) and os.path.exists(custom.PROC_FILENAME):
-            ### copy image to archive
-            image_idx += 1
-            new_filename = os.path.join(custom.archive_dir, '%s_%05d.%s' % (custom.PROC_FILENAME[:-4], image_idx, custom.EXT))
-            command = (['cp', custom.PROC_FILENAME, new_filename])
-            call(command)
+        if custom.ARCHIVE and os.path.exists(custom.archive_dir) 
+            if os.path.exists(custom.PROC_FILENAME):
+                ### copy image to archive
+                image_idx += 1
+                new_filename = os.path.join(custom.archive_dir, '%s_%05d.%s' % (custom.PROC_FILENAME[:-4], image_idx, custom.EXT))
+                command = (['mv', custom.PROC_FILENAME, new_filename])
+                call(command)
+            elif os.path.exists(GIF_OUT_FILENAME):
+                ### copy image to archive
+                image_idx += 1
+                new_filename = os.path.join(custom.archive_dir, 'animation_%05d.gif' % (image_idx))
+                command = (['mv', GIF_OUT_FILENAME, new_filename])
+                call(command)
         camera = mycamera.PiCamera()
         countdown(camera, can, countdown1)
         if effect == 'None':
