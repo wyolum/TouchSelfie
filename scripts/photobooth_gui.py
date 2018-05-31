@@ -164,9 +164,9 @@ def check_and_snap(force=False, countdown1=None):
     hardware_button_state = 0
     if GPIO.input(BUTTON1_PIN) == BUTTON_IS_ACTIVE:
         hardware_button_state = 1
-    elseif GPIO.input(BUTTON2_PIN) == BUTTON_IS_ACTIVE:
+    elif GPIO.input(BUTTON2_PIN) == BUTTON_IS_ACTIVE:
         hardware_button_state = 2
-    elseif GPIO.input(BUTTON3_PIN) == BUTTON_IS_ACTIVE:
+    elif GPIO.input(BUTTON3_PIN) == BUTTON_IS_ACTIVE:
         hardware_button_state = 2
     # Here, hardware_button_state contains the state of the command
     # 0     -> no button pressed
@@ -186,10 +186,10 @@ def check_and_snap(force=False, countdown1=None):
         if hardware_button_state == 1:
             # standard photo
             im = snap(can, countdown1=countdown1, effect='None')
-        elseif hardware_button_state == 2:
+        elif hardware_button_state == 2:
             # four photos
             im = snap(can, countdown1=countdown1, effect='Four')
-        elseif hardware_button_state == 3:
+        elif hardware_button_state == 3:
             # Gif animation
             im = snap(can, countdown1=countdown1, effect='Animation')
             # change processed image file name for upload

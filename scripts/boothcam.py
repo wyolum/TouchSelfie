@@ -100,7 +100,7 @@ def snap(can, countdown1, effect='None'):
     global image_idx
 
     try:
-        if custom.ARCHIVE and os.path.exists(custom.archive_dir) 
+        if custom.ARCHIVE and os.path.exists(custom.archive_dir): 
             if os.path.exists(custom.PROC_FILENAME):
                 ### copy image to archive
                 image_idx += 1
@@ -169,7 +169,7 @@ def snap(can, countdown1, effect='None'):
             
         camera.close()
             
-        if effect != "Animation"    
+        if effect != "Animation" :   
             if custom.logo is not None :
                 # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
                 # snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,
@@ -188,6 +188,7 @@ def snap(can, countdown1, effect='None'):
             snapshot.save(custom.PROC_FILENAME)
         else:
             #Animation
+	    pass
             
     except Exception, e:
         print e
