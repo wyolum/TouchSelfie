@@ -31,23 +31,19 @@ def safe_set_led(camera, state):
 
 def setup_google():
     global client
-
-    out = True
     try:
         # Create a client class which will make HTTP requests with Google Docs server.
         configdir = os.path.expanduser('./')
         client_secrets = os.path.join(configdir, 'OpenSelfie.json')
         credential_store = os.path.join(configdir, 'credentials.dat')
-
         client = OAuth2Login(client_secrets, credential_store, config.username)
-
+	return True
     except KeyboardInterrupt:
         raise
     except Exception, e:
         print 'could not login to Google, check .credential file\n   %s' % e
-        out = False
-        # raise ### uncomment to debug google oauth shiz
-    return out
+        return false
+    
 
 def countdown(camera, can, countdown1):
     camera.start_preview()
@@ -82,6 +78,51 @@ def countdown(camera, can, countdown1):
     can.update()
     camera.stop_preview()
 
+
+def countdown2(camera, can, countdown1):
+    camera.start_preview()
+    # camera.start_preview(fullscreen=False,
+    #                     crop=(50, 150, 800, 480),
+    #                      window=(0, 0, 800, 480),
+    #                      hflip=True)
+    can.delete("image")
+    led_state = False
+    safe_set_led(camera, led_state)
+	
+    
+    # Use annotation text instead of text for countdown
+    camera.annotate_size = 160 # Maximum size
+    camera.annotate_foreground = Color('white')
+    camera.annotate_background = Color('black')
+    camera.annotate_text = "" # Remove annotation
+    
+    camera.preview_window = (0, 0, SCREEN_W, SCREEN_H)
+    camera.preview_fullscreen = False
+
+    can.delete("all")
+
+    for i in range(countdown1):
+        #can.delete("text")
+        #can.update()
+        #can.create_text(SCREEN_W/2 - 0, 200, text=str(countdown1 - i), font=font, tags="text")
+        #can.update()
+	camera.annotate_text = "  " + str(countdown1 - i) + "  "
+	
+        if i < countdown1 - 2:
+            time.sleep(1)
+            led_state = not led_state
+            safe_set_led(camera, led_state)
+        else:
+            for j in range(5):
+                time.sleep(.2)
+                led_state = not led_state
+                safe_set_led(camera, led_state)
+    #can.delete("text")
+    #can.update()
+    camera.annotate_text = ""
+    camera.stop_preview()
+
+
 def snap(can, countdown1, effect='None'):
     global image_idx
 
@@ -100,7 +141,9 @@ def snap(can, countdown1, effect='None'):
                 command = (['mv', GIF_OUT_FILENAME, new_filename])
                 call(command)
         camera = mycamera.PiCamera()
-        countdown(camera, can, countdown1)
+        #Start countdown
+	countdown2(camera, can, countdown1)
+	
         if effect == 'None':
             camera.capture(custom.RAW_FILENAME, resize=(SNAP_W, SNAP_H))
             snapshot = Image.open(custom.RAW_FILENAME)
@@ -110,11 +153,11 @@ def snap(can, countdown1, effect='None'):
             h = int(SNAP_H/2)
             # take 4 photos and merge into one image.
             camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(w, h))
-            countdown(camera, can, custom.countdown2)
+            countdown2(camera, can, custom.countdown2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(w, h))
-            countdown(camera, can, custom.countdown2)
+            countdown2(camera, can, custom.countdown2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(w, h))
-            countdown(camera, can, custom.countdown2)
+            countdown2(camera, can, custom.countdown2)
             camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(w, h))
 
             snapshot = Image.new('RGBA', (1366, 768))
@@ -128,6 +171,7 @@ def snap(can, countdown1, effect='None'):
 		snapshot.paste(front, (0, 0 , SNAP_W, SNAP_H))
 	    except:
 		pass
+	
         elif effect == "Animation":
             # below is taken from official PiCamera doc and adapted
             for i, filename in enumerate(
@@ -143,7 +187,7 @@ def snap(can, countdown1, effect='None'):
             
         camera.close()
             
-        if effect != "Animation" :   
+        if effect == "None" :   
             if custom.logo is not None :
                 # snapshot.paste(logo,(0,SCREEN_H -lysize ),logo)
                 # snapshot.paste(custom.logo,(SCREEN_W/2 - custom.logo.size[0]/2,
