@@ -6,6 +6,7 @@ import os.path
 import time
 try:
     import picamera as mycamera
+    from picamera.color import Color
 except ImportError:
     import cv2_camera as mycamera
 from time import sleep
@@ -47,7 +48,7 @@ def setup_google():
     
 # This starts the preview with transparency and display a countdown on the canvas
 # set canvas font (for countdown() only)
-font = (COUNTDOWN_FONT_FAMILY, COUNTDONW_FONT_SIZE)
+font = (COUNTDOWN_FONT_FAMILY, COUNTDOWN_FONT_SIZE)
 def countdown(camera, can, countdown1):
     camera.start_preview()
     # camera.start_preview(fullscreen=False,
@@ -58,7 +59,7 @@ def countdown(camera, can, countdown1):
     led_state = False
     safe_set_led(camera, led_state)
     camera.preview_alpha = 100
-    camera.preview_window = (0, 0, SCREEN_W, SCREEN_H)
+    camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
     camera.preview_fullscreen = False
 
     can.delete("all")
@@ -88,7 +89,7 @@ def bbox_overlay(camera, bbox = None):
     if bbox is None:
 	bbox = (0.0, 0.0, 1.0, 1.0) # full bbox
 	
-    preview_window_size = camera.preview_window #(x,y,w,h)
+    preview_window_size = camera.preview.window #(x,y,w,h)
     ov_w = preview_window[2]
     ov_h = preview_window[3]
     overlay = Image.new('RGBA', (ov_w, ov_h))
@@ -112,24 +113,24 @@ def bbox_overlay(camera, bbox = None):
 # This is identical to the previous function but uses text_annotate instead with opaque preview
 def countdown2(camera, can, countdown1):
     camera.start_preview()
-    camera.preview_alpha = 255 # Opaque preview
+    camera.preview.alpha = 255 # Opaque preview
     # camera.start_preview(fullscreen=False,
     #                     crop=(50, 150, 800, 480),
     #                      window=(0, 0, 800, 480),
     #                      hflip=True)
     can.delete("image") # Maybe useless (opaque preview)
-    ovl = bbox_overlay(camera,(0.3, 0.3, 0.5, 0.5))
+    #ovl = bbox_overlay(camera,(0.3, 0.3, 0.5, 0.5))
     led_state = False
     safe_set_led(camera, led_state)
 
     # Use annotation text instead of text for countdown
-    camera.annotate_size = 160 # Maximum size
+    camera.annotate_text_size = 160 # Maximum size
     camera.annotate_foreground = Color('white')
     camera.annotate_background = Color('black')
     camera.annotate_text = "" # Remove annotation
     
-    camera.preview_window = (0, 0, SCREEN_W, SCREEN_H)
-    camera.preview_fullscreen = False
+    camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
+    camera.preview.fullscreen = False
 
     can.delete("all") # Useless ?
     
@@ -149,7 +150,7 @@ def countdown2(camera, can, countdown1):
                 led_state = not led_state
                 safe_set_led(camera, led_state)
     camera.annotate_text = ""
-    camera.remove_overlay(ovl)
+    #camera.remove_overlay(ovl)
     camera.stop_preview()
 
 # Take a snapshot (or a succession of snapshots), process it, archive it and return it

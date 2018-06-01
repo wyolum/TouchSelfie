@@ -167,7 +167,7 @@ def check_and_snap(force=False, countdown1=None):
     elif GPIO.input(BUTTON2_PIN) == BUTTON_IS_ACTIVE:
         hardware_button_state = 2
     elif GPIO.input(BUTTON3_PIN) == BUTTON_IS_ACTIVE:
-        hardware_button_state = 2
+        hardware_button_state = 3
     # Here, hardware_button_state contains the state of the command
     # 0     -> no button pressed
     # 1,2,3 -> index of the button pressed
@@ -296,19 +296,6 @@ def delay_timelapse(*args):
 email_addr = StringVar()
 email_addr.trace('w', delay_timelapse)
 
-## bound to RGB sliders
-r_var = IntVar()
-g_var = IntVar()
-b_var = IntVar()
-
-## send RGB changes to alamode
-def on_rgb_change(*args):
-    setLights(r_var.get(), g_var.get(), b_var.get())
-
-## call on_rgb_change when any of the sliders move
-r_var.trace('w', on_rgb_change)
-g_var.trace('w', on_rgb_change)
-b_var.trace('w', on_rgb_change)
 
 w, h = root.winfo_screenwidth(), root.winfo_screenheight()
 
@@ -378,8 +365,7 @@ if custom.SIGN_ME_IN:
     root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
 root.wm_title("Wyolum Photobooth")
 etext.focus_set()
-# etext.bind("<Enter>", sendPic)
-on_rgb_change()
+
 root.mainloop()
 
 
