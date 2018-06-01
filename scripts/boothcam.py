@@ -154,6 +154,12 @@ def snap(can, countdown1, effect='None'):
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((w, h)), (w,   0, SNAP_W, h))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((w, h)), (w, h, SNAP_W, SNAP_H))
+	    #paste the collage enveloppe if it exists
+	    try:
+	        front = Image.open(COLLAGE_FRONT_ENVELOPPE)
+		snapshot.paste(front, (0, 0 , SNAP_W, SNAP_H))
+	    except:
+		pass
         elif effect == "Animation":
             # below is taken from official PiCamera doc and adapted
             for i, filename in enumerate(
