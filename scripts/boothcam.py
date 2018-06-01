@@ -13,7 +13,6 @@ from time import sleep
 from credentials import OAuth2Login
 
 from PIL import Image
-import serial
 import config
 import custom
 import httplib2
@@ -42,7 +41,7 @@ def setup_google():
         raise
     except Exception, e:
         print 'could not login to Google, check .credential file\n   %s' % e
-        return false
+        return False
     
 
 def countdown(camera, can, countdown1):
@@ -102,12 +101,7 @@ def countdown2(camera, can, countdown1):
     can.delete("all")
 
     for i in range(countdown1):
-        #can.delete("text")
-        #can.update()
-        #can.create_text(SCREEN_W/2 - 0, 200, text=str(countdown1 - i), font=font, tags="text")
-        #can.update()
 	camera.annotate_text = "  " + str(countdown1 - i) + "  "
-	
         if i < countdown1 - 2:
             time.sleep(1)
             led_state = not led_state
@@ -117,8 +111,6 @@ def countdown2(camera, can, countdown1):
                 time.sleep(.2)
                 led_state = not led_state
                 safe_set_led(camera, led_state)
-    #can.delete("text")
-    #can.update()
     camera.annotate_text = ""
     camera.stop_preview()
 
@@ -195,7 +187,7 @@ def snap(can, countdown1, effect='None'):
                 #                             custom.logo)
                 size = snapshot.size
                 #resize logo to the wanted size
-                custom.logo.thumbnail(LOGO_MAX_SIZE) 
+                custom.logo.thumbnail((LOGO_MAX_SIZE,LOGO_MAX_SIZE)) 
                 logo_size = custom.logo.size
 
                 #put logo on bottom right with padding
@@ -205,7 +197,7 @@ def snap(can, countdown1, effect='None'):
 
             snapshot.save(custom.PROC_FILENAME)
         else:
-            #Animation
+            #Animation or Four
 	    pass
             
     except Exception, e:
@@ -223,15 +215,6 @@ if custom.ARCHIVE: ### commented out... use custom.customizer instead
     elif not os.path.exists(custom.archive_dir): ## not used
         os.mkdir(custom.archive_dir)
     image_idx = len(glob.glob(os.path.join(custom.archive_dir, '%s_*.%s' % (custom.PROC_FILENAME[:-4], custom.EXT))))
-
-SERIAL = None
-def findser():
-    global SERIAL
-    if SERIAL is None: ## singleton
-        SERIAL = serial.Serial('/dev/ttyS0',19200, timeout=.1)
-        print 'using AlaMode'
-    return SERIAL
-
 
 def googleUpload(filen):
     #upload to picasa album
