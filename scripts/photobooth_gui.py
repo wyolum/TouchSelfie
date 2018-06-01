@@ -18,8 +18,8 @@ import config
 from constants import *
 
 ## Hardware buttons interface
-# Will be used in "check_and_snap"
-# TODO move this in another module
+#       Will be used in "check_and_snap"
+#       TODO move this in another module
 import RPi.GPIO as GPIO
 
 # BUTTON#_PIN are defined in constants.py
@@ -32,6 +32,7 @@ GPIO.setup(BUTTON3_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 root = Tk()
 root.attributes("-fullscreen",True)
 
+# take a screenshot when <F12> is pressed
 def screenshot(*args):
     import screenshot
     screenshot.snap()
@@ -42,20 +43,20 @@ from boothcam import *
 
 albumID_informed = False ### only show albumID customize info once
 
-## the countdown starting value
-# COUNTDOWN1 = custom.countdown1 ### use custom.countdown1 reference directly
-
 ## put the status widget below the displayed image
 STATUS_H_OFFSET = 150 ## was 210
 
 ## only accept button inputs from the AlaMode when ready
+# TODO : remove
 Button_enabled = False
 
-import signal
+import signal # remove ?
 TIMEOUT = .3 # number of seconds your want for timeout
 
 last_snap = time.time()
 
+
+# On screen keyboard launch and kill
 tkkb = None
 def launch_tkkb(*args):
     '''
@@ -88,12 +89,14 @@ def kill_tkkb():
         except:
             pass
 
+# Display the image on the center of the screen
 def display_image(im=None):
     '''
     display image im in GUI window
     '''
     global image_tk
     
+    # 1. Resize image to the screen size
     x,y = im.size
     print((x,y,SNAP_TO_SCREEN_SCALE))
     x = int(x / SNAP_TO_SCREEN_SCALE)
@@ -103,13 +106,15 @@ def display_image(im=None):
 
     image_tk = ImageTk.PhotoImage(im)
 
-    ## delete all canvas elements with "image" in the tag
+    # 2. kill previous image if it exists and create a new one
+    #     - delete all canvas elements with "image" in the tag
     can.delete("image")
     can.create_image([(SCREEN_W + x) / 2 - x/2,
                       0 + y / 2], 
                      image=image_tk, 
                      tags="image")
 
+# helper function for timelapse photos (return true if capture needed)
 def timelapse_due():
     '''
     Return true if a time lapse photo is due to be taken (see custom.TIMELAPSE)
@@ -122,14 +127,17 @@ def timelapse_due():
         out = False
     return out
 
+# helper function to periodically refresh Google oauth2 credentials
 def refresh_oauth2_credentials():
     if custom.SIGN_ME_IN:
         if setup_google():
             print 'refreshed!', custom.oauth2_refresh_period
         else:
             print 'refresh failed'
+        # reschedule me
         root.after(custom.oauth2_refresh_period, refresh_oauth2_credentials)
-    
+
+# Check if we should take a picture and do it if needed
 def check_and_snap(force=False, countdown1=None):
     '''
     Check button status and snap a photo if button has been pressed.
@@ -139,19 +147,19 @@ def check_and_snap(force=False, countdown1=None):
     '''
     global  image_tk, Button_enabled, last_snap, signed_in
     processed_file_name = custom.PROC_FILENAME
+    processed_file_type = 'image/jpeg'
     
     if countdown1 is None:
         countdown1 = custom.countdown1
+        
+    # only allow send mail if we're connected to Google
     if signed_in:
         send_button.config(state=NORMAL)
         etext.config(state=NORMAL)
     else:
         send_button.config(state=DISABLED)
         etext.config(state=DISABLED)
-    if (Button_enabled == False):
-        ## inform alamode that we are ready to receive button press events
-        Button_enabled = True
-        
+    
     # Check for hardware button (priority from button 1 to button 3)
     hardware_button_state = 0
     if GPIO.input(BUTTON1_PIN) == BUTTON_IS_ACTIVE:
@@ -164,15 +172,15 @@ def check_and_snap(force=False, countdown1=None):
     # 0     -> no button pressed
     # 1,2,3 -> index of the button pressed
         
-    command=""
-    if Button_enabled and (force or command == "snap" or timelapse_due() or hardware_button_state != 0):
+    if force or timelapse_due() or hardware_button_state != 0:
         ## take a photo and display it
-        Button_enabled = False
         can.delete("text")
         can.update()
         
         if timelapse_due():
+            # no countdown for timelapses
             countdown1 = 0
+         
         if hardware_button_state == 1:
             # standard photo
             im = snap(can, countdown1=countdown1, effect='None')
@@ -184,10 +192,12 @@ def check_and_snap(force=False, countdown1=None):
             im = snap(can, countdown1=countdown1, effect='Animation')
             # change processed image file name for upload
             processed_file_name = GIF_OUT_FILENAME 
+            processed_file_type = "image/gif"
         else:
             # wasn't called from a hardware button, default behaviour
             im = snap(can, countdown1=countdown1, effect='None')
 
+        # if we just shot an image, display it and upload it
         if im is not None:
             # If we're timelapsing, reset the number of millis to wait
             if custom.TIMELAPSE > 0:
@@ -199,36 +209,29 @@ def check_and_snap(force=False, countdown1=None):
             # display the picture we've just taken
             display_image(im)
             
-            # attempt to upload image
+            ## attempt to upload image
+            # 1. show status
             can.delete("text")
             can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Uploading Image", font=custom.CANVAS_FONT, tags="text")
             can.update()
             
+            # 2. upload
             if signed_in:
                 if custom.albumID == 'None':
                     global albumID_informed
                     if not albumID_informed:
-                        tkMessageBox.showinfo(
-                            'Album ID not set',
-                            'Click Customize to select albumID',
-                            parent=root
-                        )
+                        tkMessageBox.showinfo('Album ID not set','Click Customize to select albumID', parent=root)
                         albumID_informed = True
                 else:
                     try:
-                        googleUpload(processed_file_name)
+                        googleUpload(processed_file_name, mime_type = processed_file_type)
                     except Exception, e:
-                        tkMessageBox.showinfo("Upload Error", str(e) +
-                                              '\nUpload Failed:%s' % e)
-
+                        tkMessageBox.showinfo("Upload Error", str(e) + '\nUpload Failed:%s' % e)
+            # 3. remove status
             can.delete("text")
             can.update()
-    else:
-        ### what command did we get?
-        if command.strip():
-            print command
     if not force:
-        ## call this function again in 100 ms
+        ## if this was a forced snapshot, exit, otherwise, call this function again in 100 ms
         root.after_id = root.after(100, check_and_snap)
 
 ## for clean shutdowns
@@ -239,7 +242,9 @@ def on_close(*args, **kw):
     '''
     if root.after_id is not None:
         root.after_cancel(root.after_id)
-
+    ### exit GPIO
+    GPIO.cleanup() 
+    
     ### turn off LEDs
     r_var.set(0)
     g_var.set(0)
