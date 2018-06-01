@@ -37,3 +37,7 @@ GIF_OUT_FILENAME = "animation.gif"
 
 ## Collage embellishment
 COLLAGE_FRONT_ENVELOPPE = "collage_four_square.png"
+
+## Countdown
+COUNTDOWN_FONT_SIZE = 100
+COUNTDOWN_FONT_FAMILY = 'Times'
