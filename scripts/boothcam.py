@@ -9,16 +9,7 @@ try:
 except ImportError:
     import cv2_camera as mycamera
 from time import sleep
-if False:
-    import gdata
-    import gdata.photos.service
-    import gdata.media
-    import gdata.geo
-    import gdata.gauth
-    import webbrowser
-    from datetime import datetime, timedelta
-    from oauth2client.client import flow_from_clientsecrets
-    from oauth2client.file import Storage
+
 from credentials import OAuth2Login
 
 from PIL import Image
@@ -29,8 +20,8 @@ import httplib2
 
 from constants import * 
 
-FONTSIZE=100
-font = ('Times', FONTSIZE)
+
+font = (COUNTDOWN_FONT_FAMILY, COUNTDONW_FONT_SIZE)
 
 def safe_set_led(camera, state):
     try:
@@ -91,11 +82,6 @@ def countdown(camera, can, countdown1):
     can.update()
     camera.stop_preview()
 
-def setLights(r, g, b):
-#    ser = findser()
-    rgb_command = 'c%s%s%s' % (chr(r), chr(g), chr(b))
-#    ser.write(rgb_command)
-
 def snap(can, countdown1, effect='None'):
     global image_idx
 
@@ -118,25 +104,7 @@ def snap(can, countdown1, effect='None'):
         if effect == 'None':
             camera.capture(custom.RAW_FILENAME, resize=(SNAP_W, SNAP_H))
             snapshot = Image.open(custom.RAW_FILENAME)
-        elif effect == 'Warhol': 
-            w = int(SNAP_W/2)
-            h = int(SNAP_H/2)
-            #  set light to R, take photo, G, take photo, B, take photo, Y, take photo
-            # merge results into one image
-            setLights(255, 0, 0) ## RED
-            camera.capture(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT, resize=(w,h))
-            setLights(0, 255, 0) ## GREEN
-            camera.capture(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT, resize=(w, h))
-            setLights(0, 0, 255) ## BLUE
-            camera.capture(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT, resize=(w, h))
-            setLights(180, 180, 0) ## yellow of same intensity
-            camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(w, h))
-
-            snapshot = Image.new('RGBA', (1366, 768))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((w, h)), (  0,   0,  w, h))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((w, h)), (w,   0, SNAP_W, h))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
-            snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((w, h)), (w, h, SNAP_W, SNAP_H))
+        
         elif effect == "Four":
             w = int(SNAP_W/2)
             h = int(SNAP_H/2)
