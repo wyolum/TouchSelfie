@@ -34,3 +34,6 @@ GIF_FRAMES_NUMBER = 10
 GIF_ACQ_INTERFRAME_DELAY_MILLIS = 400
 GIF_INTERFRAME_DELAY_MILLIS     = 100
 GIF_OUT_FILENAME = "animation.gif"
+
+## Collage embellishment
+COLLAGE_FRONT_ENVELOPPE = "collage_four_square.png"
