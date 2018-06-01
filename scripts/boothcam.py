@@ -27,7 +27,7 @@ import config
 import custom
 import httplib2
 
-from constants import SCREEN_W, SCREEN_H, WHITE, BLACK, SNAP_W, SNAP_H, LOGO_MAX_SIZE, LOGO_PADDING, SNAP_TO_SCREEN_SCALE 
+from constants import * 
 
 FONTSIZE=100
 font = ('Times', FONTSIZE)
