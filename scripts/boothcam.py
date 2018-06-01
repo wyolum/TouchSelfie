@@ -90,14 +90,15 @@ def bbox_overlay(camera, bbox = None):
 	bbox = (0.0, 0.0, 1.0, 1.0) # full bbox
 	
     preview_window_size = camera.preview.window #(x,y,w,h)
-    ov_w = preview_window[2]
-    ov_h = preview_window[3]
+    ov_w = preview_window_size[2]
+    ov_h = preview_window_size[3]
     overlay = Image.new('RGBA', (ov_w, ov_h))
     # compute bounding box in pixels
     ulx = int( bbox[0] * ov_w )
     brx = int( (bbox[0] + bbox[2]) * ov_w) +1
     uly = int( bbox[1] * ov_h)
     bry = int( (bbox[1] + bbox[3]) * ov_h) +1
+    #print "wsize: %d,%d bbox: %d, %d     %d,%d\n"% (ov_w,ov_h,ulx,uly, brx, bry) ; return None
     # Draw obscuring rectangles
     draw = ImageDraw.Draw(overlay)
     # fill with transluscency
@@ -105,7 +106,7 @@ def bbox_overlay(camera, bbox = None):
     # show the bbox
     draw.rectangle(((ulx, uly), (brx, bry)), fill=(0,0,0,0))
     # add the overlay
-    o = camera.add_overlay(overlay.tostring(), size=(ov_w, ov_h))
+    o = camera.add_overlay(overlay.tobytes(), size=(ov_w, ov_h))
     o.layer = 3 # move above the display
     return o
 
@@ -119,7 +120,6 @@ def countdown2(camera, can, countdown1):
     #                      window=(0, 0, 800, 480),
     #                      hflip=True)
     can.delete("image") # Maybe useless (opaque preview)
-    #ovl = bbox_overlay(camera,(0.3, 0.3, 0.5, 0.5))
     led_state = False
     safe_set_led(camera, led_state)
 
@@ -131,6 +131,7 @@ def countdown2(camera, can, countdown1):
     
     camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
     camera.preview.fullscreen = False
+    ovl = bbox_overlay(camera,(0.3, 0.3, 0.5, 0.5))
 
     can.delete("all") # Useless ?
     
@@ -150,7 +151,7 @@ def countdown2(camera, can, countdown1):
                 led_state = not led_state
                 safe_set_led(camera, led_state)
     camera.annotate_text = ""
-    #camera.remove_overlay(ovl)
+    camera.remove_overlay(ovl)
     camera.stop_preview()
 
 # Take a snapshot (or a succession of snapshots), process it, archive it and return it
