@@ -88,12 +88,6 @@ def kill_tkkb():
         except:
             pass
 
-
-def interrupted(signum, frame):
-    "called when serial read times out"
-    print 'interrupted!'
-    signal.signal(signal.SIGALRM, interrupted)
-
 def display_image(im=None):
     '''
     display image im in GUI window
@@ -156,11 +150,7 @@ def check_and_snap(force=False, countdown1=None):
         etext.config(state=DISABLED)
     if (Button_enabled == False):
         ## inform alamode that we are ready to receive button press events
-        ## ser.write('e') #enable button (not used)
         Button_enabled = True
-        # can.delete("text")
-        # can.create_text(SCREEN_W/2, SCREEN_H - STATUS_H_OFFSET, text="Press button when ready", font=custom.CANVAS_FONT, tags="text")
-        # can.update()
         
     # Check for hardware button (priority from button 1 to button 3)
     hardware_button_state = 0
@@ -174,8 +164,6 @@ def check_and_snap(force=False, countdown1=None):
     # 0     -> no button pressed
     # 1,2,3 -> index of the button pressed
         
-    ## get command string from alamode
-#    command = ser.readline().strip()
     command=""
     if Button_enabled and (force or command == "snap" or timelapse_due() or hardware_button_state != 0):
         ## take a photo and display it
@@ -232,8 +220,7 @@ def check_and_snap(force=False, countdown1=None):
                     except Exception, e:
                         tkMessageBox.showinfo("Upload Error", str(e) +
                                               '\nUpload Failed:%s' % e)
-                    
-                    # signed_in = False
+
             can.delete("text")
             can.update()
     else:
@@ -292,8 +279,6 @@ def sendPic(*args):
             can.update()
     else:
         print 'Not signed in'
-
-#ser = findser()
 
 def delay_timelapse(*args):
     '''
