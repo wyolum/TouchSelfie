@@ -222,6 +222,7 @@ def snap(can, countdown1, effect='None'):
 	        #print snapshot
 	        #print front
 		snapshot=Image.alpha_composite(snapshot,front)
+		snapshot.save(custom.PROC_FILENAME)
 	    except:
 		print "Front collage: ", sys.exc_info()[0]
 		print front
