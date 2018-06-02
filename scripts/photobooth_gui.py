@@ -98,7 +98,7 @@ def display_image(im=None):
     
     # 1. Resize image to the screen size
     x,y = im.size
-    ratio = min([float(x)/SCREEN_W, float(y)/SCREEN_H])
+    ratio = max([float(x)/SCREEN_W, float(y)/SCREEN_H])
     print((x,y,ratio))
     x = int(x / ratio)
     y = int(y / ratio)
