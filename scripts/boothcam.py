@@ -162,17 +162,19 @@ def snap(can, countdown1, effect='None'):
 	# Should we archive the previous processed image ?
         if custom.ARCHIVE and os.path.exists(custom.archive_dir): 
 	    # if previous image exists
+	    t = time.gmtime()
+	    ts = time.strftime("%Y-%m-%d_%H-%M-%S",t)
             if os.path.exists(custom.PROC_FILENAME):
                 ### move image to archive
                 image_idx += 1
-                new_filename = os.path.join(custom.archive_dir, '%s_%05d.%s' % (custom.PROC_FILENAME[:-4], image_idx, custom.EXT))
+                new_filename = os.path.join(custom.archive_dir, '%s_%05d_%s.%s' % (custom.PROC_FILENAME[:-4], image_idx, ts, custom.EXT))
                 command = (['mv', custom.PROC_FILENAME, new_filename])
                 call(command)
 	    # if previous animation exists	
             elif os.path.exists(GIF_OUT_FILENAME):
                 ### move animation to archive
                 image_idx += 1
-                new_filename = os.path.join(custom.archive_dir, 'animation_%05d.gif' % (image_idx))
+                new_filename = os.path.join(custom.archive_dir, 'animation_%05d_%s.gif' % (image_idx,ts))
                 command = (['mv', GIF_OUT_FILENAME, new_filename])
                 call(command)
 	# start camera
@@ -231,15 +233,19 @@ def snap(can, countdown1, effect='None'):
 		pass
 	# GIF Animation
         elif effect == "Animation":
+            camera.close()
+            camera = mycamera.PiCamera(resolution=GIF_SIZE)
+            camera.start_preview()
             # below is taken from official PiCamera doc and adapted
-	
+	   
 	    # take GIF_FRAME_NUMBER pictures resize to GIF_SIZE
             for i, filename in enumerate(camera.capture_continuous('animframe-{counter:03d}.jpg', resize= GIF_SIZE)):
                 # print(filename)
 		# TODO : enqueue the filenames and use that in the command line
                 time.sleep(GIF_ACQ_INTERFRAME_DELAY_MILLIS / 1000.0)
-                if i == GIF_FRAMES_NUMBER:
+                if i >= GIF_FRAMES_NUMBER:
                     break
+            camera.stop_preview()
 	    # Assemble images using image magick
             command_string = "convert -delay " + str(GIF_INTERFRAME_DELAY_MILLIS) + " " + "animframe-*.jpg " + GIF_OUT_FILENAME 
             os.system(command_string)
@@ -275,10 +281,12 @@ snap.active = False # Remove ?
 # initialize picture archive path and picture index
 if custom.ARCHIVE: ### commented out... use custom.customizer instead
     # custom.archive_dir = tkFileDialog.askdirectory(title="Choose archive directory.", initialdir='/media/')
+    print "path : %s"% custom.archive_dir
+    print "exists : %s"%os.path.exists(custom.archive_dir)
     if not os.path.exists(custom.archive_dir):
         print 'Directory not found.  Not archiving'
         custom.ARCHIVE = False
-    image_idx = len(glob.glob(os.path.join(custom.archive_dir, '%s_*.%s' % (custom.PROC_FILENAME[:-4], custom.EXT))))
+    image_idx = len(glob.glob(os.path.join(custom.archive_dir, '*')))
 
 def googleUpload(filen, title='Photobooth photo', caption = None, mime_type='image/jpeg'):
     #upload to picasa album
