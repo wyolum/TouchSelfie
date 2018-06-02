@@ -132,7 +132,7 @@ def countdown2(camera, can, countdown1):
     
     camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
     camera.preview.fullscreen = False
-    ovl = bbox_overlay(camera,(0.3, 0.3, 0.5, 0.5))
+    #ovl = bbox_overlay(camera,(0.3, 0.3, 0.5, 0.5))
 
     can.delete("all") # Useless ?
     
@@ -152,7 +152,7 @@ def countdown2(camera, can, countdown1):
                 led_state = not led_state
                 safe_set_led(camera, led_state)
     camera.annotate_text = ""
-    camera.remove_overlay(ovl)
+    #camera.remove_overlay(ovl)
     camera.stop_preview()
 
 # Take a snapshot (or a succession of snapshots), process it, archive it and return it
@@ -212,11 +212,20 @@ def snap(can, countdown1, effect='None'):
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT).resize((w, h)), (w, h, SNAP_W, SNAP_H))
 	    #paste the collage enveloppe if it exists
+            import traceback
 	    try:
 	        front = Image.open(COLLAGE_FRONT_ENVELOPPE)
-		snapshot.paste(front, (0, 0 , SNAP_W, SNAP_H))
+	        front = front.resize((SNAP_W,SNAP_H))
+	        snapshot = snapshot.convert('RGBA')
+	        #snapshot = snapshot.resize((SNAP_W,SNAP_H))
+	        #print snapshot
+	        #print front
+		snapshot=Image.alpha_composite(snapshot,front)
 	    except:
 		print "Front collage: ", sys.exc_info()[0]
+		print front
+		print COLLAGE_FRONT_ENVELOPPE
+		traceback.print_exc()
 		pass
 	# GIF Animation
         elif effect == "Animation":
