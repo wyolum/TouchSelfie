@@ -176,7 +176,7 @@ def snap(can, countdown1, effect='None'):
                 command = (['mv', GIF_OUT_FILENAME, new_filename])
                 call(command)
 	# start camera
-        camera = mycamera.PiCamera()
+        camera = mycamera.PiCamera(resolution=(SNAP_W,SNAP_H))
         
 	#Start countdown
 	#countdown(camera, can, countdown1) # Use countdown2() instead
@@ -185,9 +185,10 @@ def snap(can, countdown1, effect='None'):
         # take pictures and process them based on 'effect'
 	# in the end, 'snapshot' must contain the processed image
 	if effect == 'None':
-	    # simple snapshot
+	    # simple snapshot           
             camera.capture(custom.RAW_FILENAME, resize=(SNAP_W, SNAP_H))
             snapshot = Image.open(custom.RAW_FILENAME)
+            
         
         elif effect == "Four":
 	    # collage of four pictures
