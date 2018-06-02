@@ -14,9 +14,6 @@ SNAP_H = 1232
 LOGO_MAX_SIZE = 256
 LOGO_PADDING = 64
 
-# Snapshot to screen scale
-# Based on width
-SNAP_TO_SCREEN_SCALE = max([1.0 * SNAP_W / SCREEN_W, 1.0 * SNAP_H / SCREEN_H])
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -29,10 +26,10 @@ BUTTON3_PIN = 12
 BUTTON_IS_ACTIVE = 1 # active 1 GPIO (pull_down with switch to VDD)
 
 ## GIF parameters
-GIF_SIZE = (800, 800)
+GIF_SIZE = (500, 500)
 GIF_FRAMES_NUMBER = 10
-GIF_ACQ_INTERFRAME_DELAY_MILLIS = 400
-GIF_INTERFRAME_DELAY_MILLIS     = 100
+GIF_ACQ_INTERFRAME_DELAY_MILLIS = 200
+GIF_INTERFRAME_DELAY_MILLIS     = 50
 GIF_OUT_FILENAME = "animation.gif"
 
 ## Collage embellishment

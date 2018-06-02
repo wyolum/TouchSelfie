@@ -98,10 +98,11 @@ def display_image(im=None):
     
     # 1. Resize image to the screen size
     x,y = im.size
-    print((x,y,SNAP_TO_SCREEN_SCALE))
-    x = int(x / SNAP_TO_SCREEN_SCALE)
-    y = int(y / SNAP_TO_SCREEN_SCALE)
-    print( "x: %d, y:%d\n"%(x,y))
+    ratio = min([float(x)/SCREEN_W, float(y)/SCREEN_H])
+    print((x,y,ratio))
+    x = int(x / ratio)
+    y = int(y / ratio)
+    #print( "x: %d, y:%d\n"%(x,y))
     im = im.resize((x,y));
 
     image_tk = ImageTk.PhotoImage(im)
