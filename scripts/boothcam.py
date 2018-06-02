@@ -2,6 +2,7 @@ from subprocess import call
 import tkFileDialog
 import glob
 import os
+import sys
 import os.path
 import time
 try:
@@ -205,7 +206,7 @@ def snap(can, countdown1, effect='None'):
             camera.capture(custom.RAW_FILENAME[:-4] + '_4.' + custom.EXT, resize=(w, h))
 
 	    # collage
-            snapshot = Image.new('RGBA', (1366, 768))
+            snapshot = Image.new('RGBA', (SNAP_W, SNAP_H))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_1.' + custom.EXT).resize((w, h)), (  0,   0,  w, h))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_2.' + custom.EXT).resize((w, h)), (w,   0, SNAP_W, h))
             snapshot.paste(Image.open(custom.RAW_FILENAME[:-4] + '_3.' + custom.EXT).resize((w, h)), (  0, h,  w, SNAP_H))
@@ -215,6 +216,7 @@ def snap(can, countdown1, effect='None'):
 	        front = Image.open(COLLAGE_FRONT_ENVELOPPE)
 		snapshot.paste(front, (0, 0 , SNAP_W, SNAP_H))
 	    except:
+		print "Front collage: ", sys.exc_info()[0]
 		pass
 	# GIF Animation
         elif effect == "Animation":
