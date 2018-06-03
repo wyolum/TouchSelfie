@@ -91,6 +91,19 @@ class BackSpace(Key):
         
 class Tkkb:
     def __init__(self, r, entry, onEnter=None):
+        # addon to pass a stringvar instead of an entry, in which case
+        # we build our own entry in the keyboard
+        try:
+                entry.winfo_class() #Will fail if this isn't a widget
+        except:
+                #if we fail, this means that this should be a stringvar
+                # build an entry and link it to the variable
+                f = Frame(r)
+                self.entry = Entry(f,width=40,textvariable = entry, font='Times')
+                f.pack()
+                self.entry.pack()
+                entry=self.entry 
+
         c = Canvas(r, width=width, height=height)
         c.pack()
         c.onEnter = onEnter
