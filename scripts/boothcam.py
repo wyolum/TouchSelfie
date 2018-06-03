@@ -239,7 +239,7 @@ def snap(can, countdown1, effect='None'):
             # below is taken from official PiCamera doc and adapted
 	   
 	    # take GIF_FRAME_NUMBER pictures resize to GIF_SIZE
-            for i, filename in enumerate(camera.capture_continuous('animframe-{counter:03d}.jpg', resize= GIF_SIZE)):
+            for i, filename in enumerate(camera.capture_continuous('animframe-{counter:03d}.gif', resize= GIF_SIZE)):
                 # print(filename)
 		# TODO : enqueue the filenames and use that in the command line
                 time.sleep(GIF_ACQ_INTERFRAME_DELAY_MILLIS / 1000.0)
@@ -247,7 +247,7 @@ def snap(can, countdown1, effect='None'):
                     break
             camera.stop_preview()
 	    # Assemble images using image magick
-            command_string = "convert -delay " + str(GIF_INTERFRAME_DELAY_MILLIS) + " " + "animframe-*.jpg " + GIF_OUT_FILENAME 
+            command_string = "convert -delay " + str(GIF_INTERFRAME_DELAY_MILLIS) + " " + "animframe-*.gif " + GIF_OUT_FILENAME 
             os.system(command_string)
             snapshot = Image.open(GIF_OUT_FILENAME)
             #os.system("rm ./*.jpg") # cleanup source images
