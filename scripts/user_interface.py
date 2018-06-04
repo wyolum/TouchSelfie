@@ -13,6 +13,10 @@ from tkImageLabel import ImageLabel
 from constants import *
 import custom as custom
 
+import os
+from credentials import OAuth2Login
+import config as google_credentials
+
 CONFIG_BUTTON_IMG = "ic_settings.png"
 EMAIL_BUTTON_IMG = "ic_email.png"
 HARDWARE_POLL_PERIOD = 1000
@@ -64,6 +68,9 @@ class UserInterface():
         
         self.tkkb = None
         self.email_addr = StringVar()
+        
+        #Google credentials
+        self.credentials = google_credentials.Credential()
     
     def __del__(self):
         try:
@@ -100,7 +107,7 @@ class UserInterface():
     def refresh_auth(self):
         # toggle state (test)
         self.signed_in = not self.signed_in
-        if setup_google():
+        if __google_auth():
             self.mail_btn.configure(state=NORMAL)
             self.signed_in = True
         else:
@@ -109,7 +116,21 @@ class UserInterface():
             print 'refresh failed'
         #relaunch periodically
         self.auth_after_id = self.root.after(self.config.oauth2_refresh_period, self.refresh_auth)
-    
+        
+    def __google_auth(self):
+        # Connection to Google for Photo album upload
+        
+        try:
+            # Create a client class which will make HTTP requests with Google Docs server.
+            self.configdir = os.path.expanduser('./')
+            self.client_secrets = os.path.join(self.configdir, 'OpenSelfie.json')
+            self.credential_store = os.path.join(self.configdir, 'credentials.dat')
+            self.client = OAuth2Login(self.client_secrets, self.credential_store, self.credentials.key)
+            return True
+        except Exception, e:
+            print 'could not login to Google, check .credential file\n   %s' % e
+            return False
+        
     def send_email(self):
         if self.signed_in and self.tkkb is None:
             self.email_addr.set("")
