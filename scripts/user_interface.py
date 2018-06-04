@@ -12,6 +12,7 @@ from tkkb import Tkkb
 from tkImageLabel import ImageLabel
 from constants import *
 import custom as custom
+import time
 
 import os
 from credentials import OAuth2Login
@@ -67,6 +68,9 @@ class UserInterface():
         self.poll_period = poll_period
         self.poll_after_id = None
         
+        self.last_picture_filename = None
+        self.last_picture_time = time.time()
+        
         self.tkkb = None
         self.email_addr = StringVar()
         
@@ -90,13 +94,8 @@ class UserInterface():
         print "Done"
         self.root.mainloop()
 
-        
     def launch_config(self):
         self.config.customize(self.root)
-      
-    
-    def send_mail(self):
-        self.send_email()
         
     def run_periodically(self):
         #do something here
@@ -111,15 +110,28 @@ class UserInterface():
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
 
     def snap(self,mode="None"):
-        # when we snap, we should diable the polling
-        self.root.after_cancel(self.poll_after_id)
+        
+        #hide backgroud image
+        self.image.unload()
 
         #do something here
         print "snap (mode=%s)" % mode
-
-        # reenable the polling at the end
-        self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
-
+        # clear status
+        self.status("")
+        
+        # update this to be able to send email and upload
+        # snap_filename = snap_picture(mode)
+        snap_filename = None
+        if os.path.exists(snap_filename):
+            self.last_picture_filename = None
+            self.last_picture_time = time.time()
+            # 1. Display
+            self.image.load(self.last_picture_filename)
+            # 2. Archive
+            # 3. Upload
+        else:
+            # error
+            self.status("Snap failed :(")
         
     def refresh_auth(self):
         if self.__google_auth():
@@ -163,7 +175,7 @@ class UserInterface():
             self.tkkb = None
             
     def __send_picture(self):
-        email = self.email_addr.get()
+        _email = self.email_addr.get()
         print "picture sent to %s"% _email
 
 if __name__ == '__main__':
