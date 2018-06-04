@@ -91,7 +91,6 @@ class UserInterface():
         
     def launch_config(self):
         self.config.customize(self.root)
-        self.image.load('photo.jpg')
       
     
     def send_mail(self):
@@ -153,7 +152,6 @@ class UserInterface():
 
 if __name__ == '__main__':
     ui = UserInterface(window_size=(SCREEN_W, SCREEN_H))
-    ui.image.load('anim.gif')
     ui.start_ui()
 
 
