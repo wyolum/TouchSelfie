@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun 04 09:31:58 2018
+New interface for the photobooth
 
-@author: LA203179
+@author: Laurent Alacoque 2o18
 """
 
 from Tkinter import *
@@ -111,12 +111,17 @@ class UserInterface():
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
 
     def snap(self,mode="None"):
+        # when we snap, we should diable the polling
+        self.root.after_cancel(self.poll_after_id)
+
+        #do something here
         print "snap (mode=%s)" % mode
+
+        # reenable the polling at the end
+        self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
 
         
     def refresh_auth(self):
-        # toggle state (test)
-        self.signed_in = not self.signed_in
         if self.__google_auth():
             self.mail_btn.configure(state=NORMAL)
             self.signed_in = True
@@ -124,12 +129,12 @@ class UserInterface():
             self.mail_btn.configure(state=DISABLED)
             self.signed_in = False
             print 'refresh failed'
+
         #relaunch periodically
         self.auth_after_id = self.root.after(self.config.oauth2_refresh_period, self.refresh_auth)
         
     def __google_auth(self):
         # Connection to Google for Photo album upload
-        
         try:
             # Create a client class which will make HTTP requests with Google Docs server.
             self.configdir = os.path.expanduser('./')
@@ -158,7 +163,7 @@ class UserInterface():
             self.tkkb = None
             
     def __send_picture(self):
-        _email = self.email_addr.get()
+        email = self.email_addr.get()
         print "picture sent to %s"% _email
 
 if __name__ == '__main__':
