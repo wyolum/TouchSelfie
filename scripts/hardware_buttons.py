@@ -19,10 +19,11 @@ class Buttons():
         GPIO.setmode(GPIO.BOARD)
         for pin in self.buttons:
             GPIO.setup(pin, GPIO.IN, pull_up_down = self.mode)
+    
     def __del__(self):
         GPIO.cleanup()
-    def buttons_state(self):
-        ret = 0 # no button pressed
+
+    def state(self):
         for i,pin in enumerate(self.buttons_pins,1):
             if GPIO.input(pin) == self.active_state:
                 return i
