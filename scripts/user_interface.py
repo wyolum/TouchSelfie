@@ -16,10 +16,11 @@ import custom as custom
 import os
 from credentials import OAuth2Login
 import config as google_credentials
+import hardware_buttons as HWB
 
 CONFIG_BUTTON_IMG = "ic_settings.png"
 EMAIL_BUTTON_IMG = "ic_email.png"
-HARDWARE_POLL_PERIOD = 1000
+HARDWARE_POLL_PERIOD = 100
 
 
 class UserInterface():
@@ -71,6 +72,7 @@ class UserInterface():
         
         #Google credentials
         self.credentials = google_credentials.Credential()
+        self.buttons = HWB.Buttons()
     
     def __del__(self):
         try:
@@ -98,15 +100,24 @@ class UserInterface():
         
     def run_periodically(self):
         #do something here
-        print "Polling"
         self.status('')
+        btn_state = self.buttons.state()
+        if btn_state == 1:
+            self.snap("None")
+        elif btn_state == 2:
+            self.snap("Four")
+        elif btn_state == 3:
+            self.snap("Animation")
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
+
+    def snap(self,mode="None"):
+        print "snap (mode=%s)" % mode
 
         
     def refresh_auth(self):
         # toggle state (test)
         self.signed_in = not self.signed_in
-        if __google_auth():
+        if self.__google_auth():
             self.mail_btn.configure(state=NORMAL)
             self.signed_in = True
         else:
