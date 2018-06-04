@@ -18,8 +18,8 @@ from credentials import OAuth2Login
 import config as google_credentials
 import hardware_buttons as HWB
 
-CONFIG_BUTTON_IMG = "ic_settings.png"
-EMAIL_BUTTON_IMG = "ic_email.png"
+CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
+EMAIL_BUTTON_IMG = "ressources/ic_email.png"
 HARDWARE_POLL_PERIOD = 100
 
 
