@@ -17,7 +17,7 @@ class Buttons():
         self.mode = mode
         self.active_state = active_state
         GPIO.setmode(GPIO.BOARD)
-        for pin in self.buttons:
+        for pin in self.buttons_pins:
             GPIO.setup(pin, GPIO.IN, pull_up_down = self.mode)
     
     def __del__(self):
@@ -31,13 +31,14 @@ class Buttons():
             # reached the end of pins, none active
             return 0
         
- if __name__ == '__main__':
+if __name__ == '__main__':
     import time
     buttons = Buttons()
     last = 0
+    print "Press hardware buttons to see change, ctrl+C to exit"
     while True:
-        state = buttons.state():
+        state = buttons.state()
         if last != state:
-            print "new state: %d",state
+            print "new state: %d"%state
             last = state
         time.sleep(0.1)
