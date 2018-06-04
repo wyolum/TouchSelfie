@@ -100,15 +100,15 @@ class UserInterface():
     def refresh_auth(self):
         # toggle state (test)
         self.signed_in = not self.signed_in
-        if self.signed_in:
+        if setup_google():
             self.mail_btn.configure(state=NORMAL)
+            self.signed_in = True
         else:
             self.mail_btn.configure(state=DISABLED)
+            self.signed_in = False
+            print 'refresh failed'
         #relaunch periodically
-        #self.auth_after_id = self.root.after(custom.oauth2_refresh_period, self.refresh_auth)
-        print "Auth refresh"
-        self.status('poll: '+self.poll_after_id)
-        self.auth_after_id = self.root.after(5000, self.refresh_auth)
+        self.auth_after_id = self.root.after(self.config.oauth2_refresh_period, self.refresh_auth)
     
     def send_email(self):
         if self.signed_in and self.tkkb is None:
