@@ -37,3 +37,13 @@ def OAuth2Login(client_secrets, credential_store, email):
                                                    additional_headers={'Authorization' : 'Bearer %s' % credentials.access_token})
 
     return gd_client
+
+#if launched as standalone, ask for passwords and permission
+if __name__ == "__main__":
+    import config
+    import os
+    print "asking for permission for %s"%(config.username)
+    configdir = os.path.expanduser('./')
+    client_secrets = os.path.join(configdir, 'OpenSelfie.json')
+    credential_store = os.path.join(configdir, 'credentials.dat')
+    client = OAuth2Login(client_secrets, credential_store, config.username)
