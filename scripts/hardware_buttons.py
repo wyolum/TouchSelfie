@@ -6,7 +6,7 @@
 import RPi.GPIO as GPIO
 
 ## GPIO pin definition for hardware buttons
-BUTTONs_PINS = [10,8,12]
+BUTTONS_PINS = [10,8,12]
 BUTTONS_MODE = GPIO.PUD_DOWN # switch to VDD, configure io in pulldown
 BUTTON_IS_ACTIVE = 1         # active 1 GPIO (pull_down with switch to VDD)
 
@@ -30,4 +30,13 @@ class Buttons():
             # reached the end of pins, none active
             return 0
         
-        
+ if __name__ == '__main__':
+    import time
+    buttons = Buttons()
+    last = 0
+    while True:
+        state = buttons.state():
+        if last != state:
+            print "new state: %d",state
+            last = state
+        time.sleep(0.1)
