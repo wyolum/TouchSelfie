@@ -17,6 +17,7 @@ import traceback
 import mailfile
 
 import os
+import subprocess
 from credentials import OAuth2Login
 import config as google_credentials
 
@@ -241,7 +242,9 @@ class UserInterface():
                     # TODO : enqueue the filenames and use that in the command line
                     time.sleep(EFFECTS_PARAMETERS[mode]['snap_period_millis'] / 1000.0)
                     # preload first frame because convert can be slow
-                    if i == 0: self.image.load(filename)
+                    if i == 0: 
+                        print "changing " + filename
+                        self.image.load(str(filename))
                     if i >= EFFECTS_PARAMETERS[mode]['frame_number']:
                         break
                 self.camera.stop_preview()
@@ -276,7 +279,7 @@ class UserInterface():
                             
                         new_filename = os.path.join(custom.archive_dir,new_filename)
                         command = (['mv', self.last_picture_filename, new_filename])
-                        call(command)
+                        subprocess.call(command)
                     else:
                         print "Error : archive_dir %s doesn't exist"% custom.archive_dir
 
