@@ -14,24 +14,30 @@ from constants import *
 import custom as custom
 import time
 import traceback
+import mailfile
 
 import os
 from credentials import OAuth2Login
 import config as google_credentials
 
-SIMULATE_HARDWARE = False
-
-if SIMULATE_HARDWARE:
-    import fakehardware as mycamera
-    import fakehardware as HWB
-    from   fakehardware import *
-else:
+try:
     import hardware_buttons as HWB
+except ImportError:
+    print "Error importing hardware_buttons, using fakehardware instead"
+    print traceback.print_exc()
+    import fakehardware as HWB
+    
+try:
+    import picamera as mycamera
+    from picamera.color import Color
+except ImportError:
+    print "picamera not found, trying cv2_camera"
     try:
-        import picamera as mycamera
-        from picamera.color import Color
-    except ImportError:
         import cv2_camera as mycamera
+    except ImportError:
+        print "cv2_camera import failed : using fake hardware instead"
+        import fakehardware as mycamera
+        from fakehardware import Color
 
 CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
 EMAIL_BUTTON_IMG = "ressources/ic_email.png"
@@ -89,6 +95,8 @@ class UserInterface():
         self.tkkb = None
         self.email_addr = StringVar()
         
+        self.suspend_poll = False
+        
         #Google credentials
         self.credentials = google_credentials.Credential()
         self.configdir = os.path.expanduser('./')
@@ -127,19 +135,20 @@ class UserInterface():
         self.config.customize(self.root)
         
     def run_periodically(self):
-        #do something here
-        self.status('')
-        btn_state = self.buttons.state()
-        if btn_state == 1:
-            self.snap("None")
-        elif btn_state == 2:
-            self.snap("Four")
-        elif btn_state == 3:
-            self.snap("Animation")
+        if not self.suspend_poll == True:
+            self.status('')
+            btn_state = self.buttons.state()
+            if btn_state == 1:
+                self.snap("None")
+            elif btn_state == 2:
+                self.snap("Four")
+            elif btn_state == 3:
+                self.snap("Animation")
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
 
     def snap(self,mode="None"):
         print "snap (mode=%s)" % mode
+        self.suspend_poll = True
         # clear status
         self.status("")
         
@@ -210,8 +219,8 @@ class UserInterface():
                     front = front.resize((w_,h_))
                     front = front.convert('RGBA')
                     snapshot = snapshot.convert('RGBA')
-                    print snapshot
-                    print front
+                    #print snapshot
+                    #print front
                     snapshot=Image.alpha_composite(snapshot,front)
 
                 except Exception, e:
@@ -269,7 +278,7 @@ class UserInterface():
                         command = (['mv', self.last_picture_filename, new_filename])
                         call(command)
                     else:
-                        raise ValueError("archive_dir %s doesn't exist"% custom.archive_dir)
+                        print "Error : archive_dir %s doesn't exist"% custom.archive_dir
 
                 # 3. Upload
                 if self.signed_in:
@@ -283,11 +292,12 @@ class UserInterface():
             else:
                 # error
                 self.status("Snap failed :(")
+                self.image.unload()
         except Exception, e:
             print e
             traceback.print_exc()
             snapshot = None
-            
+        self.suspend_poll = False    
         return snap_filename
 
     def __countdown_set_led(self,state):
@@ -356,6 +366,7 @@ class UserInterface():
             raise ValueError("albumID not set")    
             
     def send_email(self):
+        self.suspend_poll = True
         if self.signed_in and self.tkkb is None:
             self.email_addr.set("")
             self.tkkb = Toplevel(self.root)
@@ -366,14 +377,29 @@ class UserInterface():
             self.tkkb.wm_attributes("-topmost", 1)
             self.tkkb.transient(self.root)
             self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
+            
     def kill_tkkb(self):
         if self.tkkb is not None:
             self.tkkb.destroy()
             self.tkkb = None
+            self.suspend_poll = False
             
     def __send_picture(self):
-        _email = self.email_addr.get()
-        print "picture sent to %s"% _email
+        if self.signed_in:
+            print 'sending photo by email to %s' % self.email_addr.get()
+            self.status("Sending Email")
+            try:
+                mailfile.sendMail(self.email_addr.get().strip(),
+                         custom.emailSubject,
+                         custom.emailMsg,
+                         self.last_picture_filename)
+                self.kill_tkkb()
+            except Exception, e:
+                print 'Send Failed ::', e
+                self.status("Send failed :(")
+            self.status("")
+        else:
+            print 'Not signed in'
 
 if __name__ == '__main__':
     ui = UserInterface(window_size=(SCREEN_W, SCREEN_H))
