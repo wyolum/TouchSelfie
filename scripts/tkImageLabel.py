@@ -11,6 +11,8 @@ class ImageLabel(Label):
     def __init__(self, Tk_root, size=None):
         Label.__init__(self,Tk_root)
         self.size=size
+        self.root = Tk_root # for update()
+        
     def load(self, im):
         if isinstance(im, str):
             im = Image.open(im)
@@ -29,6 +31,7 @@ class ImageLabel(Label):
                 if i == 1:
                     #immediately load first frame
                     self.config(image=self.frames[0])
+                    self.root.update()
                 im.seek(i)
         except EOFError:
             pass
@@ -46,12 +49,14 @@ class ImageLabel(Label):
     def unload(self):
         self.config(image="")
         self.frames = None
+        self.root.update()
 
     def next_frame(self):
         if self.frames:
             self.loc += 1
             self.loc %= len(self.frames)
             self.config(image=self.frames[self.loc])
+            self.root.update()
             self.after(self.delay, self.next_frame)
 if __name__ == '__main__':
 
