@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 New interface for the photobooth
 
@@ -125,6 +124,7 @@ class UserInterface():
         
     def status(self, status_text):
         self.status_lbl['text'] = status_text
+        self.root.update()
     
     def start_ui(self):
         self.auth_after_id = self.root.after(100, self.refresh_auth)
