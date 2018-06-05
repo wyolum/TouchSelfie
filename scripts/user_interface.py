@@ -266,7 +266,16 @@ class UserInterface():
                 
                 # 1. Display
                 self.image.load(snap_filename)
-                # 2. Archive
+                # 2. Upload
+                if self.signed_in:
+                    self.status("Uploading image")
+                    self.googleUpload(
+                        self.last_picture_filename, 
+                        title= self.last_picture_title,
+                        caption = custom.photoCaption + " " + self.last_picture_title,
+                        mime_type = self.last_picture_mime_type)
+                    self.status("")
+                # 3. Archive
                 if custom.ARCHIVE:
                     if os.path.exists(custom.archive_dir):
                         new_filename = ""
@@ -283,15 +292,7 @@ class UserInterface():
                     else:
                         print "Error : archive_dir %s doesn't exist"% custom.archive_dir
 
-                # 3. Upload
-                if self.signed_in:
-                    self.status("Uploading image")
-                    self.googleUpload(
-                        self.last_picture_filename, 
-                        title= self.last_picture_title,
-                        caption = custom.photoCaption + " " + self.last_picture_title,
-                        mime_type = self.last_picture_mime_type)
-                    self.status("")
+
             else:
                 # error
                 self.status("Snap failed :(")
