@@ -19,6 +19,12 @@ from credentials import OAuth2Login
 import config as google_credentials
 import hardware_buttons as HWB
 
+try:
+    import picamera as mycamera
+    from picamera.color import Color
+except ImportError:
+    import cv2_camera as mycamera
+
 CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
 EMAIL_BUTTON_IMG = "ressources/ic_email.png"
 HARDWARE_POLL_PERIOD = 100
@@ -70,18 +76,33 @@ class UserInterface():
         
         self.last_picture_filename = None
         self.last_picture_time = time.time()
+        self.last_picture_mime_type = None
         
         self.tkkb = None
         self.email_addr = StringVar()
         
         #Google credentials
         self.credentials = google_credentials.Credential()
+        self.configdir = os.path.expanduser('./')
+        self.client_secrets = os.path.join(self.configdir, 'OpenSelfie.json')
+        self.credential_store = os.path.join(self.configdir, 'credentials.dat')
+        self.client = None
+        
+        #Hardware buttons
         self.buttons = HWB.Buttons()
+        
+        #Camera
+        self.camera = mycamera.PiCamera()
+        self.camera.annotate_text_size = 160 # Maximum size
+        self.camera.annotate_foreground = Color('white')
+        self.camera.annotate_background = Color('black')
+        
     
     def __del__(self):
         try:
             self.root.after_cancel(self.auth_after_id)
             self.root.after_cancel(self.poll_after_id)
+            self.camera.close()
         except:
             pass
         
@@ -110,29 +131,185 @@ class UserInterface():
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
 
     def snap(self,mode="None"):
-        
-        #hide backgroud image
-        self.image.unload()
-
-        #do something here
         print "snap (mode=%s)" % mode
         # clear status
         self.status("")
         
+        if mode not in EFFECTS_PARAMETERS.keys():
+            print "Wrong mode %s defaults to 'None'" % mode
+            mode = "None"
+        
+        #hide backgroud image
+        self.image.unload()
+
         # update this to be able to send email and upload
         # snap_filename = snap_picture(mode)
+        # take a snapshot here
         snap_filename = None
-        if os.path.exists(snap_filename):
-            self.last_picture_filename = None
-            self.last_picture_time = time.time()
-            # 1. Display
-            self.image.load(self.last_picture_filename)
-            # 2. Archive
-            # 3. Upload
-        else:
-            # error
-            self.status("Snap failed :(")
-        
+        snap_size = EFFECTS_PARAMETERS[mode]['snap_size']
+        try:
+            # 1. Start Preview
+            self.camera.resolution = snap_size
+            self.camera.start_preview()
+            # 2. Show initial countdown
+            self.__show_countdown(custom.countdown1)
+            # 3. Take snaps and combine them
+            if mode == 'None':
+                # simple shot with logo
+                self.camera.capture('snapshot.jpg')
+                self.camera.stop_preview()
+            
+                snapshot = Image.open('snapshot.jpg')
+                if self.custom.logo is not None :
+                    size = snapshot.size
+                    #resize logo to the wanted size
+                    custom.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size'])) 
+                    logo_size = custom.logo.size
+                    #put logo on bottom right with padding
+                    yoff = size[1] - logo_size[1] - LOGO_PADDING
+                    xoff = size[0] - logo_size[0] - LOGO_PADDING
+                    snapshot.paste(custom.logo,(xoff, yoff), custom.logo)
+                snapshot.save('snapshot.jpg')
+                snap_filename = 'snapshot.jpg'
+                self.last_picture_mime_type = 'image/jpg'
+                
+            elif mode == 'Four':
+                # collage of four shots
+                # compute collage size
+                w = snap_size[0]
+                h = snap_size[1]
+                w_ = w * 2
+                h_ = h * 2
+                # take 4 photos and merge into one image.
+                self.camera.capture('collage_1.jpg')
+                self.__show_countdown(custom.countdown2)
+                self.camera.capture('collage_2.jpg')
+                self.__show_countdown(custom.countdown2)
+                self.camera.capture('collage_3.jpg')
+                self.__show_countdown(custom.countdown2)
+                self.camera.capture('collage_4.jpg')
+                # Assemble collage
+                self.camera.stop_preview()
+                self.status("Assembling collage")
+                snapshot = Image.new('RGBA', (w,h))
+                snapshot.paste(Image.open('collage_1.jpg')), (  0,   0,  w, h))
+                snapshot.paste(Image.open('collage_2.jpg')), (w,   0, w_, h))
+                snapshot.paste(Image.open('collage_3.jpg')), (  0, h,  w, h_))
+                snapshot.paste(Image.open('collage_4.jpg')), (w, h, w_, h_))
+                #paste the collage enveloppe if it exists
+                try:
+                    front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
+                    front = front.resize((w_,h_))
+                    front = front.convert('RGBA')
+                    snapshot = snapshot.convert('RGBA')
+                    snapshot=Image.alpha_composite(snapshot,front)
+                except:
+                    pass
+                self.status("")
+
+                snapshot.save('collage.jpg')
+                snap_filename = 'collage.jpg'
+                self.last_picture_mime_type = 'image/jpg'
+                
+            elif mode == 'Animation':
+                # animated gifs
+                # below is taken from official PiCamera doc and adapted
+                # take GIF_FRAME_NUMBER pictures resize to GIF_SIZE
+                for i, filename in enumerate(self.camera.capture_continuous('animframe-{counter:03d}.jpg')):
+                    # print(filename)
+                    # TODO : enqueue the filenames and use that in the command line
+                    time.sleep(EFFECTS_PARAMETERS[mode]['snap_period_millis'] / 1000.0)
+                    # preload first frame because convert can be slow
+                    if i == 0: self.image.load(filename)
+                    if i >= EFFECTS_PARAMETERS[mode]['frame_number']:
+                        break
+                self.camera.stop_preview()
+                
+                # Assemble images using image magick
+                self.status("Assembling animation")
+                command_string = "convert -delay " + str(EFFECTS_PARAMETERS[mode]['gif_period_millis']) + " animframe-*.jpg animation.gif"
+                os.system(command_string)
+                self.status("")
+                snap_filename = 'animation.gif'
+                self.last_picture_mime_type = 'image/gif'
+            
+            # Here, the photo or animation is in snap_filename
+            if os.path.exists(snap_filename):
+                self.last_picture_filename = snap_filename
+                self.last_picture_time = time.time()
+                self.last_picture_timestamp = time.strftime("%Y-%m-%d_%H-%M-%S_%f",time.gmtime())
+                self.last_picture_title = time.strftime("%d/%m/%Y %H:%M:%S",time.gmtime()) #TODO add event name
+                
+                # 1. Display
+                self.image.load(snap_filename)
+                # 2. Archive
+                if custom.ARCHIVE:
+                    if os.path.exists(custom.archive_dir):
+                        new_filename = ""
+                        if mode == 'None':
+                            new_filename = "snapshot-%s.jpg" % self.last_picture_timestamp
+                        elif mode == 'Four':
+                            new_filename = "collage-%s.jpg" % self.last_picture_timestamp
+                        elif mode == 'Animation':
+                            new_filename = "animation-%s.gif" % self.last_picture_timestamp
+                            
+                        new_filename = os.path.join(custom.archive_dir,new_filename)
+                        command = (['mv', self.last_picture_filename, new_filename])
+                        call(command)
+                    else:
+                        raise ValueError("archive_dir %s doesn't exist"%s custom.archive_dir)
+
+                # 3. Upload
+                if self.signed_in:
+                    self.status("Uploading image")
+                    self.googleUpload(
+                        self.last_picture_filename, 
+                        title= self.last_picture_title,
+                        caption = custom.photoCaption + " " + self.last_picture_title,
+                        mime_type = self.last_picture_mime_type)
+                    self.status("")
+            else:
+                # error
+                self.status("Snap failed :(")
+        except Exception, e:
+            print e
+            snapshot = None
+            
+        return snap_filename
+
+    def __countdown_set_led(self,state)
+    ''' if you have a hardware led on the camera, link it to this'''
+        try:
+            self.camera.led = state
+        except:
+            pass
+            
+    def __show_countdown(self,countdown):
+    ''' display countdown. the camera should have a preview active and the resolution must be set'''
+        led_state = False
+        self.__countdown_set_led(led_state)
+
+        self.camera.annotate_text = "" # Remove annotation
+        #self.camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
+        self.camera.preview.fullscreen = True
+
+        #Change text every second and blink led
+        for i in range(countdown):
+            # Annotation text
+            self.camera.annotate_text = "  " + str(countdown - i) + "  "
+            if i < countdown1 - 2:
+            # slow blink until -2s
+                time.sleep(1)
+                led_state = not led_state
+                self.__countdown_set_led(led_state)
+            else:
+            # fast blink until the end
+                for j in range(5):
+                    time.sleep(.2)
+                    led_state = not led_state
+                    self.__countdown_set_led(led_state)
+        self.camera.annotate_text = ""
+
     def refresh_auth(self):
         if self.__google_auth():
             self.mail_btn.configure(state=NORMAL)
@@ -149,15 +326,22 @@ class UserInterface():
         # Connection to Google for Photo album upload
         try:
             # Create a client class which will make HTTP requests with Google Docs server.
-            self.configdir = os.path.expanduser('./')
-            self.client_secrets = os.path.join(self.configdir, 'OpenSelfie.json')
-            self.credential_store = os.path.join(self.configdir, 'credentials.dat')
             self.client = OAuth2Login(self.client_secrets, self.credential_store, self.credentials.key)
             return True
         except Exception, e:
             print 'could not login to Google, check .credential file\n   %s' % e
             return False
-        
+            
+    def googleUpload(self,filen, title='Photobooth photo', caption = None, mime_type='image/jpeg'):
+        #upload to picasa album
+        if caption  is None:
+            caption = custom.photoCaption
+        if custom.albumID != 'None':
+            album_url ='/data/feed/api/user/%s/albumid/%s' % (self.credentials.key, custom.albumID)
+            photo = self.client.InsertPhotoSimple(album_url, title, caption, filen ,content_type=mime_type)
+        else:
+            raise ValueError("albumID not set")    
+            
     def send_email(self):
         if self.signed_in and self.tkkb is None:
             self.email_addr.set("")

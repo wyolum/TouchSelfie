@@ -3,9 +3,24 @@ EFFECTS = ["None", "Warhol", "Four"]
 SCREEN_W = 800 ## raspi touch
 SCREEN_H = 480 ## raspi touch
 
-#Raspicam v2 stills dimensions
-CAM_W = 3280
-CAM_H = 2464
+EFFECTS_PARAMETERS = {
+    "None": {
+        'snap_size' : (1640,1232),
+        'logo_size' : 256,
+        'logo_padding' : 64
+    },
+    "Four": { 
+        'snap_size' : (820,616),
+        'foreground_image' : "collage_four_square.png"
+    },
+    "Animation": {
+        'snap_size' : (500, 500),
+        'frame_number' : 10,
+        'snap_period_millis' : 200,
+        'gif_period_millis' : 50
+    }
+}
+
 
 #Desired snapshot size
 SNAP_W = 1640
