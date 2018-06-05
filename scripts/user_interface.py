@@ -13,17 +13,25 @@ from tkImageLabel import ImageLabel
 from constants import *
 import custom as custom
 import time
+import traceback
 
 import os
 from credentials import OAuth2Login
 import config as google_credentials
-import hardware_buttons as HWB
 
-try:
-    import picamera as mycamera
-    from picamera.color import Color
-except ImportError:
-    import cv2_camera as mycamera
+SIMULATE_HARDWARE = False
+
+if SIMULATE_HARDWARE:
+    import fakehardware as mycamera
+    import fakehardware as HWB
+    from   fakehardware import *
+else:
+    import hardware_buttons as HWB
+    try:
+        import picamera as mycamera
+        from picamera.color import Color
+    except ImportError:
+        import cv2_camera as mycamera
 
 CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
 EMAIL_BUTTON_IMG = "ressources/ic_email.png"
@@ -160,14 +168,14 @@ class UserInterface():
                 self.camera.stop_preview()
             
                 snapshot = Image.open('snapshot.jpg')
-                if self.custom.logo is not None :
+                if custom.logo is not None :
                     size = snapshot.size
                     #resize logo to the wanted size
                     custom.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size'])) 
                     logo_size = custom.logo.size
                     #put logo on bottom right with padding
-                    yoff = size[1] - logo_size[1] - LOGO_PADDING
-                    xoff = size[0] - logo_size[0] - LOGO_PADDING
+                    yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
+                    xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
                     snapshot.paste(custom.logo,(xoff, yoff), custom.logo)
                 snapshot.save('snapshot.jpg')
                 snap_filename = 'snapshot.jpg'
@@ -191,22 +199,26 @@ class UserInterface():
                 # Assemble collage
                 self.camera.stop_preview()
                 self.status("Assembling collage")
-                snapshot = Image.new('RGBA', (w,h))
-                snapshot.paste(Image.open('collage_1.jpg')), (  0,   0,  w, h))
-                snapshot.paste(Image.open('collage_2.jpg')), (w,   0, w_, h))
-                snapshot.paste(Image.open('collage_3.jpg')), (  0, h,  w, h_))
-                snapshot.paste(Image.open('collage_4.jpg')), (w, h, w_, h_))
+                snapshot = Image.new('RGBA', (w_, h_))
+                snapshot.paste(Image.open('collage_1.jpg'), (  0,   0,  w, h))
+                snapshot.paste(Image.open('collage_2.jpg'), (w,   0, w_, h))
+                snapshot.paste(Image.open('collage_3.jpg'), (  0, h,  w, h_))
+                snapshot.paste(Image.open('collage_4.jpg'), (w, h, w_, h_))
                 #paste the collage enveloppe if it exists
                 try:
                     front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
                     front = front.resize((w_,h_))
                     front = front.convert('RGBA')
                     snapshot = snapshot.convert('RGBA')
+                    print snapshot
+                    print front
                     snapshot=Image.alpha_composite(snapshot,front)
-                except:
-                    pass
-                self.status("")
 
+                except Exception, e:
+                    traceback.print_exc()
+
+                self.status("")
+                snapshot = snapshot.convert('RGB')
                 snapshot.save('collage.jpg')
                 snap_filename = 'collage.jpg'
                 self.last_picture_mime_type = 'image/jpg'
@@ -237,7 +249,7 @@ class UserInterface():
             if os.path.exists(snap_filename):
                 self.last_picture_filename = snap_filename
                 self.last_picture_time = time.time()
-                self.last_picture_timestamp = time.strftime("%Y-%m-%d_%H-%M-%S_%f",time.gmtime())
+                self.last_picture_timestamp = time.strftime("%Y-%m-%d_%H-%M-%S",time.gmtime())
                 self.last_picture_title = time.strftime("%d/%m/%Y %H:%M:%S",time.gmtime()) #TODO add event name
                 
                 # 1. Display
@@ -257,7 +269,7 @@ class UserInterface():
                         command = (['mv', self.last_picture_filename, new_filename])
                         call(command)
                     else:
-                        raise ValueError("archive_dir %s doesn't exist"%s custom.archive_dir)
+                        raise ValueError("archive_dir %s doesn't exist"% custom.archive_dir)
 
                 # 3. Upload
                 if self.signed_in:
@@ -273,19 +285,20 @@ class UserInterface():
                 self.status("Snap failed :(")
         except Exception, e:
             print e
+            traceback.print_exc()
             snapshot = None
             
         return snap_filename
 
-    def __countdown_set_led(self,state)
-    ''' if you have a hardware led on the camera, link it to this'''
+    def __countdown_set_led(self,state):
+        ''' if you have a hardware led on the camera, link it to this'''
         try:
             self.camera.led = state
         except:
             pass
             
     def __show_countdown(self,countdown):
-    ''' display countdown. the camera should have a preview active and the resolution must be set'''
+        ''' display countdown. the camera should have a preview active and the resolution must be set'''
         led_state = False
         self.__countdown_set_led(led_state)
 
@@ -297,7 +310,7 @@ class UserInterface():
         for i in range(countdown):
             # Annotation text
             self.camera.annotate_text = "  " + str(countdown - i) + "  "
-            if i < countdown1 - 2:
+            if i < countdown - 2:
             # slow blink until -2s
                 time.sleep(1)
                 led_state = not led_state

@@ -3,8 +3,8 @@ import Tkinter
 import tkFileDialog
 import tkSimpleDialog
 import os.path
-import Image
-import ImageTk
+from PIL import Image, ImageTk
+
 import ConfigParser
 import os.path
 from constants import SCREEN_W, SCREEN_H
