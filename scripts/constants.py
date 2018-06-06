@@ -6,8 +6,8 @@ SCREEN_H = 480 ## raspi touch
 EFFECTS_PARAMETERS = {
     "None": {
         'snap_size' : (1640,1232),
-        'logo_size' : 256,
-        'logo_padding' : 64
+        'logo_size' : 128,
+        'logo_padding' : 32
     },
     "Four": { 
         'snap_size' : (820,616),
@@ -21,13 +21,24 @@ EFFECTS_PARAMETERS = {
     }
 }
 
+SOFTWARE_BUTTONS = {
+    "None": {
+        "icon" : "ressources/ic_photo.png"
+        },
+    "Four": {
+        "icon" : "ressources/ic_portrait.png"
+        },
+    "Animation": {
+        "icon" : "ressources/ic_anim.png"
+        }
+}
 
 #Desired snapshot size
 SNAP_W = 1640
 SNAP_H = 1232
 #Desired size of the embedded logo
-LOGO_MAX_SIZE = 256
-LOGO_PADDING = 64
+LOGO_MAX_SIZE = 128
+LOGO_PADDING = 32
 
 
 WHITE = (255, 255, 255)

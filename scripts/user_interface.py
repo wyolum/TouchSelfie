@@ -106,6 +106,41 @@ class UserInterface():
         
         #Hardware buttons
         self.buttons = HWB.Buttons()
+        if not self.buttons.has_buttons():
+            #oh oh, we don't have hardware buttons, create soft ones
+            print "No hardware buttons found, generating software buttons"
+            
+            self.software_buttons_images = {}
+            self.software_buttons = []
+            X = 0
+            total_width = 0
+            # first, open images and load them + compute the total width
+            for i, effect in enumerate(SOFTWARE_BUTTONS):
+                effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
+                w,h = effect_image.size
+                tkimage = ImageTk.PhotoImage(effect_image)
+                self.software_buttons_images[effect] = {}
+                self.software_buttons_images[effect]['image'] = tkimage
+                self.software_buttons_images[effect]['size'] = (w,h)
+                total_width = total_width + w
+            #we have the total size, compute padding
+            padding = int((self.size[0] - total_width) / (len(SOFTWARE_BUTTONS) - 1))
+            # decurrying of callback parameter
+            def snap_factory(effect):
+                return lambda *args:self.snap(effect)
+                
+            for i, effect in enumerate(SOFTWARE_BUTTONS):
+                #print effect, SOFTWARE_BUTTONS[effect]
+                effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
+                w,h = self.software_buttons_images[effect]['size']
+                Y = self.size[1] - h
+                tkimage = self.software_buttons_images[effect]['image']
+
+                btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
+                self.software_buttons.append(btn)
+                btn.place(x=X,y=Y)
+                btn.configure(background = 'black')
+                X = X + w + padding
         
         #Camera
         self.camera = mycamera.PiCamera()
