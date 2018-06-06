@@ -23,29 +23,32 @@ except ImportError:
 
 class Buttons():
     def __init__(self, buttons_pins=BUTTONS_PINS, mode=BUTTONS_MODE, active_state=BUTTON_IS_ACTIVE):
+        self.buttons_pins = buttons_pins
+        self.mode = mode
+        self.active_state = active_state
         if RPI_GPIO_EXISTS:
-            self.buttons_pins = buttons_pins
-            self.mode = mode
-            self.active_state = active_state
             GPIO.setmode(GPIO.BOARD)
             for pin in self.buttons_pins:
                 GPIO.setup(pin, GPIO.IN, pull_up_down = self.mode)
             if len(button_pins) != 0:
-                self.has_buttons = True
+                self._has_buttons = True
             else:
-                self.has_buttons = False
+                self._has_buttons = False
         else:
-            self.has_buttons = False
+            self._has_buttons = False
     
     def __del__(self):
-        if self.has_buttons:
+        if self._has_buttons:
             GPIO.cleanup()
             
-    def has_buttons():
-        return self.has_buttons
+    def has_buttons(self):
+        return self._has_buttons
+        
+    def buttons_number(self):
+        return len(self.buttons_pins)
         
     def state(self):
-        if not self.has_buttons:
+        if not self._has_buttons:
             return 0
         
         for i,pin in enumerate(self.buttons_pins,1):
@@ -57,9 +60,16 @@ class Buttons():
         
 if __name__ == '__main__':
     import time
+    import sys
     buttons = Buttons()
     last = 0
-    print "Press hardware buttons to see change, ctrl+C to exit"
+    if buttons.has_buttons():
+        print "Press hardware buttons to see change, ctrl+C to exit"
+    else:
+        print "No button configured (no access to GPIO or empty button list)"
+        print "Number of buttons is %d" % buttons.buttons_number()
+        sys.exit()
+        
     while True:
         state = buttons.state()
         if last != state:
