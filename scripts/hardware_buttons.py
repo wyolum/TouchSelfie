@@ -30,7 +30,7 @@ class Buttons():
             GPIO.setmode(GPIO.BOARD)
             for pin in self.buttons_pins:
                 GPIO.setup(pin, GPIO.IN, pull_up_down = self.mode)
-            if len(button_pins) != 0:
+            if len(buttons_pins) != 0:
                 self._has_buttons = True
             else:
                 self._has_buttons = False
