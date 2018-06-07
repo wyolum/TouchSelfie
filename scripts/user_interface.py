@@ -47,6 +47,8 @@ HARDWARE_POLL_PERIOD = 100
 class UserInterface():
     def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom):
         self.root = Tk()
+        self.root.attributes("-fullscreen",True)
+
         self.root.configure(background='black')
         self.config=config
         if window_size is not None:
