@@ -1,3 +1,4 @@
 cd /home/pi/TouchSelfie/scripts
-python user_interface.py
+sleep 5
+python user_interface.py > /home/pi/TouchSelfie/run.log
 
