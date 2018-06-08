@@ -3,6 +3,9 @@ scripts/openselfie.conf
 scripts/.credentials
 scripts/*.jpg
 scripts/*.LOG
+# ignore log and animation frames
+run.log
+scripts/animframe*.*
 
 # ignore compiled python files
 scripts/*.pyc

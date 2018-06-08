@@ -47,6 +47,8 @@ HARDWARE_POLL_PERIOD = 100
 class UserInterface():
     def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom):
         self.root = Tk()
+        self.root.attributes("-fullscreen",True)
+
         self.root.configure(background='black')
         self.config=config
         if window_size is not None:
@@ -315,15 +317,16 @@ class UserInterface():
                     if os.path.exists(custom.archive_dir):
                         new_filename = ""
                         if mode == 'None':
-                            new_filename = "snapshot-%s.jpg" % self.last_picture_timestamp
+                            new_filename = "%s-snap.jpg" % self.last_picture_timestamp
                         elif mode == 'Four':
-                            new_filename = "collage-%s.jpg" % self.last_picture_timestamp
+                            new_filename = "%s-collage.jpg" % self.last_picture_timestamp
                         elif mode == 'Animation':
-                            new_filename = "animation-%s.gif" % self.last_picture_timestamp
+                            new_filename = "%s-anim.gif" % self.last_picture_timestamp
                             
                         new_filename = os.path.join(custom.archive_dir,new_filename)
                         command = (['mv', self.last_picture_filename, new_filename])
                         subprocess.call(command)
+                        self.last_picture_filename = new_filename
                     else:
                         print "Error : archive_dir %s doesn't exist"% custom.archive_dir
 
@@ -410,6 +413,7 @@ class UserInterface():
             self.email_addr.set("")
             self.tkkb = Toplevel(self.root)
             def onEnter(*args):
+                print "sending email..."+self.email_addr.get()
                 self.kill_tkkb()
                 self.__send_picture()
             Tkkb(self.tkkb, self.email_addr, onEnter=onEnter)
