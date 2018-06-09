@@ -69,8 +69,15 @@ class UserInterface():
         w,h = cfg_image.size
         self.cfg_imagetk = ImageTk.PhotoImage(cfg_image)
         self.cfg_btn   = Button(self.root, image=self.cfg_imagetk, height=h, width=w, command=self.launch_config)
-        self.cfg_btn.place(x=0, y=0)
+        #self.cfg_btn.place(x=0, y=0)
         self.cfg_btn.configure(background = 'black')        
+        def hide_config(*args):
+            self.cfg_btn.place_forget()
+        def show_config(*args):
+            self.cfg_btn.place(x=0,y=0)
+            self.root.after(5000, hide_config)
+        self.root.bind('<Button-1>',show_config)
+        show_config()
         
         #Create sendmail Button
         mail_image = Image.open(EMAIL_BUTTON_IMG)
