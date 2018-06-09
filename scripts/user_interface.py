@@ -7,7 +7,8 @@ New interface for the photobooth
 from Tkinter import *
 import tkMessageBox
 from PIL import ImageTk,Image
-from tkkb import Tkkb
+#from tkkb import Tkkb
+from mykb import TouchKeyboard
 from tkImageLabel import ImageLabel
 from constants import *
 import custom as custom
@@ -416,7 +417,8 @@ class UserInterface():
                 print "sending email..."+self.email_addr.get()
                 self.kill_tkkb()
                 self.__send_picture()
-            Tkkb(self.tkkb, self.email_addr, onEnter=onEnter)
+            #Tkkb(self.tkkb, self.email_addr, onEnter=onEnter)
+            TouchKeyboard(self.tkkb,self.email_addr, onEnter = onEnter)
             self.tkkb.wm_attributes("-topmost", 1)
             self.tkkb.transient(self.root)
             self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
