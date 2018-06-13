@@ -215,9 +215,9 @@ class UserInterface():
             self.camera.resolution = snap_size
             self.camera.start_preview()
             # 2. Show initial countdown
-            self.__show_countdown(custom.countdown1)
             # 3. Take snaps and combine them
             if mode == 'None':
+                self.__show_countdown(custom.countdown1,annotate_size = 160)
                 # simple shot with logo
                 self.camera.capture('snapshot.jpg')
                 self.camera.stop_preview()
@@ -244,12 +244,13 @@ class UserInterface():
                 w_ = w * 2
                 h_ = h * 2
                 # take 4 photos and merge into one image.
+                self.__show_countdown(custom.countdown1,annotate_size = 80)
                 self.camera.capture('collage_1.jpg')
-                self.__show_countdown(custom.countdown2)
+                self.__show_countdown(custom.countdown2,annotate_size = 80)
                 self.camera.capture('collage_2.jpg')
-                self.__show_countdown(custom.countdown2)
+                self.__show_countdown(custom.countdown2,annotate_size = 80)
                 self.camera.capture('collage_3.jpg')
-                self.__show_countdown(custom.countdown2)
+                self.__show_countdown(custom.countdown2,annotate_size = 80)
                 self.camera.capture('collage_4.jpg')
                 # Assemble collage
                 self.camera.stop_preview()
@@ -282,6 +283,7 @@ class UserInterface():
                 # animated gifs
                 # below is taken from official PiCamera doc and adapted
                 # take GIF_FRAME_NUMBER pictures resize to GIF_SIZE
+                self.__show_countdown(custom.countdown1,annotate_size = 50)
                 for i, filename in enumerate(self.camera.capture_continuous('animframe-{counter:03d}.jpg')):
                     # print(filename)
                     # TODO : enqueue the filenames and use that in the command line
@@ -357,12 +359,13 @@ class UserInterface():
         except:
             pass
             
-    def __show_countdown(self,countdown):
+    def __show_countdown(self,countdown,annotate_size=160):
         ''' display countdown. the camera should have a preview active and the resolution must be set'''
         led_state = False
         self.__countdown_set_led(led_state)
 
         self.camera.annotate_text = "" # Remove annotation
+        self.camera.annotate_text_size = annotate_size
         #self.camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
         self.camera.preview.fullscreen = True
 
