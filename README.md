@@ -4,6 +4,7 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 # Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
 ## Get the necessary packages
+
 '''
 # update system 
 sudo apt-get update
@@ -21,6 +22,7 @@ If google chrome is not on your system, the following might be necessary:
 sudo apt-get install luakit
 sudo update-alternatives --config x-www-browser
 '''
+
 ## Install google credentials
 This application is able to send emails from your google account and upload picture in a Google Photos album
 
