@@ -5,7 +5,7 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 ## Get the necessary packages
 
-'''
+```
 # update system 
 sudo apt-get update
 # Install ImageTk, Image from PIL
@@ -14,14 +14,14 @@ sudo apt-get install python-imaging-tk
 # Install google data api and upgrade it
 sudo apt-get install python-gdata
 sudo pip install --upgrade google-api-python-client
-'''
+```
 
 If google chrome is not on your system, the following might be necessary:
 
-'''
+```
 sudo apt-get install luakit
 sudo update-alternatives --config x-www-browser
-'''
+```
 
 ## Install google credentials
 This application is able to send emails from your google account and upload picture in a Google Photos album
