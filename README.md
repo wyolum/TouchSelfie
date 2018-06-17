@@ -33,8 +33,11 @@ This application is able to send emails from your google account and upload pict
 
 For this to work, you will need:
 - One google account
-- For email sending and Photos uploading: To enter your google account credentials in the application (It's safer to set your Google account to "double authentication" and use an "Application password" (see [instructions from Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/)). For this, just launch the application: it will ask for a user/password. Alternatively, you can create a `.credentials` file in the `/script/` directory with your google mail address on the first line and your password on the second line (yes, it's stored in clear :(, at least `chmod +600 .credentials` for a little privacy)
-- For photos uploading: you will need to setup a new application on the [google developers console](https://console.developers.google.com/). Once this is done, you must download the application's credentials as a json file and move it to `scripts/OpenSelfie.json`
+- For email sending and Photos uploading: To enter your google account credentials in the application (It's safer to set your Google account to "double authentication" and use an "Application password" (see [instructions from Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/)). For this, just launch the application: it will ask for a user/password.
+
+  - Alternatively, you can create a `.credentials` file in the `/script/` directory with your google mail address on the first line and your password on the second line (yes, it's stored in clear :(, at least `chmod +600 .credentials` for a little privacy)
+
+- For photos uploading: you will need to setup a new application on the [google developers console](https://console.developers.google.com/). Once this is done, you must download the application's credentials as a json file and move it to `scripts/OpenSelfie.json` (you can do this on your PC and simply copy it to your pi)
 
 ## Changes from wyolum/TouchSelfie
 
