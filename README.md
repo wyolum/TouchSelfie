@@ -21,13 +21,13 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 - Modern "black" userinterface with icon buttons
 
-![user interface](/laurentalacoque/TouchSelfie/blob/master/screenshots/new_user_interface.jpg?raw=true)
+![user interface](screenshots/new_user_interface.jpg?raw=true)
 
 - Preview now uses builtin annotate_text and opaque preview window
 
 - New skinnable Touchscreen keyboard "mykb.py"
 
-![user interface](/laurentalacoque/TouchSelfie/blob/master/screenshots/new_keyboard.jpg?raw=true)
+![user interface](screenshots/new_keyboard.jpg?raw=true)
 
 - Auto-hide configuration button (reactivate with tap on background)
 
