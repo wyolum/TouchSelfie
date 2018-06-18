@@ -46,11 +46,11 @@ HARDWARE_POLL_PERIOD = 100
 
 
 class UserInterface():
-    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True):
+    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True):
         self.root = Tk()
         if fullscreen:
             self.root.attributes("-fullscreen",True)
-
+        
         self.root.configure(background='black')
         self.config=config
         if window_size is not None:
@@ -80,18 +80,20 @@ class UserInterface():
         self.root.bind('<Button-1>',show_config)
         show_config()
         
+        self.send_emails = send_emails
         #Create sendmail Button
-        mail_image = Image.open(EMAIL_BUTTON_IMG)
-        w,h = mail_image.size
-        self.mail_imagetk = ImageTk.PhotoImage(mail_image)
-        self.mail_btn  = Button(self.root,image = self.mail_imagetk, height=h, width=w, command=self.send_email )
-        self.mail_btn.place(x=SCREEN_W-w-2, y=0)
-        self.mail_btn.configure(background = 'black')
+        if self.send_emails:
+            mail_image = Image.open(EMAIL_BUTTON_IMG)
+            w,h = mail_image.size
+            self.mail_imagetk = ImageTk.PhotoImage(mail_image)
+            self.mail_btn  = Button(self.root,image = self.mail_imagetk, height=h, width=w, command=self.send_email )
+            self.mail_btn.place(x=SCREEN_W-w-2, y=0)
+            self.mail_btn.configure(background = 'black')
         
         #Create status line
         self.status_lbl = Label(self.root, text="", font=("Helvetica", 20))
         self.status_lbl.config(background='black', foreground='white')
-        self.status_lbl.place(x=self.cfg_btn['width'], y=0)
+        self.status_lbl.place(x=self.cfg_btn['width'] + 10, y=0)
         
         #State variables
         self.signed_in = False
@@ -107,6 +109,9 @@ class UserInterface():
         self.email_addr = StringVar()
         
         self.suspend_poll = False
+        
+        self.upload_images = upload_images
+
         
         #Google credentials
         self.credentials = google_credentials.Credential()
@@ -388,11 +393,19 @@ class UserInterface():
         self.camera.annotate_text = ""
 
     def refresh_auth(self):
+        # useless if we don't need image upload
+        if not self.upload_images:
+            if self.send_emails:
+                self.signed_in = True #Will fail otherwise
+                self.mail_btn.configure(state=NORMAL)
+            return
         if self.__google_auth():
-            self.mail_btn.configure(state=NORMAL)
+            if self.send_emails:
+                self.mail_btn.configure(state=NORMAL)
             self.signed_in = True
         else:
-            self.mail_btn.configure(state=DISABLED)
+            if self.send_emails:        
+                self.mail_btn.configure(state=DISABLED)
             self.signed_in = False
             print 'refresh failed'
 
@@ -400,6 +413,9 @@ class UserInterface():
         self.auth_after_id = self.root.after(self.config.oauth2_refresh_period, self.refresh_auth)
         
     def __google_auth(self):
+        if not self.upload_images:
+            return False
+            
         # Connection to Google for Photo album upload
         try:
             # Create a client class which will make HTTP requests with Google Docs server.
@@ -410,6 +426,8 @@ class UserInterface():
             return False
             
     def googleUpload(self,filen, title='Photobooth photo', caption = None, mime_type='image/jpeg'):
+        if not self.upload_images:
+            return
         #upload to picasa album
         if caption  is None:
             caption = custom.photoCaption
@@ -420,6 +438,8 @@ class UserInterface():
             raise ValueError("albumID not set")    
             
     def send_email(self):
+        if not self.send_emails:
+            return
         self.suspend_poll = True
         if self.signed_in and self.tkkb is None:
             self.email_addr.set("")
@@ -441,6 +461,8 @@ class UserInterface():
             self.suspend_poll = False
             
     def __send_picture(self):
+        if not self.send_emails:
+            return
         if self.signed_in:
             print 'sending photo by email to %s' % self.email_addr.get()
             self.status("Sending Email")
@@ -458,7 +480,19 @@ class UserInterface():
             print 'Not signed in'
 
 if __name__ == '__main__':
-    ui = UserInterface(window_size=(SCREEN_W, SCREEN_H))
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-de", "--disable-email", help="disable the 'send photo by email' feature",
+                    action="store_true")
+    parser.add_argument("-du", "--disable-upload", help="disable the 'auto-upload to Google Photo' feature",
+                    action="store_true")
+    parser.add_argument("-df", "--disable-full-screen", help="disable the full-screen mode",
+                    action="store_true")
+    args = parser.parse_args()
+    
+    print args
+  
+    ui = UserInterface(window_size=(SCREEN_W, SCREEN_H), fullscreen = not args.disable_full_screen, upload_images = not args.disable_upload, send_emails = not args.disable_email)
     ui.start_ui()
 
 
