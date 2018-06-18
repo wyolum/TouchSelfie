@@ -27,11 +27,13 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 - New skinnable Touchscreen keyboard "mykb.py"
 
-![user interface](screenshots/new_keyboard.jpg?raw=true)
+![new keyboard](screenshots/new_keyboard.jpg?raw=true)
 
 - Auto-hide configuration button (reactivate with tap on background)
 
 - snapshot view now supports animated gifs
+
+![example animation](screenshots/anim.gif)
 
 - command line arguments to enable/disable some features:
   - enable/disable fullscreen startup
