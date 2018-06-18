@@ -180,7 +180,6 @@ class UserInterface():
     def start_ui(self):
         self.auth_after_id = self.root.after(100, self.refresh_auth)
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
-        print "Done"
         self.root.mainloop()
 
     def launch_config(self):
