@@ -2,7 +2,7 @@
 Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 
-## Changes from wyolum/TouchSelfie
+## Changes from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
 ### Easier setup
 - a new `setup_credentials.sh` script will help you configure the features you need (send_email, auto-upload) and will guide you for the Google credentials setup.
@@ -30,9 +30,9 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
   - enable/disable email sending
   - enable/disable auto-upload
 
-# Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
+## Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
-## Get the necessary packages
+### Get the necessary packages
 
 ```
 # update system 
@@ -57,8 +57,12 @@ sudo apt-get install luakit
 sudo update-alternatives --config x-www-browser
 ```
 
-## Install google credentials
-This application is able to send emails from your google account and upload picture in a Google Photos album
+### Install google credentials
+
+You can now use the `setup_credentials.sh` script to guide you through the credentials retrieval and installation.
+
+
+Now, for a bit of background: this application is able to send emails from your google account and upload picture in a Google Photos album
 
 For this to work, you will need:
 - One google account
