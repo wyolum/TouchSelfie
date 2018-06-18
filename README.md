@@ -13,6 +13,10 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 ### New effects
 - Added "Animation" effect that produces animated gifs (needs imagemagick)
 
+### Higher resolution pictures
+- supports new v2.1 pi camera
+- Supports arbitrary resolution for snapshots (configure it in constants.py)
+
 ### User interface improvements
 
 - Modern "black" userinterface with icon buttons
