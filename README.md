@@ -13,6 +13,8 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 ### New effects
 - Added "Animation" effect that produces animated gifs (needs imagemagick)
 
+![example animation](screenshots/anim.gif)
+
 ### Higher resolution pictures
 - supports new v2.1 pi camera
 - Supports arbitrary resolution for snapshots (configure it in constants.py)
@@ -32,8 +34,6 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 - Auto-hide configuration button (reactivate with tap on background)
 
 - snapshot view now supports animated gifs
-
-![example animation](screenshots/anim.gif)
 
 - command line arguments to enable/disable some features:
   - enable/disable fullscreen startup
