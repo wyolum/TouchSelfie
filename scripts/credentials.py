@@ -21,7 +21,7 @@ def OAuth2Login(client_secrets, credential_store, email):
         flow = flow_from_clientsecrets(client_secrets, scope=scope, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
         uri = flow.step1_get_authorize_url()
         webbrowser.open(uri)
-        code = raw_input('Enter the authentication code: ').strip()
+        code = raw_input('\nEnter the authentication code, then press Enter: ').strip()
         credentials = flow.step2_exchange(code)
 
     if (credentials.token_expiry - datetime.utcnow()) < timedelta(minutes=5):

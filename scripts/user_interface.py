@@ -399,6 +399,7 @@ class UserInterface():
                 self.signed_in = True #Will fail otherwise
                 self.mail_btn.configure(state=NORMAL)
             return
+        # actual refresh
         if self.__google_auth():
             if self.send_emails:
                 self.mail_btn.configure(state=NORMAL)

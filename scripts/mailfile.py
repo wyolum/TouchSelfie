@@ -11,7 +11,15 @@ from email.Encoders import encode_base64
 import config
 import email_logger
 
-def sendMail(recipient,subject, text, *attachmentFilePaths, from_account=None, from_account_pass=None):
+def sendMail(recipient,subject, text,  *attachmentFilePaths, **kwargs):
+  from_account=None
+  from_account_pass=None
+  if 'from_account' in kwargs.keys():
+    from_account = kwargs['from_account']
+  if 'from_account_pass' in kwargs.keys():
+    from_account_pass = kwargs['from_account_pass']
+    
+    
   if from_account == None:
     from_account = config.gmailUser
   if from_account_pass == None:
