@@ -11,9 +11,13 @@ from email.Encoders import encode_base64
 import config
 import email_logger
 
-def sendMail(recipient,subject, text, *attachmentFilePaths):
+def sendMail(recipient,subject, text, *attachmentFilePaths, from_account=None, from_account_pass=None):
+  if from_account == None:
+    from_account = config.gmailUser
+  if from_account_pass == None:
+    from_account_pass = config.gmailPassword
   msg = MIMEMultipart()
-  msg['From'] = config.gmailUser
+  msg['From'] = from_account
   msg['To'] = recipient
   msg['Subject'] = subject
   msg.attach(MIMEText(text))
@@ -23,8 +27,8 @@ def sendMail(recipient,subject, text, *attachmentFilePaths):
   mailServer.ehlo()
   mailServer.starttls()
   mailServer.ehlo()
-  mailServer.login(config.gmailUser, config.gmailPassword)
-  mailServer.sendmail(config.gmailUser, recipient, msg.as_string())
+  mailServer.login(from_account, from_account_pass)
+  mailServer.sendmail(from_account, recipient, msg.as_string())
   mailServer.close()
   print('Sent email to %s' % recipient)
   
