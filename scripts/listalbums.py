@@ -1,4 +1,4 @@
-import tkkb
+import mykb
 import os
 from credentials import OAuth2Login
 import Tkinter
@@ -51,7 +51,7 @@ class AlbumSelect:
         self.local_entry.focus_set()
         
         kb_frame = Tkinter.Frame(master)
-        kb = tkkb.Tkkb(kb_frame, local_entry)
+        kb = mykb.TouchKeyboard(kb_frame, local_entry)
         kb_frame.pack(side=Tkinter.TOP)
 
         button_frame.pack()
