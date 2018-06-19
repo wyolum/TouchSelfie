@@ -46,7 +46,7 @@ HARDWARE_POLL_PERIOD = 100
 
 
 class UserInterface():
-    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True):
+    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True, hardware_buttons = True, show_config_button = True):
         self.root = Tk()
         if fullscreen:
             self.root.attributes("-fullscreen",True)
@@ -66,17 +66,19 @@ class UserInterface():
         self.image.configure(background='black')
 
         #Create config button
+        self.show_config_button = show_config_button
         cfg_image = Image.open(CONFIG_BUTTON_IMG)
         w,h = cfg_image.size
         self.cfg_imagetk = ImageTk.PhotoImage(cfg_image)
         self.cfg_btn   = Button(self.root, image=self.cfg_imagetk, height=h, width=w, command=self.launch_config)
-        #self.cfg_btn.place(x=0, y=0)
         self.cfg_btn.configure(background = 'black')        
         def hide_config(*args):
             self.cfg_btn.place_forget()
         def show_config(*args):
-            self.cfg_btn.place(x=0,y=0)
-            self.root.after(5000, hide_config)
+            if self.show_config_button:
+                self.cfg_btn.place(x=0,y=0)
+                self.root.after(5000, hide_config)
+        
         self.root.bind('<Button-1>',show_config)
         show_config()
         
@@ -121,7 +123,11 @@ class UserInterface():
         self.client = None
         
         #Hardware buttons
-        self.buttons = HWB.Buttons()
+        if hardware_buttons:
+            self.buttons = HWB.Buttons( buttons_pins = HARDWARE_BUTTONS['button_pins'], mode = HARDWARE_BUTTONS["pull_up_down"], active_state = HARDWARE_BUTTONS["active_state"])
+        else:
+            self.buttons = HWB.Buttons( buttons_pins = [], mode=0, active_state=0)
+        
         if not self.buttons.has_buttons():
             #oh oh, we don't have hardware buttons, create soft ones
             print "No hardware buttons found, generating software buttons"
@@ -488,11 +494,21 @@ if __name__ == '__main__':
                     action="store_true")
     parser.add_argument("-df", "--disable-full-screen", help="disable the full-screen mode",
                     action="store_true")
+    parser.add_argument("-dh", "--disable-hardware-buttons", help="disable the hardware buttons (on-screen buttons instead)",
+                    action="store_true")
+    parser.add_argument("-dc", "--disable-configuration", help="disable the configuration button (no prank mode)",
+                    action="store_true")
+
     args = parser.parse_args()
     
-    print args
+    #print args
   
-    ui = UserInterface(window_size=(SCREEN_W, SCREEN_H), fullscreen = not args.disable_full_screen, upload_images = not args.disable_upload, send_emails = not args.disable_email)
+    ui = UserInterface(window_size=(SCREEN_W, SCREEN_H), 
+        fullscreen         = not args.disable_full_screen, 
+        upload_images      = not args.disable_upload, 
+        send_emails        = not args.disable_email, 
+        hardware_buttons   = not args.disable_hardware_buttons, 
+        show_config_button = not args.disable_configuration)
     ui.start_ui()
 
 

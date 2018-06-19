@@ -26,6 +26,7 @@ class Buttons():
         self.buttons_pins = buttons_pins
         self.mode = mode
         self.active_state = active_state
+        self._has_buttons = False
         if RPI_GPIO_EXISTS:
             GPIO.setmode(GPIO.BOARD)
             for pin in self.buttons_pins:
@@ -34,8 +35,6 @@ class Buttons():
                 self._has_buttons = True
             else:
                 self._has_buttons = False
-        else:
-            self._has_buttons = False
     
     def __del__(self):
         if self._has_buttons:
