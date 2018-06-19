@@ -412,7 +412,7 @@ class UserInterface():
             print 'refresh failed'
 
         #relaunch periodically
-        self.auth_after_id = self.root.after(self.config.oauth2_refresh_period, self.refresh_auth)
+        self.auth_after_id = self.root.after(OAUTH2_REFRESH_PERIOD, self.refresh_auth)
         
     def __google_auth(self):
         if not self.upload_images:
