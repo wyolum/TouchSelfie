@@ -39,6 +39,9 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
   - enable/disable fullscreen startup
   - enable/disable email sending
   - enable/disable auto-upload
+  - enable/disable configuration button (no wedding prank mode)
+  - enable/disable hardware buttons support (on-screen buttons displayed instead)
+  - *Use `python user_interface.py --help` for a description of command line options*
 
 ## Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
