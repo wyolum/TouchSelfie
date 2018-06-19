@@ -33,34 +33,19 @@ SOFTWARE_BUTTONS = {
         }
 }
 
-#Desired snapshot size
-SNAP_W = 1640
-SNAP_H = 1232
-#Desired size of the embedded logo
-LOGO_MAX_SIZE = 128
-LOGO_PADDING = 32
+HARDWARE_BUTTONS = {
+    "button_pins": [10,8,12], # Change this and the following to reflect your hardware buttons
+    "pull_up_down": 1, #GPIO.PUD_DOWN=1 GPIO_PUD_UP = 2 => switch to VDD, configure io in pulldown
+    "active_state": 1         # active 1 GPIO (pull_down with switch to VDD)
+}
+
+
 
 
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 
 
-## GPIO pin definition for hardware buttons
-BUTTON1_PIN = 10
-BUTTON2_PIN = 8
-BUTTON3_PIN = 12
-BUTTON_IS_ACTIVE = 1 # active 1 GPIO (pull_down with switch to VDD)
-
-## GIF parameters
-GIF_SIZE = (500, 500)
-GIF_FRAMES_NUMBER = 10
-GIF_ACQ_INTERFRAME_DELAY_MILLIS = 200
-GIF_INTERFRAME_DELAY_MILLIS     = 50
-GIF_OUT_FILENAME = "animation.gif"
-
 ## Collage embellishment
 COLLAGE_FRONT_ENVELOPPE = "collage_four_square.png"
 
-## Countdown
-COUNTDOWN_FONT_SIZE = 100
-COUNTDOWN_FONT_FAMILY = 'Times'
