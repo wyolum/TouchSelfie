@@ -40,10 +40,6 @@ except ImportError:
         import fakehardware as mycamera
         from fakehardware import Color
 
-CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
-EMAIL_BUTTON_IMG = "ressources/ic_email.png"
-HARDWARE_POLL_PERIOD = 100
-
 
 class UserInterface():
     def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True, hardware_buttons = True, show_config_button = True):

@@ -37,3 +37,8 @@ HARDWARE_BUTTONS = {
     "pull_up_down": 1, #GPIO.PUD_DOWN=1 GPIO_PUD_UP = 2 => switch to VDD, configure io in pulldown
     "active_state": 1         # active 1 GPIO (pull_down with switch to VDD)
 }
+
+CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
+EMAIL_BUTTON_IMG  = "ressources/ic_email.png"
+
+HARDWARE_POLL_PERIOD = 100 #poll interval for buttons (ms)
