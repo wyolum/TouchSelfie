@@ -31,7 +31,9 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
 
 ![new keyboard](screenshots/new_keyboard.jpg?raw=true)
 
-- Auto-hide configuration button (reactivate with tap on background)
+- Removed configuration button to avoid pranks
+  - use `install_credentials.py` to setup credentials and setup Google Photo Album
+  - tune configuration in `constants.py`
 
 - snapshot view now supports animated gifs
 
@@ -39,7 +41,6 @@ Open Source Photobooth based on the official Raspberry Pi 7" Touchscreen
   - enable/disable fullscreen startup
   - enable/disable email sending
   - enable/disable auto-upload
-  - enable/disable configuration button (no wedding prank mode)
   - enable/disable hardware buttons support (on-screen buttons displayed instead)
   - *Use `python user_interface.py --help` for a description of command line options*
 
