@@ -1,4 +1,3 @@
-EFFECTS = ["None", "Warhol", "Four"]
 
 SCREEN_W = 800 ## raspi touch
 SCREEN_H = 480 ## raspi touch
@@ -38,14 +37,3 @@ HARDWARE_BUTTONS = {
     "pull_up_down": 1, #GPIO.PUD_DOWN=1 GPIO_PUD_UP = 2 => switch to VDD, configure io in pulldown
     "active_state": 1         # active 1 GPIO (pull_down with switch to VDD)
 }
-
-
-
-
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-
-
-## Collage embellishment
-COLLAGE_FRONT_ENVELOPPE = "collage_four_square.png"
-
