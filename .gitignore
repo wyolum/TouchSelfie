@@ -2,6 +2,8 @@
 scripts/.credentials
 scripts/*.jpg
 scripts/*.log
+#ignore launcher
+photobooth.sh
 # ignore log and animation frames
 run.log
 scripts/animframe*.*
