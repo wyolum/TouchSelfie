@@ -1,7 +1,7 @@
 # TouchSelfie
 Open Source Photobooth forked and improved from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
-For hardware construction, see [Make Magazine article](https://makezine.com/projects/raspberry-pi-photo-booth/))
+For hardware construction, see [Make Magazine article](https://makezine.com/projects/raspberry-pi-photo-booth/)
 
 ## Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
@@ -50,7 +50,7 @@ sudo update-alternatives --config x-www-browser
 ## Changes from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
 ### Easier setup
-- a new `setup_credentials.sh` script will help you configure the features you need (send_email, auto-upload) and will guide you for the Google credentials setup.
+- a new `setup.sh` script will help you configure the features you need (send_email, auto-upload) and will guide you for the Google credentials setup and photo album selection.
 
 ### Hardware buttons support
 - Added GPIO hardware interface for three buttons (with connections in hardware/ directory). Each button triggers a different effect. Software buttons are added if GPIO is not available
@@ -77,7 +77,7 @@ sudo update-alternatives --config x-www-browser
 ![new keyboard](screenshots/new_keyboard.jpg?raw=true)
 
 - Removed configuration button to avoid pranks
-  - use `install_credentials.py` to setup credentials and setup Google Photo Album
+  - use `setup.sh` to setup credentials and setup Google Photo Album
   - tune configuration in `constants.py`
 
 - snapshot view now supports animated gifs
