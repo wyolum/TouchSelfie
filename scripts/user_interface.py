@@ -11,7 +11,6 @@ from PIL import ImageTk,Image
 from mykb import TouchKeyboard
 from tkImageLabel import ImageLabel
 from constants import *
-import custom as custom
 import time
 import traceback
 import mailfile
@@ -42,7 +41,7 @@ except ImportError:
 
 
 class UserInterface():
-    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True, hardware_buttons = True, show_config_button = True):
+    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True, hardware_buttons = True):
         self.root = Tk()
         if fullscreen:
             self.root.attributes("-fullscreen",True)
@@ -60,24 +59,7 @@ class UserInterface():
         self.image = ImageLabel(self.root, size=self.size)
         self.image.place(x=0, y=0, relwidth = 1, relheight=1)
         self.image.configure(background='black')
-
-        #Create config button
-        self.show_config_button = show_config_button
-        cfg_image = Image.open(CONFIG_BUTTON_IMG)
-        w,h = cfg_image.size
-        self.cfg_imagetk = ImageTk.PhotoImage(cfg_image)
-        self.cfg_btn   = Button(self.root, image=self.cfg_imagetk, height=h, width=w, command=self.launch_config)
-        self.cfg_btn.configure(background = 'black')        
-        def hide_config(*args):
-            self.cfg_btn.place_forget()
-        def show_config(*args):
-            if self.show_config_button:
-                self.cfg_btn.place(x=0,y=0)
-                self.root.after(5000, hide_config)
-        
-        self.root.bind('<Button-1>',show_config)
-        show_config()
-        
+     
         self.send_emails = send_emails
         #Create sendmail Button
         if self.send_emails:
@@ -91,7 +73,7 @@ class UserInterface():
         #Create status line
         self.status_lbl = Label(self.root, text="", font=("Helvetica", 20))
         self.status_lbl.config(background='black', foreground='white')
-        self.status_lbl.place(x=self.cfg_btn['width'] + 10, y=0)
+        self.status_lbl.place(x=0 + 10, y=0)
         
         #State variables
         self.signed_in = False
@@ -492,8 +474,6 @@ if __name__ == '__main__':
                     action="store_true")
     parser.add_argument("-dh", "--disable-hardware-buttons", help="disable the hardware buttons (on-screen buttons instead)",
                     action="store_true")
-    parser.add_argument("-dc", "--disable-configuration", help="disable the configuration button (no prank mode)",
-                    action="store_true")
 
     args = parser.parse_args()
     
@@ -503,8 +483,7 @@ if __name__ == '__main__':
         fullscreen         = not args.disable_full_screen, 
         upload_images      = not args.disable_upload, 
         send_emails        = not args.disable_email, 
-        hardware_buttons   = not args.disable_hardware_buttons, 
-        show_config_button = not args.disable_configuration)
+        hardware_buttons   = not args.disable_hardware_buttons)
     ui.start_ui()
 
 

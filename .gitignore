@@ -1,8 +1,7 @@
 # ignore specific files
-scripts/openselfie.conf
 scripts/.credentials
 scripts/*.jpg
-scripts/*.LOG
+scripts/*.log
 # ignore log and animation frames
 run.log
 scripts/animframe*.*
@@ -18,3 +17,6 @@ scripts/*.py~
 scripts/*.cred
 scripts/*.json
 scripts/*.dat
+
+# ignore album.id file
+scripts/album.id

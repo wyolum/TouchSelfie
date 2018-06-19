@@ -38,7 +38,7 @@ HARDWARE_BUTTONS = {
     "active_state": 1         # active 1 GPIO (pull_down with switch to VDD)
 }
 
-CONFIG_BUTTON_IMG = "ressources/ic_settings.png"
+
 EMAIL_BUTTON_IMG  = "ressources/ic_email.png"
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
 HARDWARE_POLL_PERIOD = 100      # poll interval for buttons (ms)
