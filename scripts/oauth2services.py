@@ -56,7 +56,14 @@ class OAuthServices:
             self.authorization_callback = authorization_callback
                 
         
-        
+    def refresh(self):
+        if not (self.enable_email or self.enable_upload): # if we don't want features, just return
+            return False
+        cred = self.__oauth_login()
+        if cred is None:    
+            return False
+        else:
+            return True
     
     def __oauth_login(self):
         if not (self.enable_email or self.enable_upload): # if we don't want features, just return
@@ -107,7 +114,10 @@ class OAuthServices:
     def upload_picture(self, filename, album_id = None , title="photo", caption = ""):
         if not self.enable_upload:
             return False
-            
+        
+        if caption == None:
+            caption =""
+        
         if album_id == None:
             album_url = '/data/feed/api/user/default/albumid/default' # default folder
         else :

@@ -17,8 +17,8 @@ import mailfile
 
 import os
 import subprocess
-from credentials import OAuth2Login
-import config as google_credentials
+
+import oauth2services
 
 try:
     import hardware_buttons as HWB
@@ -41,13 +41,12 @@ except ImportError:
 
 
 class UserInterface():
-    def __init__(self, window_size=None, poll_period=HARDWARE_POLL_PERIOD, config=custom, fullscreen = True, upload_images = True, send_emails = True, hardware_buttons = True):
+    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True, upload_images = True, send_emails = True, account_email= None, hardware_buttons = True):
         self.root = Tk()
         if fullscreen:
             self.root.attributes("-fullscreen",True)
         
         self.root.configure(background='black')
-        self.config=config
         if window_size is not None:
             self.size=window_size
         else:
@@ -91,14 +90,17 @@ class UserInterface():
         self.suspend_poll = False
         
         self.upload_images = upload_images
-
+        self.account_email = account_email
         
         #Google credentials
-        self.credentials = google_credentials.Credential()
+
         self.configdir = os.path.expanduser('./')
-        self.client_secrets = os.path.join(self.configdir, 'OpenSelfie.json')
-        self.credential_store = os.path.join(self.configdir, 'credentials.dat')
-        self.client = None
+        self.oauth2service = oauth2services.OAuthServices(
+            os.path.join(self.configdir, 'OpenSelfie.json'),
+            os.path.join(self.configdir, 'credentials.dat'),
+            self.account_email,
+            enable_email = send_emails,
+            enable_upload = upload_images)
         
         #Hardware buttons
         if hardware_buttons:
@@ -166,8 +168,6 @@ class UserInterface():
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
         self.root.mainloop()
 
-    def launch_config(self):
-        self.config.customize(self.root)
         
     def run_periodically(self):
         if not self.suspend_poll == True:
@@ -206,21 +206,22 @@ class UserInterface():
             # 2. Show initial countdown
             # 3. Take snaps and combine them
             if mode == 'None':
-                self.__show_countdown(custom.countdown1,annotate_size = 160)
+                self.__show_countdown(config.countdown1,annotate_size = 160)
                 # simple shot with logo
                 self.camera.capture('snapshot.jpg')
                 self.camera.stop_preview()
             
                 snapshot = Image.open('snapshot.jpg')
-                if custom.logo is not None :
+                if config.logo_file is not None :
+                    config.logo = Image.open(config.logo_file)
                     size = snapshot.size
                     #resize logo to the wanted size
-                    custom.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size'])) 
-                    logo_size = custom.logo.size
+                    config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size'])) 
+                    logo_size = config.logo.size
                     #put logo on bottom right with padding
                     yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
                     xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
-                    snapshot.paste(custom.logo,(xoff, yoff), custom.logo)
+                    snapshot.paste(config.logo,(xoff, yoff), config.logo)
                 snapshot.save('snapshot.jpg')
                 snap_filename = 'snapshot.jpg'
                 self.last_picture_mime_type = 'image/jpg'
@@ -233,13 +234,13 @@ class UserInterface():
                 w_ = w * 2
                 h_ = h * 2
                 # take 4 photos and merge into one image.
-                self.__show_countdown(custom.countdown1,annotate_size = 80)
+                self.__show_countdown(config.countdown1,annotate_size = 80)
                 self.camera.capture('collage_1.jpg')
-                self.__show_countdown(custom.countdown2,annotate_size = 80)
+                self.__show_countdown(config.countdown2,annotate_size = 80)
                 self.camera.capture('collage_2.jpg')
-                self.__show_countdown(custom.countdown2,annotate_size = 80)
+                self.__show_countdown(config.countdown2,annotate_size = 80)
                 self.camera.capture('collage_3.jpg')
-                self.__show_countdown(custom.countdown2,annotate_size = 80)
+                self.__show_countdown(config.countdown2,annotate_size = 80)
                 self.camera.capture('collage_4.jpg')
                 # Assemble collage
                 self.camera.stop_preview()
@@ -272,7 +273,7 @@ class UserInterface():
                 # animated gifs
                 # below is taken from official PiCamera doc and adapted
                 # take GIF_FRAME_NUMBER pictures resize to GIF_SIZE
-                self.__show_countdown(custom.countdown1,annotate_size = 50)
+                self.__show_countdown(config.countdown1,annotate_size = 50)
                 for i, filename in enumerate(self.camera.capture_continuous('animframe-{counter:03d}.jpg')):
                     # print(filename)
                     # TODO : enqueue the filenames and use that in the command line
@@ -308,12 +309,11 @@ class UserInterface():
                     self.googleUpload(
                         self.last_picture_filename, 
                         title= self.last_picture_title,
-                        caption = custom.photoCaption + " " + self.last_picture_title,
-                        mime_type = self.last_picture_mime_type)
+                        caption = config.photoCaption + " " + self.last_picture_title)
                     self.status("")
                 # 3. Archive
-                if custom.ARCHIVE:
-                    if os.path.exists(custom.archive_dir):
+                if config.ARCHIVE:
+                    if os.path.exists(config.archive_dir):
                         new_filename = ""
                         if mode == 'None':
                             new_filename = "%s-snap.jpg" % self.last_picture_timestamp
@@ -322,12 +322,12 @@ class UserInterface():
                         elif mode == 'Animation':
                             new_filename = "%s-anim.gif" % self.last_picture_timestamp
                             
-                        new_filename = os.path.join(custom.archive_dir,new_filename)
+                        new_filename = os.path.join(config.archive_dir,new_filename)
                         command = (['mv', self.last_picture_filename, new_filename])
                         subprocess.call(command)
                         self.last_picture_filename = new_filename
                     else:
-                        print "Error : archive_dir %s doesn't exist"% custom.archive_dir
+                        print "Error : archive_dir %s doesn't exist"% config.archive_dir
 
 
             else:
@@ -383,7 +383,7 @@ class UserInterface():
                 self.mail_btn.configure(state=NORMAL)
             return
         # actual refresh
-        if self.__google_auth():
+        if self.oauth2service.refresh():
             if self.send_emails:
                 self.mail_btn.configure(state=NORMAL)
             self.signed_in = True
@@ -396,30 +396,18 @@ class UserInterface():
         #relaunch periodically
         self.auth_after_id = self.root.after(OAUTH2_REFRESH_PERIOD, self.refresh_auth)
         
-    def __google_auth(self):
-        if not self.upload_images:
-            return False
             
-        # Connection to Google for Photo album upload
-        try:
-            # Create a client class which will make HTTP requests with Google Docs server.
-            self.client = OAuth2Login(self.client_secrets, self.credential_store, self.credentials.key)
-            return True
-        except Exception, e:
-            print 'could not login to Google, check .credential file\n   %s' % e
-            return False
-            
-    def googleUpload(self,filen, title='Photobooth photo', caption = None, mime_type='image/jpeg'):
+    def googleUpload(self,filen, title='Photobooth photo', caption = None):
         if not self.upload_images:
             return
         #upload to picasa album
-        if caption  is None:
-            caption = custom.photoCaption
-        if custom.albumID != 'None':
-            album_url ='/data/feed/api/user/%s/albumid/%s' % (self.credentials.key, custom.albumID)
-            photo = self.client.InsertPhotoSimple(album_url, title, caption, filen ,content_type=mime_type)
-        else:
-            raise ValueError("albumID not set")    
+        if caption is None:
+            caption = config.photoCaption
+        if config.albumID == 'None':
+            config.albumID = None
+        
+        self.oauth2service.upload_picture(filen, config.albumID, title, caption)
+        
             
     def send_email(self):
         if not self.send_emails:
@@ -451,10 +439,11 @@ class UserInterface():
             print 'sending photo by email to %s' % self.email_addr.get()
             self.status("Sending Email")
             try:
-                mailfile.sendMail(self.email_addr.get().strip(),
-                         custom.emailSubject,
-                         custom.emailMsg,
-                         self.last_picture_filename)
+                self.oauth2service.send_email(
+                    self.email_addr.get().strip(),
+                    config.emailSubject,
+                    config.emailMsg,
+                    self.last_picture_filename)
                 self.kill_tkkb()
             except Exception, e:
                 print 'Send Failed ::', e
@@ -474,12 +463,19 @@ if __name__ == '__main__':
                     action="store_true")
     parser.add_argument("-dh", "--disable-hardware-buttons", help="disable the hardware buttons (on-screen buttons instead)",
                     action="store_true")
-
     args = parser.parse_args()
     
     #print args
-  
-    ui = UserInterface(window_size=(SCREEN_W, SCREEN_H), 
+    import configuration
+    config = configuration.Configuration("openselfie_configuration.json")
+    if not config.is_valid:
+        config.write_default_config("user@gmail.com")
+        args.disable_upload = True
+        args.disable_email = True
+        print "No configuration file found, writing defaults into openselfie_configuration.json"
+        
+    #TODO move every arguments into config file
+    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H), 
         fullscreen         = not args.disable_full_screen, 
         upload_images      = not args.disable_upload, 
         send_emails        = not args.disable_email, 
