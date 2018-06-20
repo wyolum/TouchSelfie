@@ -42,37 +42,3 @@ HARDWARE_BUTTONS = {
 EMAIL_BUTTON_IMG  = "ressources/ic_email.png"
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
 HARDWARE_POLL_PERIOD = 100      # poll interval for buttons (ms)
-
-
-
-
-# Some customizations
-from PIL import Image
-import os
-class Config():
-
-# Adapt this to your own needs
-    logo        = Image.open("logo.png") # Logo for the "None" effect
-    countdown1  = 5 # seconds of preview before first snap
-    countdown2  = 3 # seconds of preview between snaps (Four pictures mode)
-    photoCaption = "Photo from xxx Event" # Caption in the photo album
-    ARCHIVE      = True # Do we archive photos locally
-    archive_dir  = os.path.join("..","Photos") # Where do we archive photos
-    albumID      = None # Will be overwritten with the album id string contained in "album.id" => use install_credentials.py to create 'album.id'
-    emailSubject = "Here's your photo!" # subject line of the email sent from the photobooth
-    emailMsg     = "Greetings, here's your photo sent from the photobooth" # Brief body of the message sent from the photobooth
-
-# No need to change below
-    def __init__(self):
-        try:
-            handle = open("album.id","r")
-            self.albumID = handle.readline().strip()
-            handle.close()
-            if self.albumID == "" or self.albumID == None:
-                print "Wrong 'album.id' file, run 'install_credentials.py to select album"
-                self.albumID = None
-        except:
-            print "Error while reading 'album.id', run 'install_credentials.py' to select album"
-
-custom = Config()
-    
