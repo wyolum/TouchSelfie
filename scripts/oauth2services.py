@@ -63,7 +63,7 @@ class OAuthServices:
             return None
         credentials = self.credential_store.get()
         if credentials is None or credentials.invalid:
-            flow = flow_from_clientsecrets(self.client_secrets, scope=self.scopes, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+            flow = flow_from_clientsecrets(self.client_secret, scope=self.scopes, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
             uri = flow.step1_get_authorize_url()
             code = self.authorization_callback(uri)
             credentials = flow.step2_exchange(code)
@@ -220,6 +220,18 @@ def test():
             break
     print "\nTesting picture upload"
     gservice.upload_picture("test_image.png")
+    
+    # test a new authorization call_back
+    def myown_authorization_callback(authorization_uri):
+        print "This is my own authorization callback!"
+        print "I will launch a web browser for you to connect"
+        print "Once connected, please enter the validation code below!"
+        webbrowser.open(authorization_uri)
+        mycode = raw_input('\n[code]: ').strip()
+        return mycode
+    alt_gservice = OAuthServices("client_id.json","new_cred.dat",username, authorization_callback = myown_authorization_callback)
+    alt_gservice.get_user_albums()
+    
     
     
 
