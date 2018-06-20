@@ -41,7 +41,7 @@ except ImportError:
 
 
 class UserInterface():
-    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True, upload_images = True, send_emails = True, account_email= None, hardware_buttons = True):
+    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True, upload_images = True, send_emails = True,  hardware_buttons = True):
         self.root = Tk()
         if fullscreen:
             self.root.attributes("-fullscreen",True)
@@ -90,7 +90,7 @@ class UserInterface():
         self.suspend_poll = False
         
         self.upload_images = upload_images
-        self.account_email = account_email
+        self.account_email = config.user_name
         
         #Google credentials
 
