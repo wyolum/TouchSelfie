@@ -24,149 +24,204 @@ from datetime import datetime, timedelta
 from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 
+class OAuthServices:
+    def __init__(self, client_secret, credentials_store, username, enable_upload = True, enable_email = True, authorization_callback = None):
+        self.client_secret = client_secret
+        self.credentials_store = None
+        self.username = username
+        self.enable_upload = enable_upload
+        self.enable_email  = enable_email
+        self.scopes = ""
+        
+        if not (self.enable_email or self.enable_upload): # if we don't want features, just return
+            return 
 
-def OAuth2Login(client_secrets, credential_store, email , scope='https://picasaweb.google.com/data/'):
-    storage = Storage(credential_store)
-    credentials = storage.get()
-    if credentials is None or credentials.invalid:
-        flow = flow_from_clientsecrets(client_secrets, scope=scope, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-        uri = flow.step1_get_authorize_url()
-        webbrowser.open(uri)
-        code = raw_input('\nEnter the authentication code, then press Enter: ').strip()
-        credentials = flow.step2_exchange(code)
+        #build scopes
+        if self.enable_upload:
+            self.scopes += "https://picasaweb.google.com/data/ "
+        if self.enable_email:
+            self.scopes += "https://www.googleapis.com/auth/gmail.send"
+        self.scopes = self.scopes.strip()
 
-    if (credentials.token_expiry - datetime.utcnow()) < timedelta(minutes=5):
-        http = httplib2.Http()
-        http = credentials.authorize(http)
-        credentials.refresh(http)
+        self.credential_store = Storage(credentials_store)
+        
+        if authorization_callback == None:
+            def default_authorization_callback(authorization_uri):
+                print "\nLaunching system browser to validate the credentials..."
+                webbrowser.open(uri)
+                code = raw_input('\nEnter the authentication code, then press Enter: ').strip()
+                return code
+            self.authorization_callback = default_authorization_callback
+        else:
+            self.authorization_callback = authorization_callback
+                
+        
+        
+    
+    def __oauth_login(self):
+        if not (self.enable_email or self.enable_upload): # if we don't want features, just return
+            return None
+        credentials = self.credential_store.get()
+        if credentials is None or credentials.invalid:
+            flow = flow_from_clientsecrets(self.client_secrets, scope=self.scopes, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
+            uri = flow.step1_get_authorize_url()
+            code = self.authorization_callback(uri)
+            credentials = flow.step2_exchange(code)
 
-    storage.put(credentials)
+        if (credentials.token_expiry - datetime.utcnow()) < timedelta(minutes=5):
+            http = httplib2.Http()
+            http = credentials.authorize(http)
+            credentials.refresh(http)
 
-    return credentials
-
-def get_photoservice_client(client_secrets,credential_store,email):
-    credentials = OAuth2Login(client_secrets,credential_store,email,scope='https://picasaweb.google.com/data/')
-    user_agent='picasawebuploader'
-    return gdata.photos.service.PhotosService(source=user_agent,
-                                                   email=email,
+        self.credential_store.put(credentials)
+        return credentials
+    
+    def __get_photo_client(self):
+        if not self.enable_upload: #we don't want it
+            return None
+        credentials = self.__oauth_login()
+        user_agent='picasawebuploader'
+        return gdata.photos.service.PhotosService(source=user_agent,
+                                                   email=self.username,
                                                    additional_headers={'Authorization' : 'Bearer %s' % credentials.access_token})
 
+    def get_user_albums(self, as_title_id = True):
+        if not self.enable_upload:
+            return {}
+        client = self.__get_photo_client()
+        albums = client.GetUserFeed()
 
+        if as_title_id:
+            #build a list of {"title": "My album Title", "id":"FDQAga124231"} elements
+            album_list = []
+            for album in albums.entry:
+                entry = {}
+                entry['title'] = album.title.text
+                entry['id']    = album.gphoto_id.text
+                album_list.append(entry)
+            return(album_list)
+        else:
+            #full stuff
+            return album.entry
 
+    def upload_picture(self, filename, album_id = None , title="photo", caption = ""):
+        if not self.enable_upload:
+            return False
+            
+        if album_id == None:
+            album_url = '/data/feed/api/user/default/albumid/default' # default folder
+        else :
+            album_url = '/data/feed/api/user/%s/albumid/%s' % (self.username, album_id)
+        
+        client = self.__get_photo_client()
+        content_type, encoding = mimetypes.guess_type(filename)
 
-def SendMessage(sender, to, subject, msgHtml, msgPlain, credentials, attachmentFile=None):
-    http = credentials.authorize(httplib2.Http())
-    service = discovery.build('gmail', 'v1', http=http)
-    if attachmentFile:
-        message1 = createMessageWithAttachment(sender, to, subject, msgHtml, msgPlain, attachmentFile)
-    else: 
-        message1 = CreateMessageHtml(sender, to, subject, msgHtml, msgPlain)
-    result = SendMessageInternal(service, "me", message1)
-    return result
+        try:
+            client.InsertPhotoSimple(album_url, title, caption, filename ,content_type=content_type)
+        except Exception as error:
+            print "Error uploading image %s",error
+            return False
+        return True
+ 
+    def send_message(self,to, subject, body, attachment_file=None):
+        if not self.enable_email:
+            return False
+        credentials = self.__oauth_login()
+        http = credentials.authorize(httplib2.Http())
+        service = discovery.build('gmail', 'v1', http=http)
+        message = self.__createMessage(self.username, to, subject, body, body, attachment_file=attachment_file)
+        
+        try:
+            sent_message = (service.users().messages().send(userId="me", body=message).execute())
+            print('Message Id: %s' % sent_message['id'])
+            return True
+        except errors.HttpError as error:
+            print('An error occurred during send mail: %s' % error)
+            return False
+        return True
 
-def SendMessageInternal(service, user_id, message):
-    try:
-        message = (service.users().messages().send(userId=user_id, body=message).execute())
-        print('Message Id: %s' % message['id'])
-        return message
-    except errors.HttpError as error:
-        print('An error occurred: %s' % error)
-        return "Error"
-    return "OK"
+    def __createMessage(self,
+        sender, to, subject, msgHtml, msgPlain, attachment_file=None):
+        """Create a message for an email.
 
-def CreateMessageHtml(sender, to, subject, msgHtml, msgPlain):
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = subject
-    msg['From'] = sender
-    msg['To'] = to
-    msg.attach(MIMEText(msgPlain, 'plain'))
-    msg.attach(MIMEText(msgHtml, 'html'))
-    return {'raw': base64.urlsafe_b64encode(msg.as_string())}
+        Args:
+          sender: Email address of the sender.
+          to: Email address of the receiver.
+          subject: The subject of the email message.
+          msgHtml: Html message to be sent
+          msgPlain: Alternative plain text message for older email clients          
+          attachmentFile (opt): The path to the file to be attached.
 
-def createMessageWithAttachment(
-    sender, to, subject, msgHtml, msgPlain, attachmentFile):
-    """Create a message for an email.
+        Returns:
+          An object containing a base64url encoded email object.
+        """
+        message = MIMEMultipart('mixed')
+        message['to'] = to
+        message['from'] = sender
+        message['subject'] = subject
 
-    Args:
-      sender: Email address of the sender.
-      to: Email address of the receiver.
-      subject: The subject of the email message.
-      msgHtml: Html message to be sent
-      msgPlain: Alternative plain text message for older email clients          
-      attachmentFile: The path to the file to be attached.
+        messageA = MIMEMultipart('alternative')
+        messageR = MIMEMultipart('related')
 
-    Returns:
-      An object containing a base64url encoded email object.
-    """
-    message = MIMEMultipart('mixed')
-    message['to'] = to
-    message['from'] = sender
-    message['subject'] = subject
+        messageR.attach(MIMEText(msgHtml, 'html'))
+        messageA.attach(MIMEText(msgPlain, 'plain'))
+        messageA.attach(messageR)
 
-    messageA = MIMEMultipart('alternative')
-    messageR = MIMEMultipart('related')
+        message.attach(messageA)
 
-    messageR.attach(MIMEText(msgHtml, 'html'))
-    messageA.attach(MIMEText(msgPlain, 'plain'))
-    messageA.attach(messageR)
+        #print("create_message_with_attachment: file: %s" % attachment_file)
+        if attachment_file != None:
+            content_type, encoding = mimetypes.guess_type(attachment_file)
 
-    message.attach(messageA)
+            if content_type is None or encoding is not None:
+                content_type = 'application/octet-stream'
+            main_type, sub_type = content_type.split('/', 1)
+            if main_type == 'text':
+                fp = open(attachment_file, 'rb')
+                msg = MIMEText(fp.read(), _subtype=sub_type)
+                fp.close()
+            elif main_type == 'image':
+                fp = open(attachment_file, 'rb')
+                msg = MIMEImage(fp.read(), _subtype=sub_type)
+                fp.close()
+            elif main_type == 'audio':
+                fp = open(attachment_file, 'rb')
+                msg = MIMEAudio(fp.read(), _subtype=sub_type)
+                fp.close()
+            else:
+                fp = open(attachment_file, 'rb')
+                msg = MIMEBase(main_type, sub_type)
+                msg.set_payload(fp.read())
+                fp.close()
+            filename = os.path.basename(attachment_file)
+            msg.add_header('Content-Disposition', 'attachment', filename=filename)
+            message.attach(msg)
 
-    print("create_message_with_attachment: file: %s" % attachmentFile)
-    content_type, encoding = mimetypes.guess_type(attachmentFile)
+        return {'raw': base64.urlsafe_b64encode(message.as_string())}
 
-    if content_type is None or encoding is not None:
-        content_type = 'application/octet-stream'
-    main_type, sub_type = content_type.split('/', 1)
-    if main_type == 'text':
-        fp = open(attachmentFile, 'rb')
-        msg = MIMEText(fp.read(), _subtype=sub_type)
-        fp.close()
-    elif main_type == 'image':
-        fp = open(attachmentFile, 'rb')
-        msg = MIMEImage(fp.read(), _subtype=sub_type)
-        fp.close()
-    elif main_type == 'audio':
-        fp = open(attachmentFile, 'rb')
-        msg = MIMEAudio(fp.read(), _subtype=sub_type)
-        fp.close()
-    else:
-        fp = open(attachmentFile, 'rb')
-        msg = MIMEBase(main_type, sub_type)
-        msg.set_payload(fp.read())
-        fp.close()
-    filename = os.path.basename(attachmentFile)
-    msg.add_header('Content-Disposition', 'attachment', filename=filename)
-    message.attach(msg)
-
-    return {'raw': base64.urlsafe_b64encode(message.as_string())}
-
-
-def main():
-    to = "laurent.alacoque@gmail.com"
-    sender = "laurent.alacoque@gmail.com"
-    username="laurent.alacoque@gmail.com"
-    subject = "email via oAuth"
-    msgHtml = "Hi<br/>Html Email"
-    msgPlain = "Hi\nPlain Email"
+def test():
+    username = raw_input("Please enter your email address: ")
     
-    print "Connecting to gmail and photos"
-    creds = OAuth2Login("client_id.json", "mycredentials.dat", username, scope="https://picasaweb.google.com/data/ https://www.googleapis.com/auth/gmail.send")
-    client = get_photoservice_client("client_id.json", "mycredentials.dat", username)
-
-    print "Downloading albums"
-    albums = client.GetUserFeed()
-    print "\nFound %d albums in %s Photo Gallery"%(len(albums.entry),username)
+    # creating test image
+    from PIL import Image
+    im = Image.new("RGB", (32, 32), "red")
+    im.save("test_image.png")
     
-    f = open("attachment.txt","w")
-    for i,album in enumerate(albums.entry):
-        title = album.title.text
-        f.write(title + "\n")
-        if i >= 9:
+    # Connecting to Google
+    gservice = OAuthServices("client_id.json","mycredentials.dat",username)
+    print "\nTesting email sending..."
+    print gservice.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
+    print "\nTesting album list retrieval..."
+    albums = gservice.get_user_albums()
+    for i, album in enumerate(albums):
+        print "\t title: %s, id: %s"%(album['title'],album['id'])
+        if i >= 10:
+            print "skipping the remaining albums..."
             break
-    f.close()
+    print "\nTesting picture upload"
+    gservice.upload_picture("test_image.png")
     
-    SendMessage(sender, to, subject, msgHtml, msgPlain, creds, attachmentFile='attachment.txt')
+    
 
 if __name__ == '__main__':
-    main()
+    test()
