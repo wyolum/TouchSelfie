@@ -13,7 +13,6 @@ from tkImageLabel import ImageLabel
 from constants import *
 import time
 import traceback
-import mailfile
 
 import os
 import subprocess
@@ -41,7 +40,11 @@ except ImportError:
 
 
 class UserInterface():
-    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True, upload_images = True, send_emails = True,  hardware_buttons = True):
+    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True):
+        upload_images = config.enable_upload
+        send_emails   = config.enable_email
+        hardware_buttons = config.enable_hardware_buttons
+        
         self.root = Tk()
         if fullscreen:
             self.root.attributes("-fullscreen",True)
@@ -471,14 +474,24 @@ if __name__ == '__main__':
     if not config.is_valid:
         print "No configuration file found, please run setup.sh script to create one"
         sys.exit()
+    
+    # command line arguments have higher precedence than config
+    if args.disable_upload and config.enable_upload:
+        print "* Command line argument '--disable-upload' takes precedence over configuration"
+        config.enable_upload = False
+
+    if args.disable_email and config.enable_email:
+        print "* Command line argument '--disable-email' takes precedence over configuration"
+        config.enable_email = False
+
+    if args.disable_hardware_buttons and config.enable_hardware_buttons:
+        print "* Command line argument '--disable-hardware-buttons' takes precedence over configuration"
+        config.enable_hardware_buttons = False
         
         
     #TODO move every arguments into config file
     ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H), 
-        fullscreen         = not args.disable_full_screen, 
-        upload_images      = not args.disable_upload, 
-        send_emails        = not args.disable_email, 
-        hardware_buttons   = not args.disable_hardware_buttons)
+        fullscreen         = not args.disable_full_screen)
     ui.start_ui()
 
 
