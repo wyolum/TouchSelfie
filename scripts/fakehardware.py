@@ -54,26 +54,7 @@ class PiCamera:
             
     def close(self):
         del self.cam
-        
-class Buttons():
-    def __init__(self, buttons_pins=[12, 8, 14], mode=1, active_state=1):
-        self.buttons_pins = buttons_pins
-        self.mode = mode
-        self.active_state = active_state
-        self.hw_state = 0
-        self.counter  = 0
-    
-    def __del__(self):
-        pass
 
-    def state(self):
-        self.counter += 1
-        if self.counter >= 50:
-            self.counter = 0
-            self.hw_state = (self.hw_state + 1) % 3
-            return self.hw_state + 1
-        else:
-            return 0
         
 
 if __name__ == '__main__':

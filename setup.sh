@@ -1,2 +1,2 @@
 cd scripts/
-python install_credentials.py
+python setup.py
