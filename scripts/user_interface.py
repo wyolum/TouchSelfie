@@ -96,8 +96,8 @@ class UserInterface():
 
         self.configdir = os.path.expanduser('./')
         self.oauth2service = oauth2services.OAuthServices(
-            os.path.join(self.configdir, 'OpenSelfie.json'),
-            os.path.join(self.configdir, 'credentials.dat'),
+            os.path.join(self.configdir, APP_ID_FILE),
+            os.path.join(self.configdir, CREDENTIALS_STORE_FILE),
             self.account_email,
             enable_email = send_emails,
             enable_upload = upload_images)
