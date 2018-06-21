@@ -53,8 +53,12 @@ sudo update-alternatives --config x-www-browser
 
 ## Changes from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
+### Zero password
+- Now integrally based on OAuth2, neither the send-email, nor the upload-pictures will ask for and store a password
+
 ### Easier setup
 - a new `setup.sh` script will help you configure the features you need (send_email, auto-upload) and will guide you for the Google credentials setup and photo album selection.
+- credentials installation now points to a google-hosted wizard to simplify the application-id creation
 
 ### Hardware buttons support
 - Added GPIO hardware interface for three buttons (with connections in hardware/ directory). Each button triggers a different effect. Software buttons are added if GPIO is not available
