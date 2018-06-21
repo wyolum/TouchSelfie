@@ -1,9 +1,13 @@
 # ignore specific files
-scripts/.credentials
 scripts/*.jpg
 scripts/*.log
+
 #ignore launcher
 photobooth.sh
+scripts/configuration.json
+scripts/client_id.json
+scripts/credentials.dat
+
 # ignore log and animation frames
 run.log
 scripts/animframe*.*
@@ -13,12 +17,3 @@ scripts/*.pyc
 
 # ignore emacs backupfiles
 scripts/*.py~
-
-
-# ignore credentials
-scripts/*.cred
-scripts/*.json
-scripts/*.dat
-
-# ignore album.id file
-scripts/album.id
