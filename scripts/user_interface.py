@@ -442,7 +442,7 @@ class UserInterface():
             print 'sending photo by email to %s' % self.email_addr.get()
             self.status("Sending Email")
             try:
-                self.oauth2service.send_email(
+                self.oauth2service.send_message(
                     self.email_addr.get().strip(),
                     config.emailSubject,
                     config.emailMsg,
