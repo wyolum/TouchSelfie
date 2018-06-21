@@ -38,12 +38,16 @@ sudo update-alternatives --config x-www-browser
   - Google Photos album selection
   - and will create a `photobooth.sh` launcher
 
-2. Optionally you can change configuration options in the file `scripts/constants.py` such as:
-  - captured image sizes
+2. `setup.sh` creates a configuration file `scripts/configuration.json`, you can edit this file to change configuration parameters, such as:
   - the logo file to put on your pictures
   - email subject and body
   - wether or not to archive snapshots locally
-  - ...
+  - where to store pictures locally
+  
+3. Optionally you can change lower-level configuration options in the file `scripts/constants.py` such as:
+  - captured image sizes
+  - hardware dependent things
+
 
 
 
