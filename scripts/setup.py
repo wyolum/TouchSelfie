@@ -242,7 +242,7 @@ def test_connection(service,config,test_email,test_upload):
     service.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
     
     print "\nTesting picture upload in %s's album"%username
-    service.upload_picture("test_image.png")
+    service.upload_picture("test_image.png", album_id = config.albumID)
 
 
     
