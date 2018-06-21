@@ -13,6 +13,11 @@ class Configuration():
     albumID      = None #  use install_credentials.py to create 'album.id'
     emailSubject = "Here's your photo!" # subject line of the email sent from the photobooth
     emailMsg     = "Greetings, here's your photo sent from the photobooth" # Brief body of the message sent from the photobooth
+    full_screen  = True #Start application in full screen
+    enable_email  = True #Enable the 'send email" feature
+    enable_upload = True #Enable the upload feature
+    enable_hardware_buttons = False #Enable hardware buttons
+    
     #init
     def __init__(self,configuration_file_name):
         self.config_file = configuration_file_name
@@ -45,12 +50,18 @@ class Configuration():
         if "email_subject" in config.keys():  self.emailSubject = config["email_subject"]
         if "email_body" in config.keys():  self.emailMsg = config["email_body"]
         if "logo_file" in config.keys():  self.logo_file = config["logo_file"]
+        if "full_screen" in config.keys():  self.full_screen = config["full_screen"]
+        if "enable_email" in config.keys():  self.enable_email = config["enable_email"]
+        if "enable_upload" in config.keys():  self.enable_upload = config["enable_upload"]
+        if "enable_hardware_buttons" in config.keys():  self.enable_hardware_buttons = config["enable_hardware_buttons"]
+        
+
         return self.is_valid
     
     
-    def write_default_config(self,user_name):
+    def write(self):
         myconfig = {
-            "gmail_user": user_name,
+            "gmail_user": self.user_name,
             "countdown_before_snap": self.countdown1,
             "countdown_inter_snap": self.countdown2,
             "snap_caption": self.photoCaption,
@@ -59,7 +70,11 @@ class Configuration():
             "google_photo_album_id" : self.albumID,
             "email_subject": self.emailSubject,
             "email_body":self.emailMsg,
-            "logo_file": self.logo_file
+            "logo_file": self.logo_file,
+            "full_screen": self.full_screen,
+            "enable_email": self.enable_email,
+            "enable_upload": self.enable_upload,
+            "enable_hardware_buttons": self.enable_hardware_buttons
         }
         try:
             with open(self.config_file,'w') as config:
@@ -72,4 +87,4 @@ if __name__ == "__main__":
 
     config = Configuration("myconf.conf")
     if not config.is_valid:
-        config.write_default_config("user@gmail.com")
+        config.write()
