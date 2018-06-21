@@ -467,12 +467,11 @@ if __name__ == '__main__':
     
     #print args
     import configuration
-    config = configuration.Configuration("openselfie_configuration.json")
+    config = configuration.Configuration("configuration.json")
     if not config.is_valid:
-        config.write_default_config("user@gmail.com")
-        args.disable_upload = True
-        args.disable_email = True
-        print "No configuration file found, writing defaults into openselfie_configuration.json"
+        print "No configuration file found, please run setup.sh script to create one"
+        sys.exit()
+        
         
     #TODO move every arguments into config file
     ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H), 
