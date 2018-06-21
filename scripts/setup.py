@@ -231,18 +231,21 @@ def ask_boolean(prompt, current_value):
     return to_boolean(raw_input("%s %s => "%(prompt,choice)),current_value)
     
 def test_connection(service,config,test_email,test_upload):
+    if (not test_email) and (not test_upload):
+        return
+        
     username = config.user_name
     
     # creating test image
     from PIL import Image
     im = Image.new("RGB", (32, 32), "red")
     im.save("test_image.png")
-    
-    print "\nSending a test message to %s"%username
-    service.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
-    
-    print "\nTesting picture upload in %s's album"%username
-    service.upload_picture("test_image.png", album_id = config.albumID)
+    if test_email:
+        print "\nSending a test message to %s"%username
+        service.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
+    if test_upload:
+        print "\nTesting picture upload in %s's album"%username
+        service.upload_picture("test_image.png", album_id = config.albumID)
 
 
     
