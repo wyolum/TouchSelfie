@@ -42,3 +42,7 @@ HARDWARE_BUTTONS = {
 EMAIL_BUTTON_IMG  = "ressources/ic_email.png"
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
 HARDWARE_POLL_PERIOD = 100      # poll interval for buttons (ms)
+
+CONFIGURATION_FILE = "configuration.json"
+APP_ID_FILE = "client_id.json"
+CREDENTIALS_STORE_FILE = "credentials.dat"
