@@ -57,13 +57,13 @@ class LongPressDetector:
             self.call_back(duration)
 
 class UserInterface():
-    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True):
+    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD):
         upload_images = config.enable_upload
         send_emails   = config.enable_email
         hardware_buttons = config.enable_hardware_buttons
         
         self.root = Tk()
-        if fullscreen:
+        if config.full_screen:
             self.root.attributes("-fullscreen",True)
         
         self.root.configure(background='black')
@@ -551,11 +551,15 @@ if __name__ == '__main__':
     if args.disable_hardware_buttons and config.enable_hardware_buttons:
         print "* Command line argument '--disable-hardware-buttons' takes precedence over configuration"
         config.enable_hardware_buttons = False
+
+    if args.disable_full_screen and config.full_screen:
+        print "* Command line argument '--disable-full-screen' takes precedence over configuration"
+        config.full_screen = False
         
         
     #TODO move every arguments into config file
-    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H), 
-        fullscreen         = not args.disable_full_screen)
+    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H)) 
+
     ui.start_ui()
 
 
