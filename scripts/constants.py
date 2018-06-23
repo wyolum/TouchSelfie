@@ -34,7 +34,7 @@ SOFTWARE_BUTTONS = {
 
 HARDWARE_BUTTONS = {
     "button_pins": [10,8,12], # Change this and the following to reflect your hardware buttons
-    "pull_up_down": 1,        # GPIO.PUD_DOWN=1 GPIO_PUD_UP = 2 => switch to VDD, configure io in pulldown
+    "pull_up_down": "pull_down",        # pull_up or pull_down
     "active_state": 1         # active 1 GPIO (pull_down with switch to VDD)
 }
 

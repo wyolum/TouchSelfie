@@ -24,7 +24,13 @@ except ImportError:
 class Buttons():
     def __init__(self, buttons_pins=BUTTONS_PINS, mode=BUTTONS_MODE, active_state=BUTTON_IS_ACTIVE):
         self.buttons_pins = buttons_pins
-        self.mode = mode
+        if mode == "pull_up":
+            self.mode = GPIO.PUD_UP
+        elif mode == "pull_down":
+            self.mode = GPIO.PUD_DOWN
+        else:
+            raise ValueError("Unknown pull_up_down mode %s"%mode)
+            
         self.active_state = active_state
         self._has_buttons = False
         if RPI_GPIO_EXISTS:
