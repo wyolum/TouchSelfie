@@ -87,6 +87,7 @@ sudo update-alternatives --config x-www-browser
 - Removed configuration button to avoid pranks
   - use `setup.sh` to setup credentials and setup Google Photo Album
   - tune configuration in `constants.py`
+  - limited runtime configuration (exit, enable/disable email and upload) is still possible via long press)
 
 - snapshot view now supports animated gifs
 
