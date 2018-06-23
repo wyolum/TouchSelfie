@@ -8,6 +8,9 @@ scripts/configuration.json
 scripts/client_id.json
 scripts/credentials.dat
 
+Photos/*.jpg
+Photos/*.gif
+
 # ignore log and animation frames
 run.log
 scripts/animframe*.*
