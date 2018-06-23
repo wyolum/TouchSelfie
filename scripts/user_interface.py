@@ -38,6 +38,23 @@ except ImportError:
         import fakehardware as mycamera
         from fakehardware import Color
 
+# Helper class to launch function after a long-press
+class LongPressDetector:
+# call_back will get the long_click duration as parameter
+    def __init__(self, root, call_back, long_press_duration = 1000 ):
+        self.ts=0
+        self.root = root
+        self.call_back = call_back
+        self.long_press_duration = long_press_duration
+        root.bind("<Button-1>",self.__click)
+        root.bind("<ButtonRelease-1>",self.__release)
+
+    def __click(self,event):
+        self.ts = event.time
+    def __release(self,event):
+        duration = event.time - self.ts
+        if self.call_back != None and duration > self.long_press_duration:
+            self.call_back(duration)
 
 class UserInterface():
     def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD,  fullscreen = True):
@@ -94,6 +111,8 @@ class UserInterface():
         
         self.upload_images = upload_images
         self.account_email = config.user_name
+        self.send_emails = send_emails
+        self.upload_images = upload_images
         
         #Google credentials
 
@@ -117,7 +136,7 @@ class UserInterface():
             
             self.software_buttons_images = {}
             self.software_buttons = []
-            X = 0
+            X_ = 0
             total_width = 0
             # first, open images and load them + compute the total width
             for i, effect in enumerate(SOFTWARE_BUTTONS):
@@ -143,15 +162,60 @@ class UserInterface():
 
                 btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
                 self.software_buttons.append(btn)
-                btn.place(x=X,y=Y)
+                btn.place(x=X_,y=Y)
                 btn.configure(background = 'black')
-                X = X + w + padding
+                X_ = X_ + w + padding
         
         #Camera
         self.camera = mycamera.PiCamera()
         self.camera.annotate_text_size = 160 # Maximum size
         self.camera.annotate_foreground = Color('white')
         self.camera.annotate_background = Color('black')
+
+        #Callback for long-press on screen
+        def long_press_cb(time):
+            #Create a toplevel window with checkboxes and a "Quit application button"
+            top = Toplevel(self.root)
+            qb = Button(top,text="Quit Application",command=self.root.destroy)
+            qb.pack(pady=20)
+
+            mail_enable = IntVar()
+            upload_enable = IntVar()
+            if self.send_emails: mail_enable.set(1)
+            else: mail_enable.set(0) 
+            if self.upload_images: upload_enable.set(1)
+            else: upload_enable.set(0) 
+
+            me = Checkbutton(top, text="Enable Email sending", variable=mail_enable,anchor=W)
+            me.pack(padx=20,pady=10,fill=X)
+            ue = Checkbutton(top, text="Enable Uploading", variable=upload_enable,anchor=W)
+            ue.pack(padx=20,pady=10,fill=X)
+            
+            def ok():
+                enable_email = (mail_enable.get() != 0)
+                enable_upload = (upload_enable.get() != 0)
+                self.__change_services(enable_email,enable_upload)
+                top.destroy()
+
+            b=Button(top, text="OK", command=ok)
+            b.pack(pady=20)
+            self.root.wait_window(top) 
+
+
+
+
+        self.longpress_obj= LongPressDetector(self.root,long_press_cb)
+
+    def __change_services(self,email,upload):
+        self.oauth2service.enable_email = email
+        self.oauth2service.enable_upload = upload
+        self.send_emails = email
+        self.upload_images = upload
+        #TODO show/hide button = oauth2services.OAuthServices(
+        if email:
+            self.mail_btn.configure(state=NORMAL)
+        else:
+            self.mail_btn.configure(state=DISABLED)
         
     
     def __del__(self):
