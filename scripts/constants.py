@@ -1,3 +1,29 @@
+"""
+Constants for the TouchSelfie program
+
+.. py:data:: SCREEN_H,SCREEN_W
+    Dimensions in pixels of the screen attached (will be used to compute layout)
+.. py:data:: EFFECT_PARAMETERS
+    A dict of dict data structure to tune acquisition parameters for each snap effct
+.. py:data:: SOFTWARE_BUTTONS
+    A dict of dict data structure to tune software buttons (in case of no hardware buttons)
+.. py:data:: HARDWARE_BUTTONS
+    configuration of the hardware buttons' GPIO pins, pull_up_down state and active state
+.. py:data:: EMAIL_BUTTON_IMG  
+    'send_email' button icon
+.. py:data:: OAUTH2_REFRESH_PERIOD
+    interval between two OAuth2 token refresh (ms)
+.. py:data:: HARDWARE_POLL_PERIOD = 100
+    polling interval to detect hardware buttons change (ms)
+
+.. py:data:: CONFIGURATION_FILE
+    name of the configuration file (relative to scripts/ directory)
+.. py:data:: APP_ID_FILE
+    name of the 'application_secret' file downloaded from console.developers.google.com (relative to scripts/ directory)
+.. py:data:: CREDENTIALS_STORE_FILE
+    name of the automaticaly generated credentials store (relative to scripts/ directory)
+
+"""
 
 SCREEN_W = 800 ## raspi touch
 SCREEN_H = 480 ## raspi touch
