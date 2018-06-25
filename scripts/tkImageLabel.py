@@ -1,4 +1,6 @@
 ''' 
+A Tk Image Label which supports animated gifs
+
 This is borrowed (and adapted) from Novel code here:
 https://stackoverflow.com/questions/43770847/play-an-animated-gif-in-python-with-tkinter
 Thanks!
@@ -8,12 +10,24 @@ from PIL import ImageTk,Image
 from itertools import count
 
 class ImageLabel(Label):
+    """a label containing and image"""
     def __init__(self, Tk_root, size=None):
+        """Create the image label
+        
+        Arguments:
+            Tk_root (Tk widget) : parent object
+            size    tupple(w,h) : image max dimensions
+        """
         Label.__init__(self,Tk_root)
         self.size=size
         self.root = Tk_root # for update()
         
     def load(self, im):
+        """Load a new image in the ImageLabel
+        
+        Arguments:
+            im (path or PIL Image) : the image or image file to be loaded
+        """
         if isinstance(im, str):
             im = Image.open(im)
         self.loc = 0
@@ -47,17 +61,21 @@ class ImageLabel(Label):
             self.next_frame()
 
     def unload(self):
+        """Remove the image"""
         self.config(image="")
         self.frames = None
         self.root.update()
 
     def next_frame(self):
+        """Skip to next frame (for animated gifs)"""
         if self.frames:
             self.loc += 1
             self.loc %= len(self.frames)
             self.config(image=self.frames[self.loc])
             self.root.update()
             self.after(self.delay, self.next_frame)
+            
+            
 if __name__ == '__main__':
 
     root = Tk()
