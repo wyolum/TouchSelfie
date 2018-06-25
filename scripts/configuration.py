@@ -1,7 +1,9 @@
+"""Configuration module to adapt TouchSelfie behavior"""
 import json
 import os
 
 class Configuration():
+    """Configuration class acts as configuration keys/values holder"""
     # default values
     user_name = None
     logo_file = None
@@ -20,6 +22,14 @@ class Configuration():
     
     #init
     def __init__(self,configuration_file_name):
+        """Creates the configuration object with default values and load the configuration file
+        
+        __init__ will parse the configuration file given as its argument
+        After parsing, is_valid property is set to True if no error was encountered
+        
+        Arguments:
+            configuration_file_name -- the conf.json file to read from or write to
+        """
         self.config_file = configuration_file_name
         self.is_valid = False
         self.__read_config_file()
@@ -60,6 +70,7 @@ class Configuration():
     
     
     def write(self):
+        """ write the configuration object to the configuration file given at creation time"""
         myconfig = {
             "gmail_user": self.user_name,
             "countdown_before_snap": self.countdown1,
