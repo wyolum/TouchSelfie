@@ -6,29 +6,39 @@
 from PIL import ImageDraw,ImageFont,Image
 
 class Color:
+    """ Dummy Color class"""
     def __init__(self,color):
         self.color = color
 
 class DummyPreview:
+    """Dummy Preview class for camera.preview"""
     def __init__(self):
         self.annotate_text = ""
+        
 class PiCamera:
     '''
-    Thin wrapper for the cv2 camera interface to make it look like a PiCamera
+    Fake PiCamera class to generate test images
     '''
     def __init__(self):
+        """Constructor of a fake PiCamera
+        
+        Sets default values to populate the class properties
+        """
         self.hw_state = 0
         self.resolution = (800, 600)
         self.frame_counter = 0
         self.preview = DummyPreview()
         
     def start_preview(self):
+        """does nothing"""
         self.previewing = True
             
     def stop_preview(self):
+        """does nothing"""
         self.previewing = False
         
     def capture(self, filename, resize=None):
+        """Generate a new test image"""
         im = Image.new('RGBA', self.resolution, (40,40,40,0))
         self.frame_counter = self.frame_counter + 1
         draw = ImageDraw.Draw(im)
@@ -43,6 +53,7 @@ class PiCamera:
         return True
     
     def capture_continuous(self, output):
+        """Generate a sequence of test images"""
         #'animframe-{counter:03d}.jpg'
         counter = 1
         while True:
@@ -53,6 +64,7 @@ class PiCamera:
 
             
     def close(self):
+        """Emulates PiCamera.close()"""
         del self.cam
 
         
