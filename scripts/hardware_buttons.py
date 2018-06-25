@@ -36,16 +36,17 @@ class Buttons():
             in this case, has_buttons() methods returns False
         """
         self.buttons_pins = buttons_pins
-        if mode == "pull_up":
-            self.mode = GPIO.PUD_UP
-        elif mode == "pull_down":
-            self.mode = GPIO.PUD_DOWN
-        else:
-            raise ValueError("Unknown pull_up_down mode %s"%mode)
+
             
         self.active_state = active_state
         self._has_buttons = False
         if RPI_GPIO_EXISTS:
+            if mode == "pull_up":
+                self.mode = GPIO.PUD_UP
+            elif mode == "pull_down":
+                self.mode = GPIO.PUD_DOWN
+            else:
+                raise ValueError("Unknown pull_up_down mode %s"%mode)
             GPIO.setmode(GPIO.BOARD)
             for pin in self.buttons_pins:
                 GPIO.setup(pin, GPIO.IN, pull_up_down = self.mode)

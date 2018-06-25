@@ -40,8 +40,16 @@ except ImportError:
 
 # Helper class to launch function after a long-press
 class LongPressDetector:
+    """Helper class that calls a callback after a long press/click"""
 # call_back will get the long_click duration as parameter
     def __init__(self, root, call_back, long_press_duration = 1000 ):
+        """Creates the LongPressDetector
+        
+        Arguments:
+            root (Tk Widget): parent element for the event binding
+            call_back       : a callback function with prototype callback(press_duration_ms)
+            long_press_duration : amount of milliseconds after which we consider this press is long
+        """
         self.ts=0
         self.root = root
         self.call_back = call_back
@@ -57,7 +65,15 @@ class LongPressDetector:
             self.call_back(duration)
 
 class UserInterface():
+    """A User Interface for the photobooth"""
     def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD):
+        """Constructor for the UserInterface object
+        
+        Arguments:
+            config (configuration.Configuration()) : the configuration object
+            window_size  tupple(w,h) : the window size (defaults to size in constants.py)
+            poll_period : polling period for hardware buttons changes (ms)
+        """
         upload_images = config.enable_upload
         send_emails   = config.enable_email
         hardware_buttons = config.enable_hardware_buttons
@@ -207,6 +223,7 @@ class UserInterface():
         self.longpress_obj= LongPressDetector(self.root,long_press_cb)
 
     def __change_services(self,email,upload):
+        """Called whenever we should change the state of oauth2services"""
         self.oauth2service.enable_email = email
         self.oauth2service.enable_upload = upload
         self.send_emails = email
@@ -219,6 +236,7 @@ class UserInterface():
         
     
     def __del__(self):
+        """Destructor"""
         try:
             self.root.after_cancel(self.auth_after_id)
             self.root.after_cancel(self.poll_after_id)
@@ -227,16 +245,19 @@ class UserInterface():
             pass
         
     def status(self, status_text):
+        """Update the application status line with status_text"""
         self.status_lbl['text'] = status_text
         self.root.update()
     
     def start_ui(self):
+        """Start the user interface and call Tk::mainloop()"""
         self.auth_after_id = self.root.after(100, self.refresh_auth)
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
         self.root.mainloop()
 
         
     def run_periodically(self):
+        """hardware poll function launched by start_ui"""
         if not self.suspend_poll == True:
             self.status('')
             btn_state = self.buttons.state()
@@ -249,6 +270,17 @@ class UserInterface():
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
 
     def snap(self,mode="None"):
+        """Snap a shot in given mode
+        
+        This will start a countdown preview and:
+            - take snapshot(s)
+            - process them
+            - archive them locally
+            - upload them to Google Photos
+        
+        Arguments:
+            mode ("None"|"Four"|"Animation") : the selected mode
+        """
         print "snap (mode=%s)" % mode
         self.suspend_poll = True
         # clear status
@@ -443,6 +475,7 @@ class UserInterface():
         self.camera.annotate_text = ""
 
     def refresh_auth(self):
+        """ refresh the oauth2 service (regularly called)"""
         # useless if we don't need image upload
         if not self.upload_images:
             if self.send_emails:
@@ -465,6 +498,13 @@ class UserInterface():
         
             
     def googleUpload(self,filen, title='Photobooth photo', caption = None):
+        """Upload a picture to Google Photos
+        
+        Arguments:
+            filen (str) : path to the picture to upload
+            title       : title of the picture
+            caption     : optional caption for the picture
+        """
         if not self.upload_images:
             return
         #upload to picasa album
@@ -477,6 +517,10 @@ class UserInterface():
         
             
     def send_email(self):
+        """Ask for an email address and send the last picture to it
+        
+        This will popup a touch keyboard
+        """
         if not self.send_emails:
             return
         self.suspend_poll = True
@@ -494,12 +538,14 @@ class UserInterface():
             self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
             
     def kill_tkkb(self):
+        """Kill the popup keyboard"""
         if self.tkkb is not None:
             self.tkkb.destroy()
             self.tkkb = None
             self.suspend_poll = False
             
     def __send_picture(self):
+        """Actual code to send picture self.last_picture_filename by email to the address entered in self.email_addr StringVar"""
         if not self.send_emails:
             return
         if self.signed_in:

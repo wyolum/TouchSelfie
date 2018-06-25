@@ -1,9 +1,21 @@
+"""
+    Command-line setup script for TouchSelfie
+    
+    This script is an assistant that guides users
+    through the process of configuring wanted features
+    and optionally
+        - creating a Google Project to allow OAuth2 authentication
+        - creating the configuration.json file
+        - creating the startup script photobooth.sh
+"""
 import os.path
 import sys
 
 
 
-def assistant():    
+def assistant():
+    """Configuration assistant"""
+    
     print """
     ________________________________________________________________
 
@@ -215,15 +227,19 @@ def assistant():
     
 
 def to_boolean(answer, default=True):
+    """Transforms a string to boolean"""
     if answer == '':
         return default
     if answer == 'y' or answer == 'Y' or answer == 'yes' or answer == 'Yes':
         return True
+    if answer == 'n' or answer == 'N' or answer == 'no' or answer == 'No':
+        return False
     else :
         return False
 
         
 def ask_boolean(prompt, current_value):
+    """Returns a prompt suiting current_value"""
     if current_value:
         choice = "[Y/n]"
     else:
@@ -231,6 +247,7 @@ def ask_boolean(prompt, current_value):
     return to_boolean(raw_input("%s %s => "%(prompt,choice)),current_value)
     
 def test_connection(service,config,test_email,test_upload):
+    """Tests email sending and/or image uploading"""
     if (not test_email) and (not test_upload):
         return
         
