@@ -25,7 +25,20 @@ from oauth2client.client import flow_from_clientsecrets
 from oauth2client.file import Storage
 
 class OAuthServices:
+    """Unique entry point for Google Services authentication"""
     def __init__(self, client_secret, credentials_store, username, enable_upload = True, enable_email = True, authorization_callback = None):
+        """Create an OAuthService provider
+        
+        Arguments:
+            client_secret (filename) : path to an application id json file with Gmail api activated (https://console.developers.google.com)
+            credentials_store (filename) : path to the credentials storage (OK to put a nonexistent file)
+            username                 : gmail address of the user whom account will be used
+            enable_email             : enable send_email feature
+            enable_upload            : enable upload pictures feature
+            authorization_callback   : a function callback that is responsible to connect to an authorization url, accept conditions and return a validation code (once)
+                 prototype : mycallback(URI): connect(URI); code = raw_input('enter code:'); return code
+                 by default a console callback is used, it automatically launches a webbrowser to the authorization URI and asks for a code in the console
+        """
         self.client_secret = client_secret
         self.credentials_store = None
         self.username = username
@@ -57,6 +70,9 @@ class OAuthServices:
                 
         
     def refresh(self):
+        """Refresh authentication
+        
+        returns: True if the refesh was successfull, False otherwise"""
         if not (self.enable_email or self.enable_upload): # if we don't want features, just return
             return False
         cred = self.__oauth_login()
@@ -93,6 +109,11 @@ class OAuthServices:
                                                    additional_headers={'Authorization' : 'Bearer %s' % credentials.access_token})
 
     def get_user_albums(self, as_title_id = True):
+        """
+        Retrieves connected user list of photo albums as:
+            - a list({"title": "the title", "id":"jfqmfjqsjklfaz"}) if as_title_id argument is True (default)
+            - a gdata userfeed otherwise
+        """
         if not self.enable_upload:
             return {}
         client = self.__get_photo_client()
@@ -112,6 +133,15 @@ class OAuthServices:
             return album.entry
 
     def upload_picture(self, filename, album_id = None , title="photo", caption = ""):
+        """Upload a picture to Google Photos
+        
+        Arguments:
+            filename (str) : path to the file to upload
+            album_id (str) : id string of the destination album (see get_user_albums).
+                if None (default), destination album will be Google Photos default 'Drop Box' album
+            title (str)    : title for the photo (example : filename)
+            caption (str, opt) : a Caption for the photo
+        """
         if not self.enable_upload:
             return False
         
@@ -134,6 +164,15 @@ class OAuthServices:
         return True
  
     def send_message(self,to, subject, body, attachment_file=None):
+        """ send a message using gmail
+        
+        Arguments:
+            to (str)      : email address of the recipient
+            subject (str) : subject line
+            body    (str) : body of the message
+            attachment_file (str) : path to the file to be attached (or None)
+        """
+            
         if not self.enable_email:
             return False
         credentials = self.__oauth_login()
@@ -210,6 +249,7 @@ class OAuthServices:
         return {'raw': base64.urlsafe_b64encode(message.as_string())}
 
 def test():
+    """ test email and uploading """
     username = raw_input("Please enter your email address: ")
     
     # creating test image
