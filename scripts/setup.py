@@ -1,5 +1,5 @@
 """
-    Command-line setup script for TouchSelfie
+    Graphical and Command-line setup scripts for TouchSelfie
     
     This script is an assistant that guides users
     through the process of configuring wanted features
@@ -10,11 +10,160 @@
 """
 import os.path
 import sys
+import configuration
+import constants
+
+from Tkinter import *
+class Assistant(Tk):
+    """A page-by-page assistant based on Tk"""
+    def __init__(self,config,*args,**kwargs):
+        """This creates all the widgets and variables"""
+        Tk.__init__(self,*args,**kwargs)
+        self.config = config
+        self.packed_widgets = [] 
+        self.page = 0
+        self.main_frame = Frame(self, background = "bisque")
+        self.buttons_frame = Frame(self)
+        self.b_next = Button(self.buttons_frame,text="Next", width=30, command=self.__increment)
+        self.b_prev = Button(self.buttons_frame,text="Prev", width=30, command=self.__decrement)
+        self.main_frame.pack(fill=X,ipadx=10,ipady=10)
+        self.buttons_frame.pack(side=BOTTOM)
+        self.b_prev.pack(side=LEFT,padx=40)
+        self.b_next.pack(side=RIGHT,padx=40)
+        self.widgets=[]
+        #variables
+        #PAGE 0 email/upload
+        self.want_email_var = IntVar()
+        self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W)
+        self.want_upload_var = IntVar()
+        self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W)
+        self.widgets.append([self.want_email_cb, self.want_upload_cb])
+        
+        #PAGE 1 google credentials
+        self.user_mail_label = Label(self.main_frame,text="Google Account")
+        self.user_mail_var  = StringVar()
+        self.user_mail_entry =  Entry(self.main_frame, textvariable = self.user_mail_var, font='Helvetica')
+        
+        self.credentials_frame = LabelFrame(self.main_frame, text="Credentials")
+        self.app_id_label  = Label(self.credentials_frame, text="Application id state", bitmap="info", compound=LEFT)
+        self.app_id_label.pack()
+        self.cred_store_label = Label(self.credentials_frame, text = "Credential store", bitmap="error", compound=LEFT)
+        self.cred_store_label.pack()
+        ##TODO Add App_id / credentials detection
+        
+        self.widgets.append([
+            self.user_mail_label,
+            self.user_mail_entry, 
+            self.credentials_frame])
+        
+        #PAGE 2 Email infos
+        self.email_title_var = StringVar()
+        self.email_title_var.set(config.emailSubject)
+        self.email_body_var = StringVar()
+        self.email_body_var.set(config.emailMsg)
+        
+        self.email_title_label = Label(self.main_frame,text="Email subject:")
+        self.email_title_entry = Entry(self.main_frame, textvariable=self.email_title_var, width = 40)
+        self.email_body_label = Label(self.main_frame,text="Email body:")
+        self.email_body_entry = Entry(self.main_frame, textvariable=self.email_body_var, width = 40)
+        
+        self.widgets.append([
+            self.email_title_label,
+            self.email_title_entry,
+            self.email_body_label,
+            self.email_body_entry])
+        #PAGE 3 Album ID
+        self.album_id_var = StringVar()
+        self.album_id_var.set(config.albumID)
+        self.album_id_label = Label(self.main_frame,text="Google Photo Album ID (leave blank for default album 'Drop Box')")
+        def select_album(event):
+            print "Album selection"
+            self.album_id_var.set("selected")
+        self.album_id_entry = Entry(self.main_frame,textvariable = self.album_id_var)
+        self.album_id_entry.bind("<Button-1>",select_album)
+        self.widgets.append([self.album_id_label, self.album_id_entry])
+        
+        #PAGE 4 Archive
+        self.archive_var = IntVar()
+        if config.ARCHIVE: self.archive_var.set(1)
+        else : self.archive_var(0)
+        
+        
+        self.archive_dir_label = Label(self.main_frame,text="Local directory for archive:")
+        self.archive_dir_var = StringVar()
+        self.archive_dir_var.set(config.archive_dir)
+        self.archive_dir_entry = Entry(self.main_frame, textvariable=self.archive_dir_var, width = 40)
+
+        def enable_archive_dir():
+            if self.archive_var.get() == 0:
+                self.archive_dir_entry.config(state = DISABLED)
+            else:
+                self.archive_dir_entry.config(state = NORMAL)
+                
+        self.archive_cb = Checkbutton(self.main_frame,text="Archive snapshots locally", variable = self.archive_var, command=enable_archive_dir)
+        
+        self.widgets.append([
+            self.archive_cb,
+            self.archive_dir_label,
+            self.archive_dir_entry])
+        
+        
+        
+        self.__draw_page()
+
+    def __decrement(self):
+        """decrement by one page"""
+        if self.page > 0:
+            self.page -= 1
+            self.__draw_page()
+          
+    def __increment(self):
+        """increment by one page"""
+        if self.page <= len(self.widgets):
+            self.page += 1
+            self.__draw_page()
+            
+    def __erase_page(self):
+        """unpack all the widget currently displayed"""
+        for widget in self.packed_widgets:
+            widget.pack_forget()
+        self.packed_widgets = []
+        
+    def __draw_page(self):
+        """pack all the widgets corresponding to page self.page"""
+        self.__erase_page()
+        print "page %d"%self.page
+        if self.page <= 0:
+            self.page = 0
+            self.b_prev.config(state=DISABLED)
+        else:
+            self.b_prev.config(state=NORMAL)
+        
+        if self.page >= len(self.widgets)-1:
+            self.page = len(self.widgets)-1
+            self.b_next.config(state=DISABLED)
+        else:
+            self.b_next.config(state=NORMAL)
+        
+        if self.page >= 0:
+            for w in self.widgets[self.page]:
+                w.pack()
+                self.packed_widgets.append(w)
+            
+        
+        
+    
+
+def graphical_assistant():
+    """Launches graphical interface"""
+    config = configuration.Configuration('configuration.json')
+    root = Assistant(config)
+    root.geometry("600x400")
+    root.mainloop()    
 
 
-
-def assistant():
-    """Configuration assistant"""
+def console_assistant():
+    """Launches the text-based interface"""
     
     print """
     ________________________________________________________________
@@ -26,8 +175,7 @@ def assistant():
 
     """
     install_dir = os.path.split(os.path.abspath(__file__))[0]
-    import configuration
-    import constants
+
 
     #try to read configuration
     config = configuration.Configuration(constants.CONFIGURATION_FILE)
@@ -267,6 +415,10 @@ def test_connection(service,config,test_email,test_upload):
 
     
 if __name__ == '__main__':
-    assistant()
+    try:
+        graphical_assistant()
+    except:
+        print "Error loading graphical assistant, default to console based\n"
+        console_assistant()
     
     
