@@ -19,13 +19,14 @@ class Assistant(Tk):
     def __init__(self,config,*args,**kwargs):
         """This creates all the widgets and variables"""
         Tk.__init__(self,*args,**kwargs)
+        self.config( bg = "white")
         self.config = config
         self.packed_widgets = [] 
         self.page = 0
-        self.main_frame = Frame(self, background = "bisque")
+        self.main_frame = Frame(self, bg = "white")
         self.buttons_frame = Frame(self)
-        self.b_next = Button(self.buttons_frame,text="Next", width=30, command=self.__increment)
-        self.b_prev = Button(self.buttons_frame,text="Prev", width=30, command=self.__decrement)
+        self.b_next = Button(self.buttons_frame,text="Next", fg='white', bg='#4285f4',width=30, command=self.__increment)
+        self.b_prev = Button(self.buttons_frame,text="Prev", fg='white', bg='#4285f4', width=30, command=self.__decrement)
         self.main_frame.pack(fill=X,ipadx=10,ipady=10)
         self.buttons_frame.pack(side=BOTTOM)
         self.b_prev.pack(side=LEFT,padx=40)
