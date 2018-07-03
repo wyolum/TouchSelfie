@@ -13,6 +13,7 @@ class Configuration():
     ARCHIVE      = True # Do we archive photos locally
     archive_dir  = os.path.join("..","Photos") # Where do we archive photos
     albumID      = None #  use install_credentials.py to create 'album.id'
+    album_name   = "Drop Box"
     emailSubject = "Here's your photo!" # subject line of the email sent from the photobooth
     emailMsg     = "Greetings, here's your photo sent from the photobooth" # Brief body of the message sent from the photobooth
     full_screen  = True #Start application in full screen
@@ -57,6 +58,7 @@ class Configuration():
         if "local_archive" in config.keys():  self.ARCHIVE = config["local_archive"]
         if "local_archive_dir" in config.keys():  self.archive_dir = config["local_archive_dir"]
         if "google_photo_album_id" in config.keys():  self.albumID = config["google_photo_album_id"]
+        if "google_photo_album_name" in config.keys(): self.album_name = config["google_photo_album_name"]
         if "email_subject" in config.keys():  self.emailSubject = config["email_subject"]
         if "email_body" in config.keys():  self.emailMsg = config["email_body"]
         if "logo_file" in config.keys():  self.logo_file = config["logo_file"]
@@ -79,6 +81,7 @@ class Configuration():
             "local_archive" : self.ARCHIVE,
             "local_archive_dir" : self.archive_dir,
             "google_photo_album_id" : self.albumID,
+            "google_photo_album_name" : self.album_name,
             "email_subject": self.emailSubject,
             "email_body":self.emailMsg,
             "logo_file": self.logo_file,
