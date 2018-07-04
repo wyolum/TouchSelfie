@@ -129,17 +129,15 @@ class Assistant(Tk):
             
         #PAGE 3 Album ID
         
-        self.album_name_label = Label(self.main_frame,text="Google Photo Album", font='Helvetica', anchor=W)
+        self.album_name_label = Label(self.main_frame,text="Google Photo Album:", font='Helvetica', anchor=W)
+        
         self.album_name_var = StringVar()
-        self.album_name_var.set(config.album_name)
         def on_album_name_change(*args):
             self.config.album_name = self.album_name_var.get()
-            #launch selector
-            
         self.album_name_var.trace("w",on_album_name_change)
+        self.album_name_var.set(config.album_name)
 
         self.album_id_var = StringVar()
-        
         def on_albumID_change(*args):
             album_id = self.album_id_var.get()
             album_id = album_id.strip()
@@ -151,8 +149,9 @@ class Assistant(Tk):
         self.album_id_var.set(config.albumID)
         
         self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
-        self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica')
-        self.album_id_entry = Entry(self.main_frame,textvariable = self.album_id_var, font='Helvetica')
+        self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
+        self.album_name_entry.config(fg="black",bg="#eeeeee")
+        self.album_id_entry = Entry(self.main_frame,textvariable = self.album_id_var, font='Helvetica', state=DISABLED)
         
         def select_album():
             """Popup control to select albums"""
@@ -187,7 +186,7 @@ class Assistant(Tk):
             def populate_list(*args):
                 global displayed_list_ids, displayed_list_names
                 pattern = pattern_var.get()
-                print "applying pattern %s"%pattern
+                #print "applying pattern %s"%pattern
                 #clear
                 displayed_list_ids = [""]
                 displayed_list_names=["Drop Box"]
@@ -210,7 +209,7 @@ class Assistant(Tk):
             pattern_var.trace("w",populate_list)
             def item_selected(*args):
                 global displayed_list_ids, displayed_list_names
-                print "selected!"
+                #print "selected!"
                 cursel = album_listbox.curselection()
                 cursel = int(cursel[0])
                 #print cursel
@@ -239,7 +238,8 @@ class Assistant(Tk):
         self.upload_test_button.pack(side=RIGHT)
         
 
-        self.widgets.append([self.album_name_label,self.album_name_entry,self.album_id_label, self.album_id_entry,self.album_bframe])
+        #self.widgets.append([self.album_name_label,self.current_album_label,self.album_name_entry,self.album_id_label, self.album_id_entry,self.album_bframe])
+        self.widgets.append([self.album_name_label,self.album_name_entry,self.album_bframe])
         
         #PAGE 4 Archive
         self.archive_var = IntVar()
