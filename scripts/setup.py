@@ -12,7 +12,7 @@ import os.path
 import sys
 import configuration
 import constants
-
+import mykb
 VALID_ICON_FILE = os.path.join("ressources","ic_valid.png")
 INVALID_ICON_FILE = os.path.join("ressources","ic_invalid.png")
 from PIL import Image as _Image
@@ -30,6 +30,7 @@ class Assistant(Tk):
     BUTTONS_BG = '#4285f4'
     BUTTONS_BG_INACTIVE = 'white'
     BUTTONS_BG_ACTION = '#db4437'
+    USE_SOFT_KEYBOARD = True
     def __init__(self,config,*args,**kwargs):
         """This creates all the widgets and variables"""
         Tk.__init__(self,*args,**kwargs)
@@ -64,7 +65,18 @@ class Assistant(Tk):
         
         self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
         self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
-        self.widgets.append([self.want_email_cb, self.want_upload_cb])
+        
+        #checkbutton to choose to use soft keyboard
+        
+        self.use_soft_keyboard_var = IntVar()
+        def on_use_soft_keyboard(*args):
+            self.USE_SOFT_KEYBOARD = self.use_soft_keyboard_var.get() != 0
+        self.use_soft_keyboard_var.trace("w",on_use_soft_keyboard)
+        self.use_soft_keyboard_var.set(0)
+        
+        self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
+        
+        self.widgets.append([self.want_email_cb, self.want_upload_cb, self.use_soft_keyboard_cb])
         
         #PAGE 1 google credentials
         self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
@@ -75,6 +87,7 @@ class Assistant(Tk):
         self.user_mail_var.trace("w",on_mail_change)
         self.user_mail_var.set(config.user_name)
         self.user_mail_entry =  Entry(self.main_frame, font='Helvetica', textvariable = self.user_mail_var)
+        self.__install_soft_keyboard(self.user_mail_entry, self.user_mail_var)
         
         #load valid/invalid icons
         valid_icon = _Image.open(VALID_ICON_FILE)
@@ -109,11 +122,14 @@ class Assistant(Tk):
         
         self.email_title_label = Label(self.main_frame,text="Email subject:", font='Helvetica', anchor=W)
         self.email_title_entry = Entry(self.main_frame, textvariable=self.email_title_var, font='Helvetica', width = 40)
-        
+        self.__install_soft_keyboard(self.email_title_entry, self.email_title_var)
+
         self.email_body_label = Label(self.main_frame,text="Email body:", font='Helvetica', anchor=W)
         #self.email_body_entry = Entry(self.main_frame, textvariable=self.email_body_var, width = 40)
         self.email_body_entry =  Text(self.main_frame, font='Helvetica', height=5)
         self.email_body_entry.insert(INSERT,self.email_body_var.get())
+        self.__install_soft_keyboard(self.email_body_entry,self.email_body_var)
+        
         def test_email():
             self.__mail_body_update_content()
             self.__test_connection(True,False)
@@ -175,6 +191,8 @@ class Assistant(Tk):
             #entry and listbox
             pattern_var = StringVar()
             pattern_entry = Entry(top,font='Helvetica',textvariable=pattern_var)
+            self.__install_soft_keyboard(pattern_entry, pattern_var)
+
             pattern_entry.pack(fill=X)
             
             list_box_items = 15
@@ -231,6 +249,9 @@ class Assistant(Tk):
         self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
         self.album_select_button.pack(side=LEFT)
         
+        
+
+        
         def test_upload():
             self.__test_connection(False,True)
             
@@ -259,6 +280,7 @@ class Assistant(Tk):
         self.archive_dir_var.trace("w",on_archive_dir_change)
 
         self.archive_dir_entry = Entry(self.main_frame, textvariable=self.archive_dir_var, width = 40, font='Helvetica')
+        self.__install_soft_keyboard(self.archive_dir_entry,self.archive_dir_var)
         def change_dir():
             directory = tkFileDialog.askdirectory(initialdir=self.archive_dir_var.get(), title="Choose directory for snapshots archive")
             self.archive_dir_var.set(directory)
@@ -307,7 +329,34 @@ class Assistant(Tk):
     def __remove_cred_store(self):
         print "removing %s"%constants.CREDENTIALS_STORE_FILE
         self.__ask_for_removal(constants.CREDENTIALS_STORE_FILE,"Are you sure you want to remove the credentials storage file?\nYou'll need to authorize your application again.")
-        
+    
+    def __install_soft_keyboard(self,entry,stringvar):
+        """Bind a soft keyboard to the entry if needed"""
+        def launch_keyboard(*args):
+            if not self.USE_SOFT_KEYBOARD:
+                return
+            self.soft_keyboard = Toplevel(self)
+            #Bind the keyboard output to the variable
+            def kill_keyboard():
+                """Kill the popup keyboard"""
+                if self.soft_keyboard is not None:
+                    self.soft_keyboard.destroy()
+                    self.soft_keyboard = None
+            def onEnter(*args):
+                print "updating value"
+                if entry.winfo_class() == 'Text':
+                    #copy the content of stringvar that just got modified into the text
+                    text_content = stringvar.get()
+                    entry.delete('1.0',END)
+                    entry.insert(END, text_content)
+                kill_keyboard()
+            
+            mykb.TouchKeyboard(self.soft_keyboard, stringvar, onEnter = onEnter)
+            self.soft_keyboard.wm_attributes("-topmost", 1)
+            self.wait_window(self.soft_keyboard)
+        #Bind the window click event to the entry
+        entry.bind('<Button-1>',launch_keyboard)
+            
     def __get_app_id(self):
         print "Getting App ID"
         message="""    ________________________________________________________________
@@ -380,6 +429,7 @@ class Assistant(Tk):
             code_frame_bot.pack(fill=X)
             auth_code = StringVar()
             code_entry = Entry(code_frame_top, textvariable = auth_code, font='Helvetica', width=40)
+            self.__install_soft_keyboard(code_entry,auth_code)
             code_entry.pack(side=LEFT, padx=20, pady=20)
             paste_button = Button(code_frame_top,text="Paste",font='Helvetica',fg='white',bg=self.BUTTONS_BG, command = lambda *args: auth_code.set(self.clipboard_get()))
             paste_button.pack(side=RIGHT,padx=20,pady=20)
