@@ -34,289 +34,294 @@ class Assistant(Tk):
     def __init__(self,config,*args,**kwargs):
         """This creates all the widgets and variables"""
         Tk.__init__(self,*args,**kwargs)
-        self.google_service = None
-        self.config( bg = "white")
-        self.config = config
-        self.packed_widgets = [] 
-        self.page = 0
-        self.main_frame = Frame(self, bg = "white")
-        self.buttons_frame = Frame(self, bg='white')
-        self.b_next = Button(self.buttons_frame,text="Next", fg='white', bg=self.BUTTONS_BG,width=10, command=self.__increment, font='Helvetica')
-        self.b_prev = Button(self.buttons_frame,text="Prev", fg='white', bg=self.BUTTONS_BG, width=10, command=self.__decrement, font='Helvetica')
-        self.main_frame.pack(fill=X,ipadx=10,ipady=10)
-        self.buttons_frame.pack(side=BOTTOM)
-        self.b_prev.pack(side=LEFT,padx=40)
-        self.b_next.pack(side=RIGHT,padx=40)
-        self.widgets=[]
-        
-        #variables
-        #PAGE 0 email/upload
-        self.want_email_var = IntVar()
-        self.want_email_var.set(config.enable_email == True)
-        def on_want_email_change(*args):
-            self.config.enable_email = self.want_email_var.get() != 0
-        self.want_email_var.trace("w",on_want_email_change)
-        
-        self.want_upload_var = IntVar()
-        self.want_upload_var.set(config.enable_upload == True)
-        def on_want_upload_change(*args):
-            self.config.enable_upload = self.want_upload_var.get() != 0
-        self.want_upload_var.trace("w",on_want_upload_change)
-        
-        self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
-        self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
-        
-        #checkbutton to choose to use soft keyboard
-        
-        self.use_soft_keyboard_var = IntVar()
-        def on_use_soft_keyboard(*args):
-            self.USE_SOFT_KEYBOARD = self.use_soft_keyboard_var.get() != 0
-        self.use_soft_keyboard_var.trace("w",on_use_soft_keyboard)
-        self.use_soft_keyboard_var.set(0)
-        
-        self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
-        
-        self.widgets.append([self.want_email_cb, self.want_upload_cb, self.use_soft_keyboard_cb])
-        
-        #PAGE 1 google credentials
-        self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
-        self.user_mail_var  = StringVar()
-        def on_mail_change(*args):
-            self.config.user_name = self.user_mail_var.get()
+        try:
+            self.google_service = None
+            self.config( bg = "white")
+            self.config = config
+            self.packed_widgets = [] 
+            self.page = 0
+            self.main_frame = Frame(self, bg = "white")
+            self.buttons_frame = Frame(self, bg='white')
+            self.b_next = Button(self.buttons_frame,text="Next", fg='white', bg=self.BUTTONS_BG,width=10, command=self.__increment, font='Helvetica')
+            self.b_prev = Button(self.buttons_frame,text="Prev", fg='white', bg=self.BUTTONS_BG, width=10, command=self.__decrement, font='Helvetica')
+            self.main_frame.pack(fill=X,ipadx=10,ipady=10)
+            self.buttons_frame.pack(side=BOTTOM)
+            self.b_prev.pack(side=LEFT,padx=40)
+            self.b_next.pack(side=RIGHT,padx=40)
+            self.widgets=[]
             
-        self.user_mail_var.trace("w",on_mail_change)
-        self.user_mail_var.set(config.user_name)
-        self.user_mail_entry =  Entry(self.main_frame, font='Helvetica', textvariable = self.user_mail_var)
-        self.__install_soft_keyboard(self.user_mail_entry, self.user_mail_var)
-        
-        #load valid/invalid icons
-        valid_icon = _Image.open(VALID_ICON_FILE)
-        self.valid_icon = _ImageTk.PhotoImage(valid_icon)
-        invalid_icon = _Image.open(INVALID_ICON_FILE)
-        self.invalid_icon = _ImageTk.PhotoImage(invalid_icon)
-
-        self.credentials_frame = LabelFrame(self.main_frame, text="Credentials", font='Helvetica')
-        self.__check_credentials_files()
-        
-        self.refresh_cred_button = Button(self.main_frame, text="Refresh", font='Helvetica', fg=self.BUTTONS_BG, command=self.__check_credentials_files)
-        
-        
-        self.widgets.append([
-            self.user_mail_label,
-            self.user_mail_entry, 
-            self.credentials_frame, 
-            self.refresh_cred_button])
-        
-        #PAGE 2 Email infos
-        self.email_title_var = StringVar()
-        self.email_title_var.set(config.emailSubject)
-        def on_mail_title_change(*args):
-            self.config.emailSubject = self.email_title_var.get()
-        self.email_title_var.trace("w",on_mail_title_change)
-        
-        self.email_body_var = StringVar()
-        self.email_body_var.set(config.emailMsg)
-        def on_mail_body_change(*args):
-            self.config.emailMsg = self.email_body_var.get()
-        self.email_body_var.trace("w",on_mail_body_change)
-        
-        self.email_title_label = Label(self.main_frame,text="Email subject:", font='Helvetica', anchor=W)
-        self.email_title_entry = Entry(self.main_frame, textvariable=self.email_title_var, font='Helvetica', width = 40)
-        self.__install_soft_keyboard(self.email_title_entry, self.email_title_var)
-
-        self.email_body_label = Label(self.main_frame,text="Email body:", font='Helvetica', anchor=W)
-        #self.email_body_entry = Entry(self.main_frame, textvariable=self.email_body_var, width = 40)
-        self.email_body_entry =  Text(self.main_frame, font='Helvetica', height=5)
-        self.email_body_entry.insert(INSERT,self.email_body_var.get())
-        self.__install_soft_keyboard(self.email_body_entry,self.email_body_var)
-        
-        def test_email():
-            self.__mail_body_update_content()
-            self.__test_connection(True,False)
+            #variables
+            #PAGE 0 email/upload
+            self.want_email_var = IntVar()
+            self.want_email_var.set(config.enable_email == True)
+            def on_want_email_change(*args):
+                self.config.enable_email = self.want_email_var.get() != 0
+            self.want_email_var.trace("w",on_want_email_change)
             
-        self.test_email_button = Button(self.main_frame,text="Send test email", font='Helvetica', command=test_email)
-        
-        self.widgets.append([
-            self.email_title_label,
-            self.email_title_entry,
-            self.email_body_label,
-            self.email_body_entry,
-            self.test_email_button])
+            self.want_upload_var = IntVar()
+            self.want_upload_var.set(config.enable_upload == True)
+            def on_want_upload_change(*args):
+                self.config.enable_upload = self.want_upload_var.get() != 0
+            self.want_upload_var.trace("w",on_want_upload_change)
             
-        #PAGE 3 Album ID
-        
-        self.album_name_label = Label(self.main_frame,text="Google Photo Album:", font='Helvetica', anchor=W)
-        
-        self.album_name_var = StringVar()
-        def on_album_name_change(*args):
-            self.config.album_name = self.album_name_var.get()
-        self.album_name_var.trace("w",on_album_name_change)
-        self.album_name_var.set(config.album_name)
-
-        self.album_id_var = StringVar()
-        def on_albumID_change(*args):
-            album_id = self.album_id_var.get()
-            album_id = album_id.strip()
-            if album_id == "":
-                self.config.albumID=None
-            else:
-                self.config.albumID = self.album_id_var.get()
-        self.album_id_var.trace("w",on_albumID_change)
-        self.album_id_var.set(config.albumID)
-        
-        self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
-        self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
-        self.album_name_entry.config(fg="black",bg="#eeeeee")
-        self.album_id_entry = Entry(self.main_frame,textvariable = self.album_id_var, font='Helvetica', state=DISABLED)
-        
-        def select_album():
-            """Popup control to select albums"""
-            print "Album selection"
-            connected=False
-            try:
-                connected = self.google_service.refresh()
-            except:
-                pass
-            if not connected:
-                print "Error: impossible to connect to Google\n"
-                return
-            #Create an album selection control
-            top = Toplevel(self,bg='white')
-            top.geometry("450x400")
-            loading_lbl = Label(top,text="Loading album list...", bg='white', font='Helvetica')
-            loading_lbl.pack(fill=X)
-            top.update()
-            album_list = self.google_service.get_user_albums()
-            loading_lbl.config(text='Use field below to search\nDouble-click on the list to apply')
-            #entry and listbox
-            pattern_var = StringVar()
-            pattern_entry = Entry(top,font='Helvetica',textvariable=pattern_var)
-            self.__install_soft_keyboard(pattern_entry, pattern_var)
-
-            pattern_entry.pack(fill=X)
+            self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
+            self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
             
-            list_box_items = 15
-            album_listbox = Listbox(top,height=list_box_items, font='Helvetica', selectmode=SINGLE)
-            album_listbox.pack(fill=X)
+            #checkbutton to choose to use soft keyboard
             
-            displayed_list_ids=["idstart"]
-            displayed_list_names=["namestart"]
-            def populate_list(*args):
-                global displayed_list_ids, displayed_list_names
-                pattern = pattern_var.get()
-                #print "applying pattern %s"%pattern
-                #clear
-                displayed_list_ids = [""]
-                displayed_list_names=["Drop Box"]
-                album_listbox.delete(0,END)
-                album_listbox.insert(END,"<Default>")
-
-                for i, item in enumerate(album_list):
-                    if i >= list_box_items-1:
-                        break;
-                    title = item['title']
-                    title_ = title.lower()
-                    id    = item['id']
-                    if title_.find(pattern.lower()) != -1:
-                        album_listbox.insert(END,item['title'])
-                        displayed_list_ids.append(id)
-                        displayed_list_names.append(title)
-
+            self.use_soft_keyboard_var = IntVar()
+            def on_use_soft_keyboard(*args):
+                self.USE_SOFT_KEYBOARD = self.use_soft_keyboard_var.get() != 0
+            self.use_soft_keyboard_var.trace("w",on_use_soft_keyboard)
+            self.use_soft_keyboard_var.set(0)
             
-            populate_list()
-            pattern_var.trace("w",populate_list)
-            def item_selected(*args):
-                global displayed_list_ids, displayed_list_names
-                #print "selected!"
-                cursel = album_listbox.curselection()
-                cursel = int(cursel[0])
-                #print cursel
-                #print displayed_list_ids
-                #print displayed_list_names
-                print "selected album '%s' with id '%s'"%(displayed_list_names[cursel],displayed_list_ids[cursel])
-                self.album_id_var.set(displayed_list_ids[cursel])
-                self.album_name_var.set(displayed_list_names[cursel])
-                top.destroy()
+            self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
+            
+            self.widgets.append([self.want_email_cb, self.want_upload_cb, self.use_soft_keyboard_cb])
+            
+            #PAGE 1 google credentials
+            self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
+            self.user_mail_var  = StringVar()
+            def on_mail_change(*args):
+                self.config.user_name = self.user_mail_var.get()
                 
-            album_listbox.bind("<Double-Button-1>",item_selected)    
-            self.wait_window(top)
+            self.user_mail_var.trace("w",on_mail_change)
+            self.user_mail_var.set(config.user_name)
+            self.user_mail_entry =  Entry(self.main_frame, font='Helvetica', textvariable = self.user_mail_var)
+            self.__install_soft_keyboard(self.user_mail_entry, self.user_mail_var)
+            
+            #load valid/invalid icons
+            valid_icon = _Image.open(VALID_ICON_FILE)
+            self.valid_icon = _ImageTk.PhotoImage(valid_icon)
+            invalid_icon = _Image.open(INVALID_ICON_FILE)
+            self.invalid_icon = _ImageTk.PhotoImage(invalid_icon)
+
+            self.credentials_frame = LabelFrame(self.main_frame, text="Credentials", font='Helvetica')
+            self.__check_credentials_files()
+            
+            self.refresh_cred_button = Button(self.main_frame, text="Refresh", font='Helvetica', fg=self.BUTTONS_BG, command=self.__check_credentials_files)
             
             
-
-        
-        #Select Album and test buttons
-        self.album_bframe = Frame(self.main_frame, bg='white')
-        self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
-        self.album_select_button.pack(side=LEFT)
-        
-        
-
-        
-        def test_upload():
-            self.__test_connection(False,True)
+            self.widgets.append([
+                self.user_mail_label,
+                self.user_mail_entry, 
+                self.credentials_frame, 
+                self.refresh_cred_button])
             
-        self.upload_test_button = Button(self.album_bframe, text='Test Upload',fg='white',bg=self.BUTTONS_BG, command=test_upload, font='Helvetica')
-        self.upload_test_button.pack(side=RIGHT)
-        
+            #PAGE 2 Email infos
+            self.email_title_var = StringVar()
+            self.email_title_var.set(config.emailSubject)
+            def on_mail_title_change(*args):
+                self.config.emailSubject = self.email_title_var.get()
+            self.email_title_var.trace("w",on_mail_title_change)
+            
+            self.email_body_var = StringVar()
+            self.email_body_var.set(config.emailMsg)
+            def on_mail_body_change(*args):
+                self.config.emailMsg = self.email_body_var.get()
+            self.email_body_var.trace("w",on_mail_body_change)
+            
+            self.email_title_label = Label(self.main_frame,text="Email subject:", font='Helvetica', anchor=W)
+            self.email_title_entry = Entry(self.main_frame, textvariable=self.email_title_var, font='Helvetica', width = 40)
+            self.__install_soft_keyboard(self.email_title_entry, self.email_title_var)
 
-        #self.widgets.append([self.album_name_label,self.current_album_label,self.album_name_entry,self.album_id_label, self.album_id_entry,self.album_bframe])
-        self.widgets.append([self.album_name_label,self.album_name_entry,self.album_bframe])
-        
-        #PAGE 4 Archive
-        self.archive_var = IntVar()
-        if config.ARCHIVE: self.archive_var.set(1)
-        else : self.archive_var.set(0)
-        
-        def on_archive_change(*args):
-            self.config.ARCHIVE = self.archive_var.get() != 0
-        self.archive_var.trace("w",on_archive_change)
-        
-        
-        self.archive_dir_label = Label(self.main_frame,text="Local directory for archive:", font='Helvetica', anchor=W)
-        self.archive_dir_var = StringVar()
-        self.archive_dir_var.set(config.archive_dir)
-        def on_archive_dir_change(*args):
-            self.config.archive_dir = self.archive_dir_var.get()
-        self.archive_dir_var.trace("w",on_archive_dir_change)
-
-        self.archive_dir_entry = Entry(self.main_frame, textvariable=self.archive_dir_var, width = 40, font='Helvetica')
-        self.__install_soft_keyboard(self.archive_dir_entry,self.archive_dir_var)
-        def change_dir():
-            directory = tkFileDialog.askdirectory(initialdir=self.archive_dir_var.get(), title="Choose directory for snapshots archive")
-            self.archive_dir_var.set(directory)
-            print "changed dir to %s"%directory
-
-        self.choose_archive_dir_button = Button(self.main_frame, text="Choose directory", fg='white',bg=self.BUTTONS_BG, font='Helvetica', command=change_dir)
-        
-        
-        def enable_archive_dir():
-            if self.archive_var.get() == 0:
-                self.archive_dir_entry.config(state = DISABLED)
-                self.choose_archive_dir_button.config(state = DISABLED, bg='white',fg='grey')
-            else:
-                self.archive_dir_entry.config(state = NORMAL)
-                self.choose_archive_dir_button.config(state = NORMAL, bg=self.BUTTONS_BG,fg='white')
+            self.email_body_label = Label(self.main_frame,text="Email body:", font='Helvetica', anchor=W)
+            #self.email_body_entry = Entry(self.main_frame, textvariable=self.email_body_var, width = 40)
+            self.email_body_entry =  Text(self.main_frame, font='Helvetica', height=5)
+            self.email_body_entry.insert(INSERT,self.email_body_var.get())
+            self.__install_soft_keyboard(self.email_body_entry,self.email_body_var)
+            
+            def test_email():
+                self.__mail_body_update_content()
+                self.__test_connection(True,False)
                 
-        self.archive_cb = Checkbutton(self.main_frame,text="Archive snapshots locally", variable = self.archive_var, command=enable_archive_dir, font='Helvetica', anchor=W)
-        enable_archive_dir()
-        self.widgets.append([
-            self.archive_cb,
-            self.archive_dir_label,
-            self.archive_dir_entry,
-            self.choose_archive_dir_button])
-        
-        for widget_page in self.widgets:
-            for widget in widget_page:
-                if widget.winfo_class() == 'Button':
-                    if widget['state'] != DISABLED:
-                        widget.config(foreground='white',background=self.BUTTONS_BG)
-                    else:
-                        widget.config(foreground='grey',background=self.BUTTONS_BG_INACTIVE)
+            self.test_email_button = Button(self.main_frame,text="Send test email", font='Helvetica', command=test_email)
+            
+            self.widgets.append([
+                self.email_title_label,
+                self.email_title_entry,
+                self.email_body_label,
+                self.email_body_entry,
+                self.test_email_button])
+                
+            #PAGE 3 Album ID
+            
+            self.album_name_label = Label(self.main_frame,text="Google Photo Album:", font='Helvetica', anchor=W)
+            
+            self.album_name_var = StringVar()
+            def on_album_name_change(*args):
+                self.config.album_name = self.album_name_var.get()
+            self.album_name_var.trace("w",on_album_name_change)
+            self.album_name_var.set(config.album_name)
+
+            self.album_id_var = StringVar()
+            def on_albumID_change(*args):
+                album_id = self.album_id_var.get()
+                album_id = album_id.strip()
+                if album_id == "":
+                    self.config.albumID=None
                 else:
-                    widget.config(background='white')
+                    self.config.albumID = self.album_id_var.get()
+            self.album_id_var.trace("w",on_albumID_change)
+            self.album_id_var.set(config.albumID)
+            
+            self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
+            self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
+            self.album_name_entry.config(fg="black",bg="#eeeeee")
+            self.album_id_entry = Entry(self.main_frame,textvariable = self.album_id_var, font='Helvetica', state=DISABLED)
+            
+            def select_album():
+                """Popup control to select albums"""
+                print "Album selection"
+                connected=False
+                try:
+                    connected = self.google_service.refresh()
+                except:
+                    pass
+                if not connected:
+                    print "Error: impossible to connect to Google\n"
+                    return
+                #Create an album selection control
+                top = Toplevel(self,bg='white')
+                top.geometry("450x400")
+                loading_lbl = Label(top,text="Loading album list...", bg='white', font='Helvetica')
+                loading_lbl.pack(fill=X)
+                top.update()
+                album_list = self.google_service.get_user_albums()
+                loading_lbl.config(text='Use field below to search\nDouble-click on the list to apply')
+                #entry and listbox
+                pattern_var = StringVar()
+                pattern_entry = Entry(top,font='Helvetica',textvariable=pattern_var)
+                self.__install_soft_keyboard(pattern_entry, pattern_var)
 
-        self.__draw_page()
-        
+                pattern_entry.pack(fill=X)
+                
+                list_box_items = 15
+                album_listbox = Listbox(top,height=list_box_items, font='Helvetica', selectmode=SINGLE)
+                album_listbox.pack(fill=X)
+                
+                displayed_list_ids=["idstart"]
+                displayed_list_names=["namestart"]
+                def populate_list(*args):
+                    global displayed_list_ids, displayed_list_names
+                    pattern = pattern_var.get()
+                    #print "applying pattern %s"%pattern
+                    #clear
+                    displayed_list_ids = [""]
+                    displayed_list_names=["Drop Box"]
+                    album_listbox.delete(0,END)
+                    album_listbox.insert(END,"<Default>")
+
+                    for i, item in enumerate(album_list):
+                        if i >= list_box_items-1:
+                            break;
+                        title = item['title']
+                        title_ = title.lower()
+                        id    = item['id']
+                        if title_.find(pattern.lower()) != -1:
+                            album_listbox.insert(END,item['title'])
+                            displayed_list_ids.append(id)
+                            displayed_list_names.append(title)
+
+                
+                populate_list()
+                pattern_var.trace("w",populate_list)
+                def item_selected(*args):
+                    global displayed_list_ids, displayed_list_names
+                    #print "selected!"
+                    cursel = album_listbox.curselection()
+                    cursel = int(cursel[0])
+                    #print cursel
+                    #print displayed_list_ids
+                    #print displayed_list_names
+                    print "selected album '%s' with id '%s'"%(displayed_list_names[cursel],displayed_list_ids[cursel])
+                    self.album_id_var.set(displayed_list_ids[cursel])
+                    self.album_name_var.set(displayed_list_names[cursel])
+                    top.destroy()
+                    
+                album_listbox.bind("<Double-Button-1>",item_selected)    
+                self.wait_window(top)
+                
+                
+
+            
+            #Select Album and test buttons
+            self.album_bframe = Frame(self.main_frame, bg='white')
+            self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
+            self.album_select_button.pack(side=LEFT)
+            
+            
+
+            
+            def test_upload():
+                self.__test_connection(False,True)
+                
+            self.upload_test_button = Button(self.album_bframe, text='Test Upload',fg='white',bg=self.BUTTONS_BG, command=test_upload, font='Helvetica')
+            self.upload_test_button.pack(side=RIGHT)
+            
+
+            #self.widgets.append([self.album_name_label,self.current_album_label,self.album_name_entry,self.album_id_label, self.album_id_entry,self.album_bframe])
+            self.widgets.append([self.album_name_label,self.album_name_entry,self.album_bframe])
+            
+            #PAGE 4 Archive
+            self.archive_var = IntVar()
+            if config.ARCHIVE: self.archive_var.set(1)
+            else : self.archive_var.set(0)
+            
+            def on_archive_change(*args):
+                self.config.ARCHIVE = self.archive_var.get() != 0
+            self.archive_var.trace("w",on_archive_change)
+            
+            
+            self.archive_dir_label = Label(self.main_frame,text="Local directory for archive:", font='Helvetica', anchor=W)
+            self.archive_dir_var = StringVar()
+            self.archive_dir_var.set(config.archive_dir)
+            def on_archive_dir_change(*args):
+                self.config.archive_dir = self.archive_dir_var.get()
+            self.archive_dir_var.trace("w",on_archive_dir_change)
+
+            self.archive_dir_entry = Entry(self.main_frame, textvariable=self.archive_dir_var, width = 40, font='Helvetica')
+            self.__install_soft_keyboard(self.archive_dir_entry,self.archive_dir_var)
+            def change_dir():
+                directory = tkFileDialog.askdirectory(initialdir=self.archive_dir_var.get(), title="Choose directory for snapshots archive")
+                self.archive_dir_var.set(directory)
+                print "changed dir to %s"%directory
+
+            self.choose_archive_dir_button = Button(self.main_frame, text="Choose directory", fg='white',bg=self.BUTTONS_BG, font='Helvetica', command=change_dir)
+            
+            
+            def enable_archive_dir():
+                if self.archive_var.get() == 0:
+                    self.archive_dir_entry.config(state = DISABLED)
+                    self.choose_archive_dir_button.config(state = DISABLED, bg='white',fg='grey')
+                else:
+                    self.archive_dir_entry.config(state = NORMAL)
+                    self.choose_archive_dir_button.config(state = NORMAL, bg=self.BUTTONS_BG,fg='white')
+                    
+            self.archive_cb = Checkbutton(self.main_frame,text="Archive snapshots locally", variable = self.archive_var, command=enable_archive_dir, font='Helvetica', anchor=W)
+            enable_archive_dir()
+            self.widgets.append([
+                self.archive_cb,
+                self.archive_dir_label,
+                self.archive_dir_entry,
+                self.choose_archive_dir_button])
+            
+            for widget_page in self.widgets:
+                for widget in widget_page:
+                    if widget.winfo_class() == 'Button':
+                        if widget['state'] != DISABLED:
+                            widget.config(foreground='white',background=self.BUTTONS_BG)
+                        else:
+                            widget.config(foreground='grey',background=self.BUTTONS_BG_INACTIVE)
+                    else:
+                        widget.config(background='white')
+            
+            self.__draw_page()
+        except:
+            self.update()
+            self.destroy()
+            raise Exception("Error during interface creation")
+            
     def __mail_body_update_content(self):
         self.email_body_var.set(self.email_body_entry.get('1.0','end'))
         #print "msg body: %s"%self.email_body_var.get()
@@ -663,10 +668,16 @@ Click the Start button below:
 
 def graphical_assistant():
     """Launches graphical interface"""
-    config = configuration.Configuration('configuration.json')
-    root = Assistant(config)
-    root.geometry("450x400")
-    root.mainloop()    
+    try:
+        config = configuration.Configuration('configuration.json')
+        root = Assistant(config)
+        try:
+            root.geometry("450x400")
+            root.mainloop()
+        except:
+            pass
+    except:
+        raise Exception("Graphical interface error")
 
 
 def console_assistant():
@@ -796,7 +807,7 @@ def console_assistant():
         
         # Successfully connected!
         if config.albumID != None:
-            keep_album = to_boolean(raw_input("Photo Album is configured, do you want to keep it? [Y/n] => "))
+            keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
             change_album_id = not keep_album
         else:
             print "\nNo photo album selected, images will be uploaded to\nGoogle Photo album 'Drop Box'"
@@ -840,6 +851,7 @@ def console_assistant():
                     except:
                         print "Bad album number!"
                 config.albumID = album_id
+                config.album_name = album_title
                 config.write()
                 print "\nAlbum %s with id %s successfully selected!\n"%(album_title, album_id)
             except:
@@ -926,8 +938,10 @@ if __name__ == '__main__':
         graphical_assistant()
     except Exception as error:
         print error
-        import traceback
-        traceback.print_exc()
+        #import traceback
+        #traceback.print_exc()
+        import time
+        time.sleep(2)
         print "\nError loading graphical assistant, default to console based\n"
         console_assistant()
     
