@@ -20,3 +20,6 @@ scripts/*.pyc
 
 # ignore emacs backupfiles
 scripts/*.py~
+
+# ignore test image
+scripts/test_image.png
