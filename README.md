@@ -3,7 +3,11 @@ Open Source Photobooth forked and improved from [wyolum/TouchSelfie](https://git
 
 For hardware construction, see [Make Magazine article](https://makezine.com/projects/raspberry-pi-photo-booth/)
 
-## Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
+## Take a shortcut:
+- [Installation](#install)
+- [What's new?](#changes)
+
+## <a id="install"></a>Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
 ### Get the necessary packages
 
@@ -51,13 +55,13 @@ sudo update-alternatives --config x-www-browser
 
 
 
-## Changes from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
+## <a id="changes"></a>Changes from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
 ### Zero password
 - Now integrally based on OAuth2, neither the send-email, nor the upload-pictures will ask for and store a password
 
 ### Easier setup
-- a new `setup.sh` script will help you configure the features you need (send_email, auto-upload) and will guide you for the Google credentials setup and photo album selection.
+- a new `setup.sh` assistant will guide you through the configuration of the features you need (send_email, auto-upload) and will help you install the Google credentials.
 - credentials installation now points to a google-hosted wizard to simplify the application-id creation
 
 ### Hardware buttons support
