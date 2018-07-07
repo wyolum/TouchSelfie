@@ -79,6 +79,35 @@ class UserInterface():
         hardware_buttons = config.enable_hardware_buttons
         
         self.root = Tk()
+
+        ## Auto hide Mouse cursor
+
+        #Events to enable/disable cursor based on motion
+        #on_motion() is called on mouse motion and sets a boolean
+        #enable_cursor is a fast loop that checks this boolean and enable the cursor
+        #check_and_disable_cursor is a slow loop that checks this boolean and resets it
+
+        self.cursor_motion = False
+        def enable_cursor():
+            if self.cursor_motion:
+                self.root.config(cursor="")
+            self.enable_cursor_after_id = self.root.after(200,enable_cursor)
+        def check_and_disable_cursor():
+            if self.cursor_motion == False:
+                #remove the cursor,reactivated by motion
+                self.root.config(cursor="none")
+            else:
+                #erase it
+                self.cursor_motion = False
+            self.disable_cursor_after_id = self.root.after(3000,check_and_disable_cursor)
+        def on_motion(event):
+            self.cursor_motion = True
+        self.root.bind("<Motion>",on_motion)
+        self.enable_cursor_after_id = self.root.after(100,enable_cursor)
+        self.disable_cursor_after_id = self.root.after(2000,check_and_disable_cursor)
+        
+        ## End of Auto-hide mouse cursor
+
         if config.full_screen:
             self.root.attributes("-fullscreen",True)
         
