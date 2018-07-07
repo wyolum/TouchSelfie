@@ -6,6 +6,7 @@ For hardware construction, see [Make Magazine article](https://makezine.com/proj
 ## Take a shortcut:
 - [Installation](#install)
 - [What's new?](#changes)
+- [A note on confidentiality and security](#confidentiality)
 
 ## <a id="install"></a>Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
@@ -120,7 +121,7 @@ If you configured TouchSelfie to not send emails, you don't need to authorize ac
 No, but don't take my word!
 This is the beauty of opensource: everybody can read the source code and check if it's harmfull. Plus, with Github, you can't hide anything: every versions of this code is archived and I can't delete them: you will always be able to verify that I didn't do anything harmfull in the past.
 
-Maybe you don't have the competency to verify the sourcecode, but others have and I trust they will alert the world if they find something nasty (or just file an [Issue!](../issues)). 
+Maybe you don't have the competency to verify the sourcecode, but others have and I trust they will alert the world if they find something nasty (or just file an [Issue!](../../issues)). 
 Hint for future verifyiers: the `scripts/oaut2services.py` contains all the code that accesses the Google Accounts. As you will see, there's no methods designed to read emails, only to send them.
 
   - **Why do I need to create a project on Google Developers? Can't you provide one?**
