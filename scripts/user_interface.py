@@ -86,7 +86,6 @@ class UserInterface():
         #on_motion() is called on mouse motion and sets a boolean
         #enable_cursor is a fast loop that checks this boolean and enable the cursor
         #check_and_disable_cursor is a slow loop that checks this boolean and resets it
-
         self.cursor_motion = False
         def enable_cursor():
             if self.cursor_motion:
@@ -105,8 +104,19 @@ class UserInterface():
         self.root.bind("<Motion>",on_motion)
         self.enable_cursor_after_id = self.root.after(100,enable_cursor)
         self.disable_cursor_after_id = self.root.after(2000,check_and_disable_cursor)
-        
         ## End of Auto-hide mouse cursor
+
+        ## Bind keyboard keys to actions
+        def install_key_binding(action,function):
+            if action in ACTIONS_KEYS_MAPPING.keys():
+                for key in ACTIONS_KEYS_MAPPING[action]:
+                    self.root.bind(key,function) 
+        install_key_binding("snap_None",lambda *args: self.snap("None"))
+        install_key_binding("snap_Four",lambda *args: self.snap("Four"))
+        install_key_binding("snap_Animation",lambda *args: self.snap("Animation"))
+        install_key_binding("send_email",lambda *args: self.send_email())
+        install_key_binding("configure",lambda *args: self.long_press_cb(self))
+        ## Bind keyboard keys to actions
 
         if config.full_screen:
             self.root.attributes("-fullscreen",True)
@@ -249,6 +259,7 @@ class UserInterface():
 
 
 
+        self.long_press_cb= long_press_cb
         self.longpress_obj= LongPressDetector(self.root,long_press_cb)
 
     def __change_services(self,email,upload):

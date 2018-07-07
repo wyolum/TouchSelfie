@@ -64,6 +64,13 @@ HARDWARE_BUTTONS = {
     "active_state": 1         # active 1 GPIO (pull_down with switch to VDD)
 }
 
+ACTIONS_KEYS_MAPPING = {
+    "snap_None": ["s","S","<F1>"],
+    "snap_Four": ["f","F","<F2>"],
+    "snap_Animation": ["a","A","<F3>"],
+    "send_email":["e","@"],
+    "configure":["<Escape>"]
+}
 
 EMAIL_BUTTON_IMG  = "ressources/ic_email.png"
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
