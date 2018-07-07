@@ -108,23 +108,29 @@ sudo update-alternatives --config x-www-browser
   - **During setup, you ask me to allow this application to access my email, the original TouchSelfie didn't do this, why?**
 
 The Original TouchSelfie script used to store you google account and *password* in a `.credentials` file.
+
 Considering it was a security risk, I prefered to code an alternate email-sending procedure that wouldn't require your password to get things done.
+
 This is achieved via OAuth2 mechanism that only requires that you accept (once) that this application can access to your email. This way is safer since there's no way for the application to do anything other than what you accepted it to do.
 
   - **Wait, I don't want email sending, but you still ask me to accept that!**
 
 To simplify the setup process, the setup assistant points you to a google credentials download page where email authorization is enabled by default. You can change this.
+
 If you configured TouchSelfie to not send emails, you don't need to authorize access to your mail box, just change this during the credentials download process. This way, the application will only require basic authorization to your account.
 
   - **Will YOU have access to my emails?**
 
 No, but don't take my word!
+
 This is the beauty of opensource: everybody can read the source code and check if it's harmfull. Plus, with Github, you can't hide anything: every versions of this code is archived and I can't delete them: you will always be able to verify that I didn't do anything harmfull in the past.
 
 Maybe you don't have the competency to verify the sourcecode, but others have and I trust they will alert the world if they find something nasty (or just file an [Issue!](../../issues)). 
+
 Hint for future verifyiers: the `scripts/oaut2services.py` contains all the code that accesses the Google Accounts. As you will see, there's no methods designed to read emails, only to send them.
 
   - **Why do I need to create a project on Google Developers? Can't you provide one?**
 
-Your Security and My Quota. 
+Your Security and My Quota.
+
 By retrieving yourself application credentials, you basically authorize yourself to access your own google account and you can revoke this whenever you want. Also, Application Credentials have a daily limit of free use, If I were to provide you my own credentials, a group of users would consume this quota in no time, leaving everybody with a bad experience.
