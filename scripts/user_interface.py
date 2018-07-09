@@ -527,11 +527,17 @@ class UserInterface():
 
         self.camera.preview.fullscreen = True
         self.camera.preview.hflip = True  #Mirror effect for easier selfies
-        bbox = self.camera.preview.window
-        preview_width = bbox[2]
-        preview_height = bbox[3]
+        #for some reason camera.preview.window =(0,0,0,0)
+        #bbox = self.camera.preview.window
+        #preview_width = bbox[2]
+        #preview_height = bbox[3]
+        preview_size = self.camera.resolution
+        preview_width = preview_size[0]
+        preview_height = preview_size[1]
         
-        overlay_height = int(bbox[3] * 0.2)
+        overlay_height = int(preview_height * 0.2)
+        print preview_size
+        print preview_width, preview_height, overlay_height
         
         ## prepare overlay images (resize)
         overlay_images = []
@@ -568,13 +574,13 @@ class UserInterface():
             overlay = None
             if overlay_image != None:
                 #create overlay
-                overlay = self.camera.add_overlay(overlay_image.tobytes, size=overlay_image.size)
+                overlay = self.camera.add_overlay(overlay_image.tobytes(), size=overlay_image.size)
                 #move it on top of preview
                 overlay.layer = 3
                 #change transparency
                 overlay.alpha = 128
                 #flip it horizontally (because preview is flipped)
-                overlay.hflip = True
+                #overlay.hflip = True
             
             if i < countdown - 2:
             # slow blink until -2s
