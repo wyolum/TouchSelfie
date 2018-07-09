@@ -630,8 +630,21 @@ Click the Start button below:
             
     def __save_and_exit(self):
         print "bye!"
-        
+        #finally create a personalized script to run the photobooth
+        install_dir = os.path.split(os.path.abspath(__file__))[0]
+        script_name = os.path.join(os.path.abspath(".."),"photobooth.sh")
+        script = open(script_name,"w")
+        script.write("#!/bin/sh\n")
+        script.write("cd %s\n"% install_dir)
+        script.write("python user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
+        script.close()
+        #make the script executable
+        import stat
+        st = os.stat(script_name)
+        os.chmod(script_name, st.st_mode | stat.S_IEXEC)
+        #write the configuration
         self.config.write()
+        #exit assistant
         self.destroy()
     
     def __test_connection(self,test_email,test_upload):
@@ -858,16 +871,16 @@ def console_assistant():
     test_connection(service, config, test_email, test_upload)
     
     #finally create a personalized script to run the photobooth
-    options= ""
-    if not want_email:
-        options = options + "--disable-email "
-    if not want_upload:
-        options = options + "--disable-upload "
     script_name = os.path.join(os.path.abspath(".."),"photobooth.sh")
     script = open(script_name,"w")
+    script.write("#!/bin/sh\n")
     script.write("cd %s\n"% install_dir)
-    script.write("python user_interface.py %s > %s\n"%(options,os.path.join(install_dir,"run.log")))
+    script.write("python user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
     script.close()
+    #make the script executable
+    import stat
+    st = os.stat(script_name)
+    os.chmod(script_name, st.st_mode | stat.S_IEXEC)
 
     print """
         
