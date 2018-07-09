@@ -12,9 +12,12 @@ class Color:
 
 class DummyPreview:
     """Dummy Preview class for camera.preview"""
+    window=(0,0,640,480)
     def __init__(self):
         self.annotate_text = ""
-        
+class FakeOverlay:
+    layer=0
+    pass
 class PiCamera:
     '''
     Fake PiCamera class to generate test images
@@ -51,7 +54,14 @@ class PiCamera:
         im = im.convert('RGB')
         im.save(filename)
         return True
-    
+        
+    def add_overlay(self,overlay_image, size=(640,480)):
+        return FakeOverlay()
+        pass
+        
+    def remove_overlay(self,overlay):
+        pass
+        
     def capture_continuous(self, output):
         """Generate a sequence of test images"""
         #'animframe-{counter:03d}.jpg'

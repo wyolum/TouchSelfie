@@ -488,6 +488,11 @@ class UserInterface():
             pass
             
     def __show_countdown(self,countdown,annotate_size=160):
+        '''wrapper function to select between overlay and text countdowns'''
+        #self.__show_text_countdown(countdown,annotate_size=annotate_size)
+        self.__show_overlay_countdown(countdown)
+        
+    def __show_text_countdown(self,countdown,annotate_size=160):
         ''' display countdown. the camera should have a preview active and the resolution must be set'''
         led_state = False
         self.__countdown_set_led(led_state)
@@ -513,7 +518,86 @@ class UserInterface():
                     led_state = not led_state
                     self.__countdown_set_led(led_state)
         self.camera.annotate_text = ""
+    
+    def __show_overlay_countdown(self,countdown):
+        """Display countdown as images overlays"""
+        #COUNTDOWN_OVERLAY_IMAGES
+        led_state = False
+        self.__countdown_set_led(led_state)
 
+        self.camera.preview.fullscreen = True
+        self.camera.preview.hflip = True  #Mirror effect for easier selfies
+        #for some reason camera.preview.window =(0,0,0,0)
+        #bbox = self.camera.preview.window
+        #preview_width = bbox[2]
+        #preview_height = bbox[3]
+        preview_size = self.camera.resolution
+        preview_width = preview_size[0]
+        preview_height = preview_size[1]
+        
+        overlay_height = int(preview_height * 0.2)
+        print preview_size
+        print preview_width, preview_height, overlay_height
+        
+        ## prepare overlay images (resize)
+        overlay_images = []
+        for i in range(countdown):
+            if i >= len(COUNTDOWN_OVERLAY_IMAGES):
+                break;
+            #read overlay image
+            im = Image.open(COUNTDOWN_OVERLAY_IMAGES[i])
+            #resize to 20% of height
+            im.thumbnail((preview_width,overlay_height))
+            
+            #overlays should be padded to 32 (width) and 16 (height)
+            pad_width = int((preview_width + 31) / 32) * 32
+            pad_height = int((preview_height + 15) / 16) * 16
+            
+            padded_overlay = Image.new('RGBA', (pad_width, pad_height))
+            # Paste the original image into the padded one (centered)
+            padded_overlay.paste(im, ( int((preview_width+im.size[0])/2.0), int((preview_height+im.size[1])/2.0)))
+            overlay_images.append(padded_overlay)
+        ## All images loaded at the right resolution
+
+        #Change overlay every second and blink led
+        for i in range(countdown):
+            #what overlay image to select:
+            overlay_image = None
+            overlay_image_num = countdown -1 -i #5-1-0 ==> 4 ; 5-1-4 ==> 0
+            if overlay_image_num >= len(overlay_images):
+                overlay_image = overlay_images[len(overlay_images)-1]
+            elif overlay_image_num < 0:
+                overlay_image = None
+            else:
+                overlay_image = overlay_images[overlay_image_num]
+            ## Add overlay to image
+            overlay = None
+            if overlay_image != None:
+                #create overlay
+                overlay = self.camera.add_overlay(overlay_image.tobytes(), size=overlay_image.size)
+                #move it on top of preview
+                overlay.layer = 3
+                #change transparency
+                overlay.alpha = 128
+                #flip it horizontally (because preview is flipped)
+                #overlay.hflip = True
+            
+            if i < countdown - 2:
+            # slow blink until -2s
+                time.sleep(1)
+                led_state = not led_state
+                self.__countdown_set_led(led_state)
+            else:
+            # fast blink until the end
+                for j in range(5):
+                    time.sleep(.2)
+                    led_state = not led_state
+                    self.__countdown_set_led(led_state)
+            if overlay != None:
+                self.camera.remove_overlay(overlay)
+                
+        
+        
     def refresh_auth(self):
         """ refresh the oauth2 service (regularly called)"""
         # useless if we don't need image upload

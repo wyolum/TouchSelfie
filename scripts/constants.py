@@ -24,7 +24,7 @@ Constants for the TouchSelfie program
     name of the automaticaly generated credentials store (relative to scripts/ directory)
 
 """
-
+import os
 SCREEN_W = 800 ## raspi touch
 SCREEN_H = 480 ## raspi touch
 
@@ -48,13 +48,13 @@ EFFECTS_PARAMETERS = {
 
 SOFTWARE_BUTTONS = {
     "None": {
-        "icon" : "ressources/ic_photo.png"
+        "icon" : os.path.join("ressources","ic_photo.png")
         },
     "Four": {
-        "icon" : "ressources/ic_portrait.png"
+        "icon" : os.path.join("ressources","ic_portrait.png")
         },
     "Animation": {
-        "icon" : "ressources/ic_anim.png"
+        "icon" : os.path.join("ressources","ic_anim.png")
         }
 }
 
@@ -72,7 +72,15 @@ ACTIONS_KEYS_MAPPING = {
     "configure":["<Escape>"]
 }
 
-EMAIL_BUTTON_IMG  = "ressources/ic_email.png"
+COUNTDOWN_OVERLAY_IMAGES=[
+    os.path.join("ressources","count_down_1.png"),
+    os.path.join("ressources","count_down_2.png"),
+    os.path.join("ressources","count_down_3.png"),
+    os.path.join("ressources","count_down_4.png"),
+    os.path.join("ressources","count_down_5.png"),
+    os.path.join("ressources","count_down_ready.png")]
+
+EMAIL_BUTTON_IMG  = os.path.join("ressources","ic_email.png")
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
 HARDWARE_POLL_PERIOD = 100      # poll interval for buttons (ms)
 
