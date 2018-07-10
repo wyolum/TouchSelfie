@@ -131,6 +131,15 @@ class Assistant(Tk):
             self.email_body_entry.insert(INSERT,self.email_body_var.get())
             self.__install_soft_keyboard(self.email_body_entry,self.email_body_var)
             
+            self.email_logging_var = IntVar()
+            if self.config.enable_email_logging: self.email_logging_var.set(1)
+            else : self.email_logging_var.set(0)
+            def on_email_logging_change(*args):
+                self.config.enable_email_logging = self.email_logging_var.get() != 0
+            self.email_logging_var.trace("w",on_email_logging_change)
+            self.email_logging_cb = Checkbutton(self.main_frame, text="Log email addresses?", variable=self.email_logging_var, anchor=W, font='Helvetica')
+            
+            
             def test_email():
                 self.__mail_body_update_content()
                 self.__test_connection(True,False)
@@ -142,6 +151,7 @@ class Assistant(Tk):
                 self.email_title_entry,
                 self.email_body_label,
                 self.email_body_entry,
+                self.email_logging_cb,
                 self.test_email_button])
                 
             #PAGE 3 Album ID
@@ -875,6 +885,8 @@ def console_assistant():
 
     # Optional tests for connection
     if config.enable_email:
+        config.enable_email_logging = ask_boolean("Do you want to log outgoing email addresses?",config.enable_email_logging)
+        config.write()
         test_email = to_boolean(raw_input("Do you want to test email sending? [N/y] => "),False)
 
     if config.enable_upload:
@@ -947,15 +959,23 @@ def test_connection(service,config,test_email,test_upload):
 
     
 if __name__ == '__main__':
-    try:
-        graphical_assistant()
-    except Exception as error:
-        print error
-        #import traceback
-        #traceback.print_exc()
-        import time
-        time.sleep(2)
-        print "\nError loading graphical assistant, default to console based\n"
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--console", help="console mode, no graphical interface", action="store_true")
+    args = parser.parse_args()
+
+    if args.console:
         console_assistant()
+    else:
+        try:
+            graphical_assistant()
+        except Exception as error:
+            print error
+            #import traceback
+            #traceback.print_exc()
+            import time
+            time.sleep(2)
+            print "\nError loading graphical assistant, default to console based\n"
+            console_assistant()
     
     
