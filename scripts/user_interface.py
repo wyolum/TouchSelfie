@@ -56,10 +56,18 @@ class LongPressDetector:
         self.long_press_duration = long_press_duration
         root.bind("<Button-1>",self.__click)
         root.bind("<ButtonRelease-1>",self.__release)
-
+        self._suspend = False
+    
+    def suspend(self):
+        """ give the ability to suspend the long click behaviour for one click"""
+        self._suspend=True
+    
     def __click(self,event):
         self.ts = event.time
     def __release(self,event):
+        if self._suspend:
+            self._suspend = False
+            return
         duration = event.time - self.ts
         if self.call_back != None and duration > self.long_press_duration:
             self.call_back(duration)
@@ -168,7 +176,7 @@ class UserInterface():
         self.account_email = config.user_name
         self.send_emails = send_emails
         self.upload_images = upload_images
-        
+        self.config = config
         #Google credentials
 
         self.configdir = os.path.expanduser('./')
@@ -462,8 +470,7 @@ class UserInterface():
                             new_filename = "%s-anim.gif" % self.last_picture_timestamp
                             
                         new_filename = os.path.join(config.archive_dir,new_filename)
-                        command = (['mv', self.last_picture_filename, new_filename])
-                        subprocess.call(command)
+                        os.rename(self.last_picture_filename, new_filename)
                         self.last_picture_filename = new_filename
                     else:
                         print "Error : archive_dir %s doesn't exist"% config.archive_dir
@@ -647,19 +654,41 @@ class UserInterface():
         """
         if not self.send_emails:
             return
-        self.suspend_poll = True
         if self.signed_in and self.tkkb is None:
             self.email_addr.set("")
+            self.suspend_poll = True
+            self.longpress_obj.suspend() # solves bug of longpress detected when keyboard was displayed
             self.tkkb = Toplevel(self.root)
-            def onEnter(*args):
-                print "sending email..."+self.email_addr.get()
-                self.kill_tkkb()
-                self.__send_picture()
-            #Tkkb(self.tkkb, self.email_addr, onEnter=onEnter)
-            TouchKeyboard(self.tkkb,self.email_addr, onEnter = onEnter)
-            self.tkkb.wm_attributes("-topmost", 1)
-            self.tkkb.transient(self.root)
-            self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
+            keyboard_parent = self.tkkb
+            consent_var = IntVar()
+            if self.config.enable_email_logging:
+                #build consent control
+                main_frame=Frame(self.tkkb)
+                consent_frame = Frame(self.tkkb, bg='white', pady=20)
+                consent_var.set(1)
+                consent_cb = Checkbutton(consent_frame,text="Ok to log my mail address", variable=consent_var, font="Helvetica",bg='white', fg='black')
+                consent_cb.pack(fill=X)
+                consent_frame.pack(side=BOTTOM,fill=X)
+                main_frame.pack(side=TOP,fill=Y)
+                keyboard_parent=main_frame
+                def onEnter(*args):
+                    self.kill_tkkb()
+                    res = self.__send_picture()
+                    self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter)
+                self.tkkb.wm_attributes("-topmost", 1)
+                self.tkkb.transient(self.root)
+                self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
+                    
+            else:
+                def onEnter(*args):
+                    self.kill_tkkb()
+                    self.__send_picture()
+
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter)
+                self.tkkb.wm_attributes("-topmost", 1)
+                self.tkkb.transient(self.root)
+                self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
             
     def kill_tkkb(self):
         """Kill the popup keyboard"""
@@ -671,23 +700,48 @@ class UserInterface():
     def __send_picture(self):
         """Actual code to send picture self.last_picture_filename by email to the address entered in self.email_addr StringVar"""
         if not self.send_emails:
-            return
+            return False
+        retcode = False
         if self.signed_in:
-            print 'sending photo by email to %s' % self.email_addr.get()
+            #print 'sending photo by email to %s' % self.email_addr.get()
             self.status("Sending Email")
             try:
-                self.oauth2service.send_message(
+                retcode = self.oauth2service.send_message(
                     self.email_addr.get().strip(),
                     config.emailSubject,
                     config.emailMsg,
                     self.last_picture_filename)
-                self.kill_tkkb()
             except Exception, e:
                 print 'Send Failed ::', e
                 self.status("Send failed :(")
+                retcode = False
             self.status("")
         else:
             print 'Not signed in'
+            retcode = False
+        return retcode
+    def __log_email_address(self,mail_address,consent_to_log,success,last_picture_filename):
+        import time
+        import datetime
+        ts = datetime.datetime.fromtimestamp(time.time()).strftime("[%Y-%m-%d %H:%M]")
+        sendcode = "?"
+        if not consent_to_log:
+            #user does'nt want his address to be logged
+            mail_address = "xxx@xxx"
+            if success:
+                sendcode = '-'
+            else:
+                sendcode = "X"
+        else:
+            if success:
+                sendcode = '*'
+            else:
+                sendcode = 'X'
+        
+        sendmail_log = open(EMAILS_LOG_FILE,"a")
+        status = "%s (%s) %s %s\n"%(ts,sendcode,mail_address,os.path.basename(last_picture_filename))
+        sendmail_log.write(status)
+        sendmail_log.close()
 
 if __name__ == '__main__':
     import argparse
