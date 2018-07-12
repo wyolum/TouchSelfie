@@ -58,21 +58,15 @@ class LongPressDetector:
         root.bind("<Button-1>",self.__click)
         root.bind("<ButtonRelease-1>",self.__release)
         
-        # Suspend actions in case we loose focus or leave 
-        root.bind("<FocusOut>",self.__suspend)
-        root.bind("<Leave>",self.__suspend)
-        # Reactivate actions in case we're back
-        root.bind("<FocusIn>",self.__continue)
-        root.bind("<Enter>",self.__continue)
-       
-    def __suspend(self,event):
+               
+    def suspend(self):
         """suspend longpress action"""
         self._suspend = True
     
-    def __continue(self,event):
+    def activate(self):
         """reactivate longpress action"""
         self._suspend = False
-        self.ts = event.time
+        
         
     def __click(self,event):
         self.ts = event.time
@@ -80,8 +74,7 @@ class LongPressDetector:
     def __release(self,event):
         if self._suspend:
             #cancel this event
-            print "suspended"
-            self._suspend = False
+            self.ts = event.time
             return
         duration = event.time - self.ts
         if self.call_back != None and duration > self.long_press_duration:
@@ -558,8 +551,8 @@ class UserInterface():
         preview_height = preview_size[1]
         
         overlay_height = int(preview_height * 0.2)
-        print preview_size
-        print preview_width, preview_height, overlay_height
+        #print preview_size
+        #print preview_width, preview_height, overlay_height
         
         ## prepare overlay images (resize)
         overlay_images = []
@@ -672,7 +665,7 @@ class UserInterface():
         if self.signed_in and self.tkkb is None:
             self.email_addr.set("")
             self.suspend_poll = True
-            self.longpress_obj.suspend() # solves bug of longpress detected when keyboard was displayed
+            self.longpress_obj.suspend()
             self.tkkb = Toplevel(self.root)
             keyboard_parent = self.tkkb
             consent_var = IntVar()
@@ -711,6 +704,7 @@ class UserInterface():
             self.tkkb.destroy()
             self.tkkb = None
             self.suspend_poll = False
+        self.root.after(300,self.longpress_obj.activate)
             
     def __send_picture(self):
         """Actual code to send picture self.last_picture_filename by email to the address entered in self.email_addr StringVar"""
@@ -735,6 +729,7 @@ class UserInterface():
             print 'Not signed in'
             retcode = False
         return retcode
+        
     def __log_email_address(self,mail_address,consent_to_log,success,last_picture_filename):
         import time
         import datetime
@@ -752,9 +747,13 @@ class UserInterface():
                 sendcode = '*'
             else:
                 sendcode = 'X'
-        
+        file_path = last_picture_filename
+        try:
+            file_path = os.path.basename(last_picture_filename)
+        except:
+            pass
         sendmail_log = open(EMAILS_LOG_FILE,"a")
-        status = "%s (%s) %s %s\n"%(ts,sendcode,mail_address,os.path.basename(last_picture_filename))
+        status = "%s (%s) %s %s\n"%(ts,sendcode,mail_address,file_path)
         sendmail_log.write(status)
         sendmail_log.close()
 
