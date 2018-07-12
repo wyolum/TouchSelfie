@@ -20,6 +20,7 @@ class Configuration():
     enable_email  = True #Enable the 'send email" feature
     enable_upload = True #Enable the upload feature
     enable_hardware_buttons = False #Enable hardware buttons
+    enable_email_logging = False # Should we log outgoing emails?
     
     #init
     def __init__(self,configuration_file_name):
@@ -66,6 +67,7 @@ class Configuration():
         if "enable_email" in config.keys():  self.enable_email = config["enable_email"]
         if "enable_upload" in config.keys():  self.enable_upload = config["enable_upload"]
         if "enable_hardware_buttons" in config.keys():  self.enable_hardware_buttons = config["enable_hardware_buttons"]
+        if "enable_email_logging" in config.keys(): self.enable_email_logging = config["enable_email_logging"]
         
 
         return self.is_valid
@@ -88,7 +90,8 @@ class Configuration():
             "full_screen": self.full_screen,
             "enable_email": self.enable_email,
             "enable_upload": self.enable_upload,
-            "enable_hardware_buttons": self.enable_hardware_buttons
+            "enable_hardware_buttons": self.enable_hardware_buttons,
+            "enable_email_logging" : self.enable_email_logging
         }
         try:
             with open(self.config_file,'w') as config:
