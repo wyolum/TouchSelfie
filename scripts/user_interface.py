@@ -53,13 +53,36 @@ class LongPressDetector:
         self.ts=0
         self.root = root
         self.call_back = call_back
+        self._suspend = False
         self.long_press_duration = long_press_duration
         root.bind("<Button-1>",self.__click)
         root.bind("<ButtonRelease-1>",self.__release)
-
+        
+        # Suspend actions in case we loose focus or leave 
+        root.bind("<FocusOut>",self.__suspend)
+        root.bind("<Leave>",self.__suspend)
+        # Reactivate actions in case we're back
+        root.bind("<FocusIn>",self.__continue)
+        root.bind("<Enter>",self.__continue)
+       
+    def __suspend(self,event):
+        """suspend longpress action"""
+        self._suspend = True
+    
+    def __continue(self,event):
+        """reactivate longpress action"""
+        self._suspend = False
+        self.ts = event.time
+        
     def __click(self,event):
         self.ts = event.time
+
     def __release(self,event):
+        if self._suspend:
+            #cancel this event
+            print "suspended"
+            self._suspend = False
+            return
         duration = event.time - self.ts
         if self.call_back != None and duration > self.long_press_duration:
             self.call_back(duration)
