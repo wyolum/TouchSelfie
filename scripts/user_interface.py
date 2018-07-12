@@ -570,7 +570,7 @@ class UserInterface():
             
             padded_overlay = Image.new('RGBA', (pad_width, pad_height))
             # Paste the original image into the padded one (centered)
-            padded_overlay.paste(im, ( int((preview_width+im.size[0])/2.0), int((preview_height+im.size[1])/2.0)))
+            padded_overlay.paste(im, ( int((preview_width-im.size[0])/2.0), int((preview_height-im.size[1])/2.0)))
             overlay_images.append(padded_overlay)
         ## All images loaded at the right resolution
 
