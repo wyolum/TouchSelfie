@@ -83,7 +83,7 @@ sudo update-alternatives --config x-www-browser
 
 ![user interface](screenshots/new_user_interface.jpg?raw=true)
 
-- Preview now uses builtin annotate_text and opaque preview window
+- Preview now uses images for countdown: be creative! see `constants.py` for customizations.
 
 - New skinnable Touchscreen keyboard "mykb.py"
 
@@ -94,7 +94,10 @@ sudo update-alternatives --config x-www-browser
   - tune configuration in `constants.py`
   - limited runtime configuration (exit, enable/disable email and upload) is still possible via long press)
 
-- snapshot view now supports animated gifs
+- snapshot display now supports animated gifs
+
+- Mail address logging available in configuration
+  - photobooth users can opt-out from the mail logging if activated
 
 - command line arguments to enable/disable some features:
   - enable/disable fullscreen startup
