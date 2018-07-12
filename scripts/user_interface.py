@@ -453,9 +453,9 @@ class UserInterface():
             if os.path.exists(snap_filename):
                 self.last_picture_filename = snap_filename
                 self.last_picture_time = time.time()
-                self.last_picture_timestamp = time.strftime("%Y-%m-%d_%H-%M-%S",time.gmtime())
-                self.last_picture_title = time.strftime("%d-%m-%Y %H:%M:%S",time.gmtime()) #TODO add event name
-                
+                import datetime
+                self.last_picture_timestamp = datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d_%H-%M-%S")
+                self.last_picture_title = datetime.datetime.fromtimestamp(time.time()).strftime("%d-%m-%Y %H:%M:%S")  #TODO add event name
                 # 1. Display
                 self.image.load(snap_filename)
                 # 2. Upload
