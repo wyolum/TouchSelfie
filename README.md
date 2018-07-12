@@ -77,13 +77,16 @@ sudo update-alternatives --config x-www-browser
 - supports new v2.1 pi camera
 - Supports arbitrary resolution for snapshots (configure it in constants.py)
 
+### Better snap preview mode
+
+- Preview now uses images for countdown: be creative! see `constants.py` for customizations.
+- Preview is now horizontally flipped which is consistent with cameraphone behaviors and your bathroom mirror. (Previous mode was confusing for users)
+
 ### User interface improvements
 
 - Modern "black" userinterface with icon buttons
 
 ![user interface](screenshots/new_user_interface.jpg?raw=true)
-
-- Preview now uses images for countdown: be creative! see `constants.py` for customizations.
 
 - New skinnable Touchscreen keyboard "mykb.py"
 
