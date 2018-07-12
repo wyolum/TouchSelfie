@@ -616,7 +616,7 @@ class UserInterface():
     def refresh_auth(self):
         """ refresh the oauth2 service (regularly called)"""
         # useless if we don't need image upload
-        if not self.upload_images:
+        if not (self.upload_images or self.send_emails):
             if self.send_emails:
                 self.signed_in = True #Will fail otherwise
                 self.mail_btn.configure(state=NORMAL)
