@@ -550,7 +550,7 @@ class UserInterface():
         preview_width = preview_size[0]
         preview_height = preview_size[1]
         
-        overlay_height = int(preview_height * 0.2)
+        overlay_height = int(preview_height * COUNTDOWN_IMAGE_MAX_HEIGHT_RATIO)
         #print preview_size
         #print preview_width, preview_height, overlay_height
         
