@@ -7,7 +7,7 @@ RPI_GPIO_EXISTS = True
 
 # Predefine variables
 BUTTONS_PINS = []
-BUTTONS_MODE = 0
+BUTTONS_MODE = "pull_up"
 BUTTON_IS_ACTIVE = 1
 
 try:
