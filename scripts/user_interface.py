@@ -546,11 +546,18 @@ class UserInterface():
         #bbox = self.camera.preview.window
         #preview_width = bbox[2]
         #preview_height = bbox[3]
-        preview_size = self.camera.resolution
-        preview_width = preview_size[0]
-        preview_height = preview_size[1]
+        #preview_size = self.camera.resolution
+
         
-        overlay_height = int(preview_height * 0.2)
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        
+        #I'm making the bet that preview window size == screen size in fullscreen mode
+        #If this fails we should try preview_width = min(screen_width, self.camera.resolution[0])
+        preview_width = screen_width
+        preview_height = screen_height
+        
+        overlay_height = int(preview_height * COUNTDOWN_IMAGE_MAX_HEIGHT_RATIO) 
         #print preview_size
         #print preview_width, preview_height, overlay_height
         

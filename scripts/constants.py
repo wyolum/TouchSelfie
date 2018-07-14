@@ -79,6 +79,7 @@ COUNTDOWN_OVERLAY_IMAGES=[
     os.path.join("ressources","count_down_4.png"),
     os.path.join("ressources","count_down_5.png"),
     os.path.join("ressources","count_down_ready.png")]
+COUNTDOWN_IMAGE_MAX_HEIGHT_RATIO = 0.2 #(0. - 1.) Ratio of the countdown images over screen height
 
 EMAIL_BUTTON_IMG  = os.path.join("ressources","ic_email.png")
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
