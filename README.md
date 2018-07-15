@@ -61,6 +61,9 @@ sudo update-alternatives --config x-www-browser
 ### Zero password
 - Now integrally based on OAuth2, neither the send-email, nor the upload-pictures will ask for and store a password
 
+### Send mails even from protected networks
+- Many faculty/company networks block the sendmail port. By using OAuth2 authentication, photobooth emails are seen as https connection and are not blocked by the network anymore
+
 ### Easier setup
 - a new `setup.sh` assistant will guide you through the configuration of the features you need (send_email, auto-upload) and will help you install the Google credentials.
 - credentials installation now points to a google-hosted wizard to simplify the application-id creation
