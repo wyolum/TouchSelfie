@@ -485,7 +485,15 @@ class UserInterface():
                             new_filename = "%s-anim.gif" % self.last_picture_timestamp
                             
                         new_filename = os.path.join(config.archive_dir,new_filename)
-                        os.rename(self.last_picture_filename, new_filename)
+                        # bug #40 shows that os.rename does not handle cross-filesystems (ex: usb key)
+                        # So we use (slower) copy and remove when os.rename raises an exception
+                        try:
+                            os.rename(self.last_picture_filename, new_filename)
+                        except:
+                            import shutil
+                            shutil.copy(self.last_picture_filename, new_filename)
+                            os.remove(self.last_picture_filename)
+                    
                         self.last_picture_filename = new_filename
                     else:
                         print "Error : archive_dir %s doesn't exist"% config.archive_dir
