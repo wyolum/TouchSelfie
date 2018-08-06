@@ -136,7 +136,13 @@ class UserInterface():
 
         if config.full_screen:
             self.root.attributes("-fullscreen",True)
-        
+            self.root.update()
+            global SCREEN_H,SCREEN_W
+            SCREEN_W = self.root.winfo_width()
+            SCREEN_H = self.root.winfo_height()
+            self.size=(SCREEN_W,SCREEN_H)
+            window_size= self.size
+
         self.root.configure(background='black')
         if window_size is not None:
             self.size=window_size
@@ -145,6 +151,7 @@ class UserInterface():
         
         self.root.geometry('%dx%d+0+0'%(self.size[0],self.size[1]))
 
+        
         #Configure Image holder
         self.image = ImageLabel(self.root, size=self.size)
         self.image.place(x=0, y=0, relwidth = 1, relheight=1)
