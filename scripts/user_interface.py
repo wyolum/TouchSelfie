@@ -95,6 +95,7 @@ class UserInterface():
         send_emails   = config.enable_email
         hardware_buttons = config.enable_hardware_buttons
         send_prints = config.enable_print #should be added to config file later
+        selected_printer = config.selected_printer
 
         self.root = Tk()
 
@@ -205,6 +206,7 @@ class UserInterface():
         self.account_email = config.user_name
         self.send_emails = send_emails
         self.send_prints = send_prints
+        self.selected_printer = selected_printer
         self.upload_images = upload_images
         self.config = config
         #Google credentials
@@ -740,10 +742,11 @@ class UserInterface():
         try:
             conn = cups.Connection()
             printers = conn.getPrinters()
-            default_printer = printers.keys()[1]#defaults to the first printer installed
+            print self.selected_printer
+            default_printer = printers.keys()[self.selected_printer]#defaults to the first printer installed
             cups.setUser('pi')
             conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
-            print 'Sending to printer'
+            print 'Sending to printer...'
         except:
             print 'print failed :: '
             self.status("Print failed :(")

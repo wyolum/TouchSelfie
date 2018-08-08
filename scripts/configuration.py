@@ -68,6 +68,7 @@ class Configuration():
         if "enable_email" in config.keys():  self.enable_email = config["enable_email"]
         if "enable_upload" in config.keys():  self.enable_upload = config["enable_upload"]
         if "enable_print" in config.keys(): self.enable_print = config["enable_print"]
+        if "selected_printer" in config.keys(): self.selected_printer = config["selected_printer"]
         if "enable_hardware_buttons" in config.keys():  self.enable_hardware_buttons = config["enable_hardware_buttons"]
         if "enable_email_logging" in config.keys(): self.enable_email_logging = config["enable_email_logging"]
 
@@ -93,6 +94,7 @@ class Configuration():
             "enable_email": self.enable_email,
             "enable_upload": self.enable_upload,
             "enable_print": self.enable_print,
+            "selected_printer": self.selected_printer,
             "enable_hardware_buttons": self.enable_hardware_buttons,
             "enable_email_logging" : self.enable_email_logging
         }

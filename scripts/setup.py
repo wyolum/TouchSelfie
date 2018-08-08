@@ -13,6 +13,7 @@ import sys
 import configuration
 import constants
 import mykb
+import cups
 VALID_ICON_FILE = os.path.join("ressources","ic_valid.png")
 INVALID_ICON_FILE = os.path.join("ressources","ic_invalid.png")
 from PIL import Image as _Image
@@ -68,11 +69,42 @@ class Assistant(Tk):
             self.want_print_var.set(config.enable_print == True)
             def on_want_print_change(*args):
                 self.config.enable_print = self.want_print_var.get() !=0
+                if self.config.enable_print == True:
+                    self.use_print_list = Listbox(self.main_frame)
+                    self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
+                    #self.use_print_list.pack()
+                    self.__erase_page()
+                    self.widgets.pop(0)
+                    self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
+                    conn = cups.Connection()
+                    printers = conn.getPrinters()
+
+                    for printer in printers:
+                        #print printer, printers[printer]["device-uri"]
+                        self.use_print_list.insert(END, printer)
+                    self.__draw_page()
+
+
+
+
+
+
             self.want_print_var.trace("w",on_want_print_change)
 
             self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
             self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
             self.want_print_cb = Checkbutton(self.main_frame, text="Enable photo print", variable=self.want_print_var, anchor=W, font='Helvetica')
+
+            self.want_printer_val = int()
+            #self.want_printer_val.set(config.selected_printer)
+            def on_use_printer(evt):
+                printer_selected = evt.widget
+                self.want_printer_val = int(printer_selected.curselection()[0])
+                self.config.selected_printer = self.want_printer_val
+                #value = self.want_printer_val.get(index)
+                print 'You selected item %d: ' % (self.want_printer_val)
+
+
             #checkbutton to choose to use soft keyboard
 
             self.use_soft_keyboard_var = IntVar()
@@ -115,6 +147,7 @@ class Assistant(Tk):
                 self.refresh_cred_button])
 
             #PAGE 2 Email infos
+
             self.email_title_var = StringVar()
             self.email_title_var.set(config.emailSubject)
             def on_mail_title_change(*args):
