@@ -83,7 +83,7 @@ class Assistant(Tk):
 
             self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
 
-            self.widgets.append([self.want_email_cb, self.want_upload_cb, self.use_soft_keyboard_cb])
+            self.widgets.append([self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb])
 
             #PAGE 1 google credentials
             self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
@@ -736,6 +736,7 @@ def console_assistant():
 
     want_email  = config.enable_email
     want_upload = config.enable_upload
+    want_print = config.enable_print
     need_credentials = want_email or want_upload
 
     # We only need a user name if we need credentials

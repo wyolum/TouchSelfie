@@ -92,6 +92,7 @@ class Configuration():
             "full_screen": self.full_screen,
             "enable_email": self.enable_email,
             "enable_upload": self.enable_upload,
+            "enable_print": self.enable_print,
             "enable_hardware_buttons": self.enable_hardware_buttons,
             "enable_email_logging" : self.enable_email_logging
         }
