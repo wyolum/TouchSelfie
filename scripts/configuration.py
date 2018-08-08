@@ -19,23 +19,24 @@ class Configuration():
     full_screen  = True #Start application in full screen
     enable_email  = True #Enable the 'send email" feature
     enable_upload = True #Enable the upload feature
+    enable_print = True #Enable the printer feature
     enable_hardware_buttons = False #Enable hardware buttons
     enable_email_logging = False # Should we log outgoing emails?
-    
+
     #init
     def __init__(self,configuration_file_name):
         """Creates the configuration object with default values and load the configuration file
-        
+
         __init__ will parse the configuration file given as its argument
         After parsing, is_valid property is set to True if no error was encountered
-        
+
         Arguments:
             configuration_file_name -- the conf.json file to read from or write to
         """
         self.config_file = configuration_file_name
         self.is_valid = False
         self.__read_config_file()
-    
+
     def __read_config_file(self):
         self.is_valid = True
         try:
@@ -66,13 +67,14 @@ class Configuration():
         if "full_screen" in config.keys():  self.full_screen = config["full_screen"]
         if "enable_email" in config.keys():  self.enable_email = config["enable_email"]
         if "enable_upload" in config.keys():  self.enable_upload = config["enable_upload"]
+        if "enable_print" in config.keys(): self.enable_print = config["enable_print"]
         if "enable_hardware_buttons" in config.keys():  self.enable_hardware_buttons = config["enable_hardware_buttons"]
         if "enable_email_logging" in config.keys(): self.enable_email_logging = config["enable_email_logging"]
-        
+
 
         return self.is_valid
-    
-    
+
+
     def write(self):
         """ write the configuration object to the configuration file given at creation time"""
         myconfig = {
@@ -98,8 +100,8 @@ class Configuration():
                 config.write(json.dumps(myconfig, indent =4, sort_keys=True))
         except Exception as error:
             raise ValueError("Problem writing %s configuration file: %s"%(self.config_file,error))
-            
-            
+
+
 if __name__ == "__main__":
 
     config = Configuration("myconf.conf")

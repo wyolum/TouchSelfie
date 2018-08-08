@@ -13,7 +13,7 @@ For hardware construction, see [Make Magazine article](https://makezine.com/proj
 ### Get the necessary packages
 
 ```
-# update system 
+# update system
 sudo apt-get update
 
 # Install ImageTk, Image from PIL
@@ -26,6 +26,16 @@ sudo pip install --upgrade google-api-python-client
 
 # Install ImageMagick for the 'Animation' mode
 sudo apt-get install imagemagick
+
+# Install CUPS for the Printing function
+sudo apt-get install cups
+sudo apt-get install pycups
+
+# Setting up  CUPS/printer
+https://www.techradar.com/how-to/computing/how-to-turn-the-raspberry-pi-into-a-wireless-printer-server-1312717
+Test device:
+Canon Selphy CP1300 with the Canon SELPHY CP900 - CUPS+Gutenprint v5.2.11  driver over USB
+
 ```
 
 If google chrome is not on your system, the following might be necessary:
@@ -48,7 +58,7 @@ sudo update-alternatives --config x-www-browser
   - email subject and body
   - wether or not to archive snapshots locally
   - where to store pictures locally
-  
+
 3. Optionally you can change lower-level configuration options in the file `scripts/constants.py` such as:
   - captured image sizes
   - hardware dependent things
@@ -111,7 +121,7 @@ sudo update-alternatives --config x-www-browser
   - enable/disable auto-upload
   - enable/disable hardware buttons support (on-screen buttons displayed instead)
   - *Use `python user_interface.py --help` for a description of command line options*
-  
+
 ## <a id="confidentiality"></a>A note on security and confidentiality
 
   - **During setup, you ask me to allow this application to access my email, the original TouchSelfie didn't do this, why?**
@@ -134,7 +144,7 @@ No, but don't take my word!
 
 This is the beauty of opensource: everybody can read the source code and check if it's harmfull. Plus, with Github, you can't hide anything: every versions of this code is archived and I can't delete them: you will always be able to verify that I didn't do anything harmfull in the past.
 
-Maybe you don't have the competency to verify the sourcecode, but others have and I trust they will alert the world if they find something nasty (or just file an [Issue!](../../issues)). 
+Maybe you don't have the competency to verify the sourcecode, but others have and I trust they will alert the world if they find something nasty (or just file an [Issue!](../../issues)).
 
 Hint for future verifyiers: the `scripts/oaut2services.py` contains all the code that accesses the Google Accounts. As you will see, there's no methods designed to read emails, only to send them.
 
