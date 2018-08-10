@@ -19,7 +19,8 @@ class Configuration():
     full_screen  = True #Start application in full screen
     enable_email  = True #Enable the 'send email" feature
     enable_upload = True #Enable the upload feature
-    enable_print = True #Enable the printer feature
+    enable_print = False #Enable the printer feature
+    selected_printer = None #No printer select
     enable_hardware_buttons = False #Enable hardware buttons
     enable_email_logging = False # Should we log outgoing emails?
 

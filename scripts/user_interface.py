@@ -13,7 +13,13 @@ from tkImageLabel import ImageLabel
 from constants import *
 import time
 import traceback
-import cups
+
+try:
+    import cups
+    self.printer_selection_enable = True
+except ImportError:
+    print "Cups not installed. removing option"
+    self.printer_selection_enable = False
 
 import os
 import subprocess

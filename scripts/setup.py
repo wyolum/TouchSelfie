@@ -13,7 +13,13 @@ import sys
 import configuration
 import constants
 import mykb
-import cups
+try:
+    import cups
+    printer_selection_enable = True
+except ImportError:
+    print "Cups not installed. removing option"
+    printer_selection_enable = False
+
 VALID_ICON_FILE = os.path.join("ressources","ic_valid.png")
 INVALID_ICON_FILE = os.path.join("ressources","ic_invalid.png")
 from PIL import Image as _Image
@@ -37,6 +43,7 @@ class Assistant(Tk):
         Tk.__init__(self,*args,**kwargs)
         try:
             self.google_service = None
+            self.printer_selection_enable = printer_selection_enable
             self.config( bg = "white")
             self.config = config
             self.packed_widgets = []
@@ -65,37 +72,40 @@ class Assistant(Tk):
                 self.config.enable_upload = self.want_upload_var.get() != 0
             self.want_upload_var.trace("w",on_want_upload_change)
 
-            self.want_print_var = IntVar()
-            self.want_print_var.set(config.enable_print == True)
-            def on_want_print_change(*args):
-                self.config.enable_print = self.want_print_var.get() !=0
-                if self.config.enable_print == True:
-                    self.use_print_list = Listbox(self.main_frame)
-                    self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
-                    #self.use_print_list.pack()
-                    self.__erase_page()
-                    self.widgets.pop(0)
-                    self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
-                    conn = cups.Connection()
-                    printers = conn.getPrinters()
 
-                    for printer in printers:
-                        #print printer, printers[printer]["device-uri"]
-                        self.use_print_list.insert(END, printer)
-                    self.__draw_page()
+            if self.printer_selection_enable == True:
+                self.want_print_var = IntVar()
+                self.want_print_var.set(config.enable_print == True)
+                def on_want_print_change(*args):
+                    self.config.enable_print = self.want_print_var.get() !=0
+                    if self.config.enable_print == True:
+                        self.use_print_list = Listbox(self.main_frame)
+                        self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
+                        #self.use_print_list.pack()
+                        self.__erase_page()
+                        self.widgets.pop(0)
+                        self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
+                        conn = cups.Connection()
+                        printers = conn.getPrinters()
 
-
-
-
+                        for printer in printers:
+                            #print printer, printers[printer]["device-uri"]
+                            self.use_print_list.insert(END, printer)
+                        self.__draw_page()
 
 
-            self.want_print_var.trace("w",on_want_print_change)
+
+
+
+            if printer_selection_enable == True:self.want_print_var.trace("w",on_want_print_change)
 
             self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
             self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
-            self.want_print_cb = Checkbutton(self.main_frame, text="Enable photo print", variable=self.want_print_var, anchor=W, font='Helvetica')
 
-            self.want_printer_val = int()
+            if printer_selection_enable == True:
+                self.want_print_cb = Checkbutton(self.main_frame, text="Enable photo print", variable=self.want_print_var, anchor=W, font='Helvetica')
+                self.want_printer_val = int()
+
             #self.want_printer_val.set(config.selected_printer)
             def on_use_printer(evt):
                 printer_selected = evt.widget
@@ -114,8 +124,10 @@ class Assistant(Tk):
             self.use_soft_keyboard_var.set(0)
 
             self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
-
-            self.widgets.append([self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb])
+            if self.printer_selection_enable == True:
+                self.widgets.append([self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb])
+            else:
+                self.widgets.append([self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
 
             #PAGE 1 google credentials
             self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
@@ -766,10 +778,28 @@ def console_assistant():
     print ""
     config.enable_upload = ask_boolean("Do you want the 'auto-upload photos' feature?",config.enable_upload)
     print ""
+    if printer_selection_enable == True:
+        config.enable_print = ask_boolean("Do you want the 'Send photo to printer' feature?", config.enable_print)
+        print ""
+        if config.enable_print == True:
+            conn = cups.Connection()
+            printers = conn.getPrinters()
+            index = 0
+            selectedindex = 0
+            for printer in printers:
+                if config.selected_printer == str(index):
+                    print '[*] ['+str(index)+'] '+printer
+                    selectedindex = index
+                else:
+                    print '[ ] ['+str(index)+'] '+printer
+                index = index + 1
+            config.selected_printer = raw_input("Seleted printer: [%s] confirm or change =>" % config.selected_printer)
+            if config.selected_printer is "": config.selected_printer = selectedindex
 
     want_email  = config.enable_email
     want_upload = config.enable_upload
     want_print = config.enable_print
+    selected_printer = config.selected_printer
     need_credentials = want_email or want_upload
 
     # We only need a user name if we need credentials
