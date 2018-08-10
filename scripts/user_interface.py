@@ -16,6 +16,7 @@ import traceback
 
 try:
     import cups
+    import getpass
     self.printer_selection_enable = True
 except ImportError:
     print "Cups not installed. removing option"
@@ -750,7 +751,7 @@ class UserInterface():
             printers = conn.getPrinters()
             print self.selected_printer
             default_printer = printers.keys()[self.selected_printer]#defaults to the first printer installed
-            cups.setUser('pi')
+            cups.setUser(getpass.getuser())
             conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
             print 'Sending to printer...'
         except:

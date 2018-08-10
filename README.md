@@ -27,11 +27,11 @@ sudo pip install --upgrade google-api-python-client
 # Install ImageMagick for the 'Animation' mode
 sudo apt-get install imagemagick
 
-# Install CUPS for the Printing function
+# Install CUPS for the Printing function(optional)
 sudo apt-get install cups
 sudo apt-get install pycups
 
-# Setting up  CUPS/printer
+# Setting up  CUPS/printer(optional)
 https://www.techradar.com/how-to/computing/how-to-turn-the-raspberry-pi-into-a-wireless-printer-server-1312717
 Test device:
 Canon Selphy CP1300 with the Canon SELPHY CP900 - CUPS+Gutenprint v5.2.11  driver over USB
