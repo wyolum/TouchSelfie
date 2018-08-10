@@ -17,10 +17,10 @@ import traceback
 try:
     import cups
     import getpass
-    self.printer_selection_enable = True
+    printer_selection_enable = True
 except ImportError:
     print "Cups not installed. removing option"
-    self.printer_selection_enable = False
+    printer_selection_enable = False
 
 import os
 import subprocess
