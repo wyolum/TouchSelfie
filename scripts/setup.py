@@ -79,19 +79,30 @@ class Assistant(Tk):
                 def on_want_print_change(*args):
                     self.config.enable_print = self.want_print_var.get() !=0
                     if self.config.enable_print == True:
-                        self.use_print_list = Listbox(self.main_frame)
-                        self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
-                        #self.use_print_list.pack()
-                        self.__erase_page()
-                        self.widgets.pop(0)
-                        self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
-                        conn = cups.Connection()
-                        printers = conn.getPrinters()
+                        try:
+                            self.use_print_list = Listbox(self.main_frame)
+                            self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
+                            #self.use_print_list.pack()
+                            self.__erase_page()
+                            self.widgets.pop(0)
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
 
-                        for printer in printers:
-                            #print printer, printers[printer]["device-uri"]
-                            self.use_print_list.insert(END, printer)
-                        self.__draw_page()
+                            conn = cups.Connection()
+                            printers = conn.getPrinters()
+
+                            for printer in printers:
+                                #print printer, printers[printer]["device-uri"]
+                                self.use_print_list.insert(END, printer)
+                            self.__draw_page()
+                        except:
+                            tkMessageBox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
+                            self.__erase_page()
+                            self.widgets.pop(0)
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
+                            self.__draw_page()
+                            self.enable_print = False;
+                            self.selected_printer = None;
+
 
 
 
