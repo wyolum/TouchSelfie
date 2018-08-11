@@ -95,12 +95,7 @@ class Assistant(Tk):
                                 self.use_print_list.insert(END, printer)
                             self.__draw_page()
                         except:
-                            message_box = Text(text_frame, font=('Helvetica',10), height=12)
-                            message_box.insert(INSERT,"""You need CUPS installed and a printer setup.
-                            Please look in the Readme file for a link on how to setup CUPS on your system.
-
-                            The printer option will be disabled for this setup.""")
-                            message_box.pack(fill=X)
+                            tkMessageBox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
                             self.__erase_page()
                             self.widgets.pop(0)
                             self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
