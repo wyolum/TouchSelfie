@@ -101,6 +101,10 @@ class Assistant(Tk):
 
                             The printer option will be disabled for this setup.""")
                             message_box.pack(fill=X)
+                            self.__erase_page()
+                            self.widgets.pop(0)
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
+                            self.__draw_page()
                             self.enable_print = False;
                             self.selected_printer = None;
 
