@@ -1,6 +1,6 @@
 """
     Graphical and Command-line setup scripts for TouchSelfie
-    
+
     This script is an assistant that guides users
     through the process of configuring wanted features
     and optionally
@@ -13,6 +13,13 @@ import sys
 import configuration
 import constants
 import mykb
+try:
+    import cups
+    printer_selection_enable = True
+except ImportError:
+    print "Cups not installed. removing option"
+    printer_selection_enable = False
+
 VALID_ICON_FILE = os.path.join("ressources","ic_valid.png")
 INVALID_ICON_FILE = os.path.join("ressources","ic_invalid.png")
 from PIL import Image as _Image
@@ -36,9 +43,10 @@ class Assistant(Tk):
         Tk.__init__(self,*args,**kwargs)
         try:
             self.google_service = None
+            self.printer_selection_enable = printer_selection_enable
             self.config( bg = "white")
             self.config = config
-            self.packed_widgets = [] 
+            self.packed_widgets = []
             self.page = 0
             self.main_frame = Frame(self, bg = "white")
             self.buttons_frame = Frame(self, bg='white')
@@ -49,7 +57,7 @@ class Assistant(Tk):
             self.b_prev.pack(side=LEFT,padx=40)
             self.b_next.pack(side=RIGHT,padx=40)
             self.widgets=[]
-            
+
             #variables
             #PAGE 0 email/upload
             self.want_email_var = IntVar()
@@ -57,39 +65,92 @@ class Assistant(Tk):
             def on_want_email_change(*args):
                 self.config.enable_email = self.want_email_var.get() != 0
             self.want_email_var.trace("w",on_want_email_change)
-            
+
             self.want_upload_var = IntVar()
             self.want_upload_var.set(config.enable_upload == True)
             def on_want_upload_change(*args):
                 self.config.enable_upload = self.want_upload_var.get() != 0
             self.want_upload_var.trace("w",on_want_upload_change)
-            
+
+
+            if self.printer_selection_enable == True:
+                self.want_print_var = IntVar()
+                self.want_print_var.set(config.enable_print == True)
+                def on_want_print_change(*args):
+                    self.config.enable_print = self.want_print_var.get() !=0
+                    if self.config.enable_print == True:
+                        try:
+                            self.use_print_list = Listbox(self.main_frame)
+                            self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
+                            #self.use_print_list.pack()
+                            self.__erase_page()
+                            self.widgets.pop(0)
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
+
+                            conn = cups.Connection()
+                            printers = conn.getPrinters()
+
+                            for printer in printers:
+                                #print printer, printers[printer]["device-uri"]
+                                self.use_print_list.insert(END, printer)
+                            self.__draw_page()
+                        except:
+                            tkMessageBox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
+                            self.__erase_page()
+                            self.widgets.pop(0)
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
+                            self.__draw_page()
+                            self.enable_print = False;
+                            self.selected_printer = None;
+
+
+
+
+
+
+            if printer_selection_enable == True:self.want_print_var.trace("w",on_want_print_change)
+
             self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
             self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
-            
+
+            if printer_selection_enable == True:
+                self.want_print_cb = Checkbutton(self.main_frame, text="Enable photo print", variable=self.want_print_var, anchor=W, font='Helvetica')
+                self.want_printer_val = int()
+
+            #self.want_printer_val.set(config.selected_printer)
+            def on_use_printer(evt):
+                printer_selected = evt.widget
+                self.want_printer_val = int(printer_selected.curselection()[0])
+                self.config.selected_printer = self.want_printer_val
+                #value = self.want_printer_val.get(index)
+                print 'You selected item %d: ' % (self.want_printer_val)
+
+
             #checkbutton to choose to use soft keyboard
-            
+
             self.use_soft_keyboard_var = IntVar()
             def on_use_soft_keyboard(*args):
                 self.USE_SOFT_KEYBOARD = self.use_soft_keyboard_var.get() != 0
             self.use_soft_keyboard_var.trace("w",on_use_soft_keyboard)
             self.use_soft_keyboard_var.set(0)
-            
+
             self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
-            
-            self.widgets.append([self.want_email_cb, self.want_upload_cb, self.use_soft_keyboard_cb])
-            
+            if self.printer_selection_enable == True:
+                self.widgets.append([self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb])
+            else:
+                self.widgets.append([self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
+
             #PAGE 1 google credentials
             self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
             self.user_mail_var  = StringVar()
             def on_mail_change(*args):
                 self.config.user_name = self.user_mail_var.get()
-                
+
             self.user_mail_var.trace("w",on_mail_change)
             self.user_mail_var.set(config.user_name)
             self.user_mail_entry =  Entry(self.main_frame, font='Helvetica', textvariable = self.user_mail_var)
             self.__install_soft_keyboard(self.user_mail_entry, self.user_mail_var)
-            
+
             #load valid/invalid icons
             valid_icon = _Image.open(VALID_ICON_FILE)
             self.valid_icon = _ImageTk.PhotoImage(valid_icon)
@@ -98,29 +159,30 @@ class Assistant(Tk):
 
             self.credentials_frame = LabelFrame(self.main_frame, text="Credentials", font='Helvetica')
             self.__check_credentials_files()
-            
+
             self.refresh_cred_button = Button(self.main_frame, text="Refresh", font='Helvetica', fg=self.BUTTONS_BG, command=self.__check_credentials_files)
-            
-            
+
+
             self.widgets.append([
                 self.user_mail_label,
-                self.user_mail_entry, 
-                self.credentials_frame, 
+                self.user_mail_entry,
+                self.credentials_frame,
                 self.refresh_cred_button])
-            
+
             #PAGE 2 Email infos
+
             self.email_title_var = StringVar()
             self.email_title_var.set(config.emailSubject)
             def on_mail_title_change(*args):
                 self.config.emailSubject = self.email_title_var.get()
             self.email_title_var.trace("w",on_mail_title_change)
-            
+
             self.email_body_var = StringVar()
             self.email_body_var.set(config.emailMsg)
             def on_mail_body_change(*args):
                 self.config.emailMsg = self.email_body_var.get()
             self.email_body_var.trace("w",on_mail_body_change)
-            
+
             self.email_title_label = Label(self.main_frame,text="Email subject:", font='Helvetica', anchor=W)
             self.email_title_entry = Entry(self.main_frame, textvariable=self.email_title_var, font='Helvetica', width = 40)
             self.__install_soft_keyboard(self.email_title_entry, self.email_title_var)
@@ -130,7 +192,7 @@ class Assistant(Tk):
             self.email_body_entry =  Text(self.main_frame, font='Helvetica', height=5)
             self.email_body_entry.insert(INSERT,self.email_body_var.get())
             self.__install_soft_keyboard(self.email_body_entry,self.email_body_var)
-            
+
             self.email_logging_var = IntVar()
             if self.config.enable_email_logging: self.email_logging_var.set(1)
             else : self.email_logging_var.set(0)
@@ -138,14 +200,14 @@ class Assistant(Tk):
                 self.config.enable_email_logging = self.email_logging_var.get() != 0
             self.email_logging_var.trace("w",on_email_logging_change)
             self.email_logging_cb = Checkbutton(self.main_frame, text="Log email addresses?", variable=self.email_logging_var, anchor=W, font='Helvetica')
-            
-            
+
+
             def test_email():
                 self.__mail_body_update_content()
                 self.__test_connection(True,False)
-                
+
             self.test_email_button = Button(self.main_frame,text="Send test email", font='Helvetica', command=test_email)
-            
+
             self.widgets.append([
                 self.email_title_label,
                 self.email_title_entry,
@@ -153,11 +215,11 @@ class Assistant(Tk):
                 self.email_body_entry,
                 self.email_logging_cb,
                 self.test_email_button])
-                
+
             #PAGE 3 Album ID
-            
+
             self.album_name_label = Label(self.main_frame,text="Google Photo Album:", font='Helvetica', anchor=W)
-            
+
             self.album_name_var = StringVar()
             def on_album_name_change(*args):
                 self.config.album_name = self.album_name_var.get()
@@ -174,12 +236,12 @@ class Assistant(Tk):
                     self.config.albumID = self.album_id_var.get()
             self.album_id_var.trace("w",on_albumID_change)
             self.album_id_var.set(config.albumID)
-            
+
             self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
             self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
             self.album_name_entry.config(fg="black",bg="#eeeeee")
             self.album_id_entry = Entry(self.main_frame,textvariable = self.album_id_var, font='Helvetica', state=DISABLED)
-            
+
             def select_album():
                 """Popup control to select albums"""
                 print "Album selection"
@@ -205,11 +267,11 @@ class Assistant(Tk):
                 self.__install_soft_keyboard(pattern_entry, pattern_var)
 
                 pattern_entry.pack(fill=X)
-                
+
                 list_box_items = 15
                 album_listbox = Listbox(top,height=list_box_items, font='Helvetica', selectmode=SINGLE)
                 album_listbox.pack(fill=X)
-                
+
                 displayed_list_ids=["idstart"]
                 displayed_list_names=["namestart"]
                 def populate_list(*args):
@@ -233,7 +295,7 @@ class Assistant(Tk):
                             displayed_list_ids.append(id)
                             displayed_list_names.append(title)
 
-                
+
                 populate_list()
                 pattern_var.trace("w",populate_list)
                 def item_selected(*args):
@@ -248,41 +310,41 @@ class Assistant(Tk):
                     self.album_id_var.set(displayed_list_ids[cursel])
                     self.album_name_var.set(displayed_list_names[cursel])
                     top.destroy()
-                    
-                album_listbox.bind("<Double-Button-1>",item_selected)    
-                self.wait_window(top)
-                
-                
 
-            
+                album_listbox.bind("<Double-Button-1>",item_selected)
+                self.wait_window(top)
+
+
+
+
             #Select Album and test buttons
             self.album_bframe = Frame(self.main_frame, bg='white')
             self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
             self.album_select_button.pack(side=LEFT)
-            
-            
 
-            
+
+
+
             def test_upload():
                 self.__test_connection(False,True)
-                
+
             self.upload_test_button = Button(self.album_bframe, text='Test Upload',fg='white',bg=self.BUTTONS_BG, command=test_upload, font='Helvetica')
             self.upload_test_button.pack(side=RIGHT)
-            
+
 
             #self.widgets.append([self.album_name_label,self.current_album_label,self.album_name_entry,self.album_id_label, self.album_id_entry,self.album_bframe])
             self.widgets.append([self.album_name_label,self.album_name_entry,self.album_bframe])
-            
+
             #PAGE 4 Archive
             self.archive_var = IntVar()
             if config.ARCHIVE: self.archive_var.set(1)
             else : self.archive_var.set(0)
-            
+
             def on_archive_change(*args):
                 self.config.ARCHIVE = self.archive_var.get() != 0
             self.archive_var.trace("w",on_archive_change)
-            
-            
+
+
             self.archive_dir_label = Label(self.main_frame,text="Local directory for archive:", font='Helvetica', anchor=W)
             self.archive_dir_var = StringVar()
             self.archive_dir_var.set(config.archive_dir)
@@ -298,8 +360,8 @@ class Assistant(Tk):
                 print "changed dir to %s"%directory
 
             self.choose_archive_dir_button = Button(self.main_frame, text="Choose directory", fg='white',bg=self.BUTTONS_BG, font='Helvetica', command=change_dir)
-            
-            
+
+
             def enable_archive_dir():
                 if self.archive_var.get() == 0:
                     self.archive_dir_entry.config(state = DISABLED)
@@ -307,7 +369,7 @@ class Assistant(Tk):
                 else:
                     self.archive_dir_entry.config(state = NORMAL)
                     self.choose_archive_dir_button.config(state = NORMAL, bg=self.BUTTONS_BG,fg='white')
-                    
+
             self.archive_cb = Checkbutton(self.main_frame,text="Archive snapshots locally", variable = self.archive_var, command=enable_archive_dir, font='Helvetica', anchor=W)
             enable_archive_dir()
             self.widgets.append([
@@ -315,7 +377,7 @@ class Assistant(Tk):
                 self.archive_dir_label,
                 self.archive_dir_entry,
                 self.choose_archive_dir_button])
-            
+
             for widget_page in self.widgets:
                 for widget in widget_page:
                     if widget.winfo_class() == 'Button':
@@ -325,26 +387,26 @@ class Assistant(Tk):
                             widget.config(foreground='grey',background=self.BUTTONS_BG_INACTIVE)
                     else:
                         widget.config(background='white')
-            
+
             self.__draw_page()
         except:
             self.update()
             self.destroy()
             raise Exception("Error during interface creation")
-            
+
     def __mail_body_update_content(self):
         self.email_body_var.set(self.email_body_entry.get('1.0','end'))
         #print "msg body: %s"%self.email_body_var.get()
         return self.email_body_var.get()
-        
+
     def __remove_app_id(self):
         print "removing %s"%constants.APP_ID_FILE
         self.__ask_for_removal(constants.APP_ID_FILE,"Are you sure you want to remove the App ID file?\nYou'll need to download it again from your developer's console.")
-        
+
     def __remove_cred_store(self):
         print "removing %s"%constants.CREDENTIALS_STORE_FILE
         self.__ask_for_removal(constants.CREDENTIALS_STORE_FILE,"Are you sure you want to remove the credentials storage file?\nYou'll need to authorize your application again.")
-    
+
     def __install_soft_keyboard(self,entry,stringvar):
         """Bind a soft keyboard to the entry if needed"""
         def launch_keyboard(*args):
@@ -365,19 +427,19 @@ class Assistant(Tk):
                     entry.delete('1.0',END)
                     entry.insert(END, text_content)
                 kill_keyboard()
-            
+
             mykb.TouchKeyboard(self.soft_keyboard, stringvar, onEnter = onEnter)
             self.soft_keyboard.wm_attributes("-topmost", 1)
             self.wait_window(self.soft_keyboard)
         #Bind the window click event to the entry
         entry.bind('<Button-1>',launch_keyboard)
-            
+
     def __get_app_id(self):
         print "Getting App ID"
         message="""    ________________________________________________________________
 
-    Photo upload or email sending requires that you create a 
-    Google Project and download the project's credentials to 
+    Photo upload or email sending requires that you create a
+    Google Project and download the project's credentials to
     the scripts/ directory
     Note: you can do the following on any computer (except step 5/)
     ________________________________________________________________
@@ -388,7 +450,7 @@ class Assistant(Tk):
         - Platform : other (with command-line user interface)
         - Access   : User data
         - Fill whatever your like for application name and ID name
-    4/  The last step of the assistant makes you Download 
+    4/  The last step of the assistant makes you Download
         a client_id.json file : this is your project's credentials!
     5/  Copy the downloaded file to : scripts/%s
 
@@ -400,27 +462,27 @@ class Assistant(Tk):
         top = Toplevel(self)
         text_frame=Frame(top, bg='white')
         text_frame.pack(side=TOP,fill=X)
-        
+
 
         def launch_browser():
             import webbrowser
             webbrowser.open(GET_APP_ID_WIZARD_URL)
-            
+
         button_frame = Frame(top,bg='white')
         button_frame.pack(side=BOTTOM, fill=X)
         qb = Button(button_frame,text="Launch browser", font='Helvetica', fg="white", bg=self.BUTTONS_BG, command=launch_browser)
         qb.pack( side = LEFT,pady=20,padx=20)
         dismiss_button = Button(button_frame,text="Dismiss", font='Helvetica', fg="white", bg=self.BUTTONS_BG, command=top.destroy)
         dismiss_button.pack( side= RIGHT, pady=20,padx=20)
-        
+
         message_box = Text(text_frame, font=('Helvetica',10), height=25)
         message_box.insert(INSERT,message)
         message_box.pack(fill=X)
         self.wait_window(top)
-        
+
         #update displayed
         self.__check_credentials_files()
-                
+
     def __connect_app(self):
         print "Connecting App"
 
@@ -448,18 +510,18 @@ class Assistant(Tk):
             code_entry.pack(side=LEFT, padx=20, pady=20)
             paste_button = Button(code_frame_top,text="Paste",font='Helvetica',fg='white',bg=self.BUTTONS_BG, command = lambda *args: auth_code.set(self.clipboard_get()))
             paste_button.pack(side=RIGHT,padx=20,pady=20)
-            
+
             ok_button = Button(code_frame_bot,text="Authenticate", font='Helvetica',fg='white',bg=self.BUTTONS_BG, command=top.destroy)
             ok_button.pack(fill=X,padx=20,pady=20)
 
 
-            
+
             message_box = Text(text_frame, font=('Helvetica',10), height=12)
             message_box.insert(INSERT,"""You need to authorize this application to access you data
-            
+
 Click the Start button below:
-    - This will launch a web browser 
-    - You will land on an authorization page for this app to 
+    - This will launch a web browser
+    - You will land on an authorization page for this app to
        - send emails
        - upload pictures
     - Once authorized, you will get an authorization code
@@ -472,7 +534,7 @@ Click the Start button below:
                 code_frame.pack(fill=X, padx=10, pady=10)
                 import webbrowser
                 webbrowser.open(URI)
-            
+
             qb.config(command=authenticate)
 
 
@@ -492,7 +554,7 @@ Click the Start button below:
             import traceback
             traceback.print_exc()
         self.__check_credentials_files()
-        
+
     def __ask_for_removal(self,file,message):
         result = tkMessageBox.askquestion("Delete File", message, icon='warning')
         if result == 'yes':
@@ -505,7 +567,7 @@ Click the Start button below:
             print "Canceled"
         #repaint the control
         self.__check_credentials_files()
-            
+
     def __check_credentials_files(self):
         #empty current
         try:
@@ -536,9 +598,9 @@ Click the Start button below:
                 #We failed to connect
                 self.google_service = None
                 return False
-                
+
         has_cred_store = check_cred_store()
-        
+
         self.app_id_frame = Frame(self.credentials_frame,bg='white')
         self.app_id_frame.pack(fill=X)
         self.cred_store_frame = Frame(self.credentials_frame,bg='white')
@@ -550,7 +612,7 @@ Click the Start button below:
             self.app_id_label  = Label(self.app_id_frame, text="Application ID found", image=self.valid_icon, compound=LEFT, font='Helvetica', bg='white')
             self.app_id_button = Button(self.app_id_frame, text="Remove?", command=self.__remove_app_id, font='Helvetica', fg='white', bg=self.BUTTONS_BG)
 
-        self.app_id_label.pack(side=LEFT,padx=20)        
+        self.app_id_label.pack(side=LEFT,padx=20)
         self.app_id_button.pack(side=RIGHT,padx=20)
 
         if not has_cred_store:
@@ -559,19 +621,19 @@ Click the Start button below:
         else:
             self.cred_store_label = Label(self.cred_store_frame, text = "Credential store found", image=self.valid_icon, compound=LEFT, font='Helvetica', bg = 'white')
             self.cred_store_button = Button(self.cred_store_frame, text = "Remove?", command=self.__remove_cred_store, font='Helvetica', bg = self.BUTTONS_BG, fg='white')
-        
+
         self.cred_store_label.pack(side=LEFT,padx=20)
         self.cred_store_button.pack(side=RIGHT,padx=20)
         if not has_app_id:
             self.cred_store_button.config(state=DISABLED,bg=self.BUTTONS_BG_INACTIVE)
         else:
             self.cred_store_button.config(state=NORMAL,bg=self.BUTTONS_BG)
-            
+
         if (not has_app_id) or (not has_cred_store):
             self.b_next.config(state=DISABLED, bg=self.BUTTONS_BG_INACTIVE)
         else:
             self.b_next.config(state=NORMAL, bg= self.BUTTONS_BG)
-            
+
 
     def __decrement(self):
         """decrement by one page"""
@@ -588,12 +650,12 @@ Click the Start button below:
                 self.page -= 1
             self.__draw_page()
 
-          
+
     def __increment(self):
         """increment by one page"""
         want_email = self.want_email_var.get() != 0
         want_upload = self.want_upload_var.get() != 0
-        
+
         if self.page <= len(self.widgets):
             if self.page == 0 and not (want_email or want_upload):
                 self.page = 4
@@ -607,7 +669,7 @@ Click the Start button below:
                 self.page +=1
 
             self.__draw_page()
-            
+
     def __erase_page(self):
         """unpack all the widget currently displayed"""
         for widget in self.packed_widgets:
@@ -615,11 +677,11 @@ Click the Start button below:
         self.packed_widgets = []
         #update mail body at each page change (TODO : move this to an event)
         self.__mail_body_update_content()
-        
+
     def __draw_page(self):
         """pack all the widgets corresponding to page self.page"""
         self.__erase_page()
-        
+
         if self.page <= 0:
             self.page = 0
             self.b_prev.config(state=DISABLED)
@@ -627,22 +689,22 @@ Click the Start button below:
         else:
             self.b_prev.config(state=NORMAL)
             self.b_prev.config(bg=self.BUTTONS_BG)
-        
+
         if self.page >= len(self.widgets)-1:
             self.page = len(self.widgets)-1
             self.b_next.configure(text="Save",command=self.__save_and_exit, bg=self.BUTTONS_BG_ACTION)
         else:
             self.b_next.config(state=NORMAL)
             self.b_next.configure(text="Next",command=self.__increment, bg=self.BUTTONS_BG)
-        
+
         #regenerate credentials state
         if self.page == 1:
             self.__check_credentials_files()
-        
+
         for w in self.widgets[self.page]:
             w.pack(fill=X,padx=20, pady=10)
             self.packed_widgets.append(w)
-            
+
     def __save_and_exit(self):
         print "bye!"
         #finally create a personalized script to run the photobooth
@@ -661,7 +723,7 @@ Click the Start button below:
         self.config.write()
         #exit assistant
         self.destroy()
-    
+
     def __test_connection(self,test_email,test_upload):
         """Tests email sending and/or image uploading"""
         if (not test_email) and (not test_upload):
@@ -670,7 +732,7 @@ Click the Start button below:
         if self.google_service is None:
             print "Unable to test service: no connection"
             return False
-            
+
         # creating test image (a 32x32 image with random color)
         from PIL import Image
         from random import randint
@@ -684,10 +746,10 @@ Click the Start button below:
             self.google_service.send_message(username,self.config.emailSubject,self.config.emailMsg,attachment_file="test_image.png")
         if test_upload:
             print "\nTesting picture upload in %s's album with id :"%username
-            
+
             self.google_service.upload_picture("test_image.png", album_id = self.config.albumID)
-        
-    
+
+
 
 def graphical_assistant():
     """Launches graphical interface"""
@@ -705,12 +767,12 @@ def graphical_assistant():
 
 def console_assistant():
     """Launches the text-based interface"""
-    
+
     print """
     ________________________________________________________________
 
     Welcome to the installation assistant!
-    I will guide you through the setup and installation of Google 
+    I will guide you through the setup and installation of Google
     credentials
     ________________________________________________________________
 
@@ -727,9 +789,28 @@ def console_assistant():
     print ""
     config.enable_upload = ask_boolean("Do you want the 'auto-upload photos' feature?",config.enable_upload)
     print ""
+    if printer_selection_enable == True:
+        config.enable_print = ask_boolean("Do you want the 'Send photo to printer' feature?", config.enable_print)
+        print ""
+        if config.enable_print == True:
+            conn = cups.Connection()
+            printers = conn.getPrinters()
+            index = 0
+            selectedindex = 0
+            for printer in printers:
+                if config.selected_printer == str(index):
+                    print '[*] ['+str(index)+'] '+printer
+                    selectedindex = index
+                else:
+                    print '[ ] ['+str(index)+'] '+printer
+                index = index + 1
+            config.selected_printer = raw_input("Seleted printer: [%s] confirm or change =>" % config.selected_printer)
+            if config.selected_printer is "": config.selected_printer = selectedindex
 
     want_email  = config.enable_email
     want_upload = config.enable_upload
+    want_print = config.enable_print
+    selected_printer = config.selected_printer
     need_credentials = want_email or want_upload
 
     # We only need a user name if we need credentials
@@ -744,15 +825,15 @@ def console_assistant():
             config.write()
         # Check for credentials
         app_id     = os.path.join(install_dir,constants.APP_ID_FILE)
-        
+
         if os.path.exists(app_id):
             print "\n** found %s application file, will use it (remove in case of problems)"%constants.APP_ID_FILE
         else:
             print """
     ________________________________________________________________
 
-    Photo upload or email sending requires that you create a 
-    Google Project and download the project's credentials to 
+    Photo upload or email sending requires that you create a
+    Google Project and download the project's credentials to
     the scripts/ directory
 
     Note: you can do the following on any computer (except step 5/)
@@ -765,7 +846,7 @@ def console_assistant():
         - Platform : other (with command-line user interface)
         - Access   : User data
         - Fill whatever your like for application name and ID name
-    4/  The last step of the assistant makes you Download 
+    4/  The last step of the assistant makes you Download
         a client_id.json file : this is your project's credentials!
     5/  Copy the downloaded file to :
         %s
@@ -773,13 +854,13 @@ def console_assistant():
     The following page has up-to-date informations for this procedure:
     https://support.google.com/googleapi/answer/6158849
 
-    The installation program will now exit. 
+    The installation program will now exit.
     Run it again once this is done
     """%(app_id)
             sys.exit()
-        
+
         # We do have the client_id !
-        
+
         cred_store = os.path.join(install_dir,constants.CREDENTIALS_STORE_FILE)
         if os.path.exists(cred_store):
             print "\n** Found %s credential store"%constants.CREDENTIALS_STORE_FILE
@@ -792,7 +873,7 @@ def console_assistant():
                     traceback.print_exc()
                     print "\n==> Problem removing %s file, please do it on your side and run this assistant again\n"%cred_store
                     sys.exit()
-        
+
         # prepare the validation callback in case of missing or invalid credential store
         import webbrowser
         def auth_callback(authorization_uri):
@@ -809,8 +890,8 @@ def console_assistant():
             webbrowser.open(authorization_uri)
             mycode = raw_input('\n[validation code]: ').strip()
             return mycode
-        
-        
+
+
         import oauth2services
         try:
             print "\n** Connecting..."
@@ -821,13 +902,13 @@ def console_assistant():
             print error
             print "\n==> Connection failed :("
             sys.exit()
-            
+
         if not connected:
             print "\nThere was an error during the connection"
             print "Please check your network connection and/or reauthorize this application"
             print "Exiting..."
             sys.exit()
-        
+
         # Successfully connected!
         if config.albumID != None:
             keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
@@ -835,7 +916,7 @@ def console_assistant():
         else:
             print "\nNo photo album selected, images will be uploaded to\nGoogle Photo album 'Drop Box'"
             change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
-        
+
         if change_album_id:
             try:
                 print "\nDownloading %s albums list..."% config.user_name
@@ -864,7 +945,7 @@ def console_assistant():
                 print "Here's the album that match:"
                 for i, title in enumerate(candidates):
                     print "[%3d] %s"%(i,title)
-                
+
                 while True:
                     album_num = raw_input("Type album number => ")
                     try:
@@ -881,7 +962,7 @@ def console_assistant():
                 import traceback
                 traceback.print_exc()
                 print "\n==> Error while fetching user albums, try to re-authenticate the application :("
-            
+
 
     # Optional tests for connection
     if config.enable_email:
@@ -891,9 +972,9 @@ def console_assistant():
 
     if config.enable_upload:
         test_upload = to_boolean(raw_input("Do you want to test image upload? [N/y] => "),False)
-    
+
     test_connection(service, config, test_email, test_upload)
-    
+
     #finally create a personalized script to run the photobooth
     script_name = os.path.join(os.path.abspath(".."),"photobooth.sh")
     script = open(script_name,"w")
@@ -907,7 +988,7 @@ def console_assistant():
     os.chmod(script_name, st.st_mode | stat.S_IEXEC)
 
     print """
-        
+
     ________________________________________________________________
 
     We're all set, I just created a script to launch TouchSelfie with
@@ -916,7 +997,7 @@ def console_assistant():
     You can tune configuration parameters in scripts/%s
     You can adapt your hardware configuration in scripts/constants.py
     """% (script_name, constants.CONFIGURATION_FILE)
-    
+
 
 def to_boolean(answer, default=True):
     """Transforms a string to boolean"""
@@ -929,7 +1010,7 @@ def to_boolean(answer, default=True):
     else :
         return False
 
-        
+
 def ask_boolean(prompt, current_value):
     """Returns a prompt suiting current_value"""
     if current_value:
@@ -937,14 +1018,14 @@ def ask_boolean(prompt, current_value):
     else:
         choice = "[N/y]"
     return to_boolean(raw_input("%s %s => "%(prompt,choice)),current_value)
-    
+
 def test_connection(service,config,test_email,test_upload):
     """Tests email sending and/or image uploading"""
     if (not test_email) and (not test_upload):
         return
-        
+
     username = config.user_name
-    
+
     # creating test image
     from PIL import Image
     im = Image.new("RGB", (32, 32), "red")
@@ -957,7 +1038,7 @@ def test_connection(service,config,test_email,test_upload):
         service.upload_picture("test_image.png", album_id = config.albumID)
 
 
-    
+
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
@@ -977,5 +1058,3 @@ if __name__ == '__main__':
             time.sleep(2)
             print "\nError loading graphical assistant, default to console based\n"
             console_assistant()
-    
-    
