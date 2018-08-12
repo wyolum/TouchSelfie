@@ -101,6 +101,7 @@ class Assistant(Tk):
                             self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
                             self.__draw_page()
                             self.enable_print = False;
+                            self.config.enable_print = False; #Fix printing enabled even on error
                             self.selected_printer = None;
 
 
