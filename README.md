@@ -81,6 +81,9 @@ sudo update-alternatives --config x-www-browser
 ### Hardware buttons support
 - Added GPIO hardware interface for three buttons (with connections in hardware/ directory). Each button triggers a different effect. Software buttons are added if GPIO is not available
 
+### Print selfies immediately
+- A new 'print' button allows you to print selfies on a preconfigured printer (courtesy [Pikokosan](https://github.com/Pikokosan))
+
 ### New effects
 - Added "Animation" effect that produces animated gifs (needs imagemagick)
 
