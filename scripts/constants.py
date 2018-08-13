@@ -70,6 +70,7 @@ ACTIONS_KEYS_MAPPING = {
     "snap_Animation": ["a","A","<F3>"],
     "send_email":["e","@"],
     "configure":["<Escape>"]
+    #,"send_print":["P"] #Uncomment if you want to a keyboard shortcut for printing
 }
 
 COUNTDOWN_OVERLAY_IMAGES=[
