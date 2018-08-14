@@ -89,6 +89,10 @@ sudo update-alternatives --config x-www-browser
 
 ![example animation](screenshots/anim.gif)
 
+- Choose among `PiCamera` builtin image effects for more creative snapshots
+
+![Effects Palette](screenshots/builtin-effects.png)
+
 ### Higher resolution pictures
 - supports new v2.1 pi camera
 - Supports arbitrary resolution for snapshots (configure it in constants.py)
