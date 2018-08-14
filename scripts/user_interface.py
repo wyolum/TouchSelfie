@@ -101,7 +101,8 @@ class UserInterface():
         upload_images = config.enable_upload
         send_emails   = config.enable_email
         hardware_buttons = config.enable_hardware_buttons
-        send_prints = config.enable_print #should be added to config file later
+        send_prints = config.enable_print
+        image_effects = config.enable_effects
         selected_printer = config.selected_printer
 
         self.root = Tk()
@@ -144,7 +145,8 @@ class UserInterface():
         install_key_binding("configure",lambda *args: self.long_press_cb(self))
         install_key_binding("send_print",lambda *args: self.send_print())
         ## Bind keyboard keys to actions
-
+        
+        self.full_screen = config.full_screen
         if config.full_screen:
             self.root.attributes("-fullscreen",True)
             self.root.update()
@@ -159,7 +161,6 @@ class UserInterface():
             self.size=window_size
         else:
             self.size=(640,480)
-
         self.root.geometry('%dx%d+0+0'%(self.size[0],self.size[1]))
 
 
@@ -180,6 +181,7 @@ class UserInterface():
             self.print_btn.configure(background= 'black')
 
         self.send_emails = send_emails
+        
         #Create sendmail Button
         if self.send_emails:
             mail_image = Image.open(EMAIL_BUTTON_IMG)
@@ -188,7 +190,18 @@ class UserInterface():
             self.mail_btn  = Button(self.root,image = self.mail_imagetk, height=h, width=w, command=self.send_email )
             self.mail_btn.place(x=SCREEN_W-w-2, y=0)
             self.mail_btn.configure(background = 'black')
-
+            
+        #Create image_effects button
+        self.image_effects = image_effects
+        self.selected_image_effect='none'
+        if self.image_effects:
+            effects_image = Image.open(EFFECTS_BUTTON_IMG)
+            w,h = effects_image.size
+            self.effects_imagetk = ImageTk.PhotoImage(effects_image)
+            self.effects_btn = Button(self.root, image = self.effects_imagetk, height=h, width=w, command=self.__choose_effect)
+            self.effects_btn.place(x=SCREEN_W-w-2,y=int((SCREEN_H-h)/2))
+            self.effects_btn.configure(background = 'black')
+            
         #Create status line
         self.status_lbl = Label(self.root, text="", font=("Helvetica", 20))
         self.status_lbl.config(background='black', foreground='white')
@@ -386,6 +399,14 @@ class UserInterface():
         snap_filename = None
         snap_size = EFFECTS_PARAMETERS[mode]['snap_size']
         try:
+            # 0. Apply builtin effect
+            if self.image_effects:
+                try:
+                    self.camera.image_effect = IMAGE_EFFECTS[self.selected_image_effect]['effect_name']
+                    if 'effect_params' in IMAGE_EFFECTS[self.selected_image_effect]:
+                        self.camera.image_effect_params = IMAGE_EFFECTS[self.selected_image_effect]['effect_params']
+                except:
+                    print ("Error setting effect to",self.image_effect)
             # 1. Start Preview
             self.camera.resolution = snap_size
             self.camera.start_preview()
@@ -479,6 +500,9 @@ class UserInterface():
                 self.status("")
                 snap_filename = 'animation.gif'
                 self.last_picture_mime_type = 'image/gif'
+            
+            # cancel image_effect
+            self.camera.image_effect = 'none'
 
             # Here, the photo or animation is in snap_filename
             if os.path.exists(snap_filename):
@@ -818,7 +842,59 @@ class UserInterface():
         status = "%s (%s) %s %s\n"%(ts,sendcode,mail_address,file_path)
         sendmail_log.write(status)
         sendmail_log.close()
+        
+    def __choose_effect(self):
+        """Displays a screen from where user can choose a builtin effect
+        This modifies self.selected_image_effect
+        """
+        self.selected_image_effect = 'none'
 
+        if not self.image_effects: #Shouldn't happen
+            return
+
+        #Create a toplevel window to display effects thumbnails
+        top = Toplevel(self.root)
+        if self.full_screen:
+            top.attributes("-fullscreen",True)
+        top.geometry('%dx%d+0+0'%(self.size[0],self.size[1]))
+        top.configure(background='black')
+        
+        #layout
+        NCOLS=4
+        NROWS=3       
+        window_width = self.size[0]
+        window_height = self.size[1]
+        
+        button_size = min(int(window_width/NCOLS),int(window_height/NROWS))
+        button_images =[]
+        def cb_factory(img_effect):
+            def mod_effect():
+                self.selected_image_effect = img_effect
+                print "Effect",img_effect,"selected"
+                top.destroy()
+            return mod_effect
+            
+        effect_buttons=[]
+        for index in range(len(IMAGE_EFFECTS_LIST)):
+            effect = IMAGE_EFFECTS_LIST[index]
+            params = IMAGE_EFFECTS[effect]
+            try:
+                button_img = Image.open(params["effect_icon"])
+                button_img.thumbnail((button_size,button_size))
+                button_img_tk =  ImageTk.PhotoImage(button_img)
+                button_images.append(button_img_tk)
+                button = Button(top, image = button_img_tk, text=effect, height=button_size, width=button_size, background = 'black',command=cb_factory(params["effect_name"]))
+            except:
+                print "Error for effect",effect,"trying text button"
+                button = Button(top, text=effect, background = "#333333",fg="white",font='Helvetica',command=cb_factory(params["effect_name"]))
+            row = int(index/NCOLS)
+            col = index % NCOLS
+            button.grid(row=row,column=col)
+            effect_buttons.append(button)
+            
+        
+        self.root.wait_window(top)
+        
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser()
