@@ -20,6 +20,7 @@ class Configuration():
     enable_email  = True #Enable the 'send email" feature
     enable_upload = True #Enable the upload feature
     enable_print = False #Enable the printer feature
+    enable_effects = True
     selected_printer = None #No printer select
     enable_hardware_buttons = False #Enable hardware buttons
     enable_email_logging = False # Should we log outgoing emails?
@@ -69,6 +70,7 @@ class Configuration():
         if "enable_email" in config.keys():  self.enable_email = config["enable_email"]
         if "enable_upload" in config.keys():  self.enable_upload = config["enable_upload"]
         if "enable_print" in config.keys(): self.enable_print = config["enable_print"]
+        if "enable_effects" in config.keys(): self.enable_effects = config["enable_effects"]
         if "selected_printer" in config.keys(): self.selected_printer = config["selected_printer"]
         if "enable_hardware_buttons" in config.keys():  self.enable_hardware_buttons = config["enable_hardware_buttons"]
         if "enable_email_logging" in config.keys(): self.enable_email_logging = config["enable_email_logging"]
@@ -95,6 +97,7 @@ class Configuration():
             "enable_email": self.enable_email,
             "enable_upload": self.enable_upload,
             "enable_print": self.enable_print,
+            "enable_effects": self.enable_effects,
             "selected_printer": self.selected_printer,
             "enable_hardware_buttons": self.enable_hardware_buttons,
             "enable_email_logging" : self.enable_email_logging
