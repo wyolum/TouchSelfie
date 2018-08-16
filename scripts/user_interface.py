@@ -894,9 +894,9 @@ class UserInterface():
 
         # auto-centering: configure empty border rows/cols with a weight of 1
         top.columnconfigure(0,weight=1)
-        top.columnconfigure(NCOLS,weight=1)
+        top.columnconfigure(NCOLS+1,weight=1)
         top.rowconfigure(0, weight=1)
-        top.rowconfigure(NROWS, weight=1)
+        top.rowconfigure(NROWS+1, weight=1)
         
         self.root.wait_window(top)
         
