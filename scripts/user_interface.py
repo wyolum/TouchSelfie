@@ -406,7 +406,7 @@ class UserInterface():
                     if 'effect_params' in IMAGE_EFFECTS[self.selected_image_effect]:
                         self.camera.image_effect_params = IMAGE_EFFECTS[self.selected_image_effect]['effect_params']
                 except:
-                    print ("Error setting effect to",self.image_effect)
+                    print ("Error setting effect to",self.selected_image_effect)
             # 1. Start Preview
             self.camera.resolution = snap_size
             self.camera.start_preview()
@@ -883,10 +883,10 @@ class UserInterface():
                 button_img.thumbnail((button_size,button_size))
                 button_img_tk =  ImageTk.PhotoImage(button_img)
                 button_images.append(button_img_tk)
-                button = Button(top, image = button_img_tk, text=effect, height=button_size, width=button_size, background = 'black',command=cb_factory(params["effect_name"]))
+                button = Button(top, image = button_img_tk, text=effect, height=button_size, width=button_size, background = 'black',command=cb_factory(effect))
             except:
                 print "Error for effect",effect,"trying text button"
-                button = Button(top, text=effect, background = "#333333",fg="white",font='Helvetica',command=cb_factory(params["effect_name"]))
+                button = Button(top, text=effect, background = "#333333",fg="white",font='Helvetica',command=cb_factory(effect))
             row = int(index/NCOLS)
             col = index % NCOLS
             button.grid(row=row+1,column=col+1) #+1 -> leave one empty row and one empty column for centering
