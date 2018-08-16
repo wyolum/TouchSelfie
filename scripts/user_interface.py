@@ -889,9 +889,14 @@ class UserInterface():
                 button = Button(top, text=effect, background = "#333333",fg="white",font='Helvetica',command=cb_factory(params["effect_name"]))
             row = int(index/NCOLS)
             col = index % NCOLS
-            button.grid(row=row,column=col)
+            button.grid(row=row+1,column=col+1) #+1 -> leave one empty row and one empty column for centering
             effect_buttons.append(button)
-            
+
+        # auto-centering: configure empty border rows/cols with a weight of 1
+        top.columnconfigure(0,weight=1)
+        top.columnconfigure(NCOLS,weight=1)
+        top.rowconfigure(0, weight=1)
+        top.rowconfigure(NROWS, weight=1)
         
         self.root.wait_window(top)
         
