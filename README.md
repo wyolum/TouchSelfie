@@ -108,6 +108,7 @@ sudo update-alternatives --config x-www-browser
 
 ![user interface](screenshots/new_user_interface.jpg?raw=true)
 
+
 - New skinnable Touchscreen keyboard "mykb.py"
 
 ![new keyboard](screenshots/new_keyboard.jpg?raw=true)
