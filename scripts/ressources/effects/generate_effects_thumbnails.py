@@ -38,9 +38,9 @@ def snap_effects():
             # add parameters to the effect string
             try:
                 for arg in effect_params:
-                    effect_string += "-" + arg
+                    effect_string += "-" + str(arg)
             except:
-                effect_string += "-" + effect_params
+                effect_string += "-" + str(effect_params)
         capture_filename = os.path.join(SNAP_PATH,effect_string + '.jpg')
         camera.capture(capture_filename)
         effects_snaps[effect] = capture_filename
