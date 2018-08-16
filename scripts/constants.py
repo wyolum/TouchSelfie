@@ -65,6 +65,95 @@ SOFTWARE_BUTTONS = {
         }
 }
 
+# piCamera Builtin effects selection list
+# @see https://picamera.readthedocs.io/en/release-1.13/api_camera.html#picamera.PiCamera.image_effect
+# this constant maps a subset of picamera builtin effects 
+# and (optional) parameters to a thumbnail
+#
+# needed keys: 
+# - "effect_name": the name of the piCamera image_effect
+# - "effect_icon": path to the thumbnail that represents this effect (MUST be square)
+# - "effect_params": (opt) parameters for the effect (see image_effect_parameter)
+EFFECTS_THUMB_DIR = os.path.join("ressources","effects")
+# ordered list of IMAGE_EFFECTS keys (only these will be displayed)
+IMAGE_EFFECTS_LIST = [
+    "none",
+    "colorswap1",
+    "colorswap0",
+    "negative",
+
+    "oilpaint",
+    "pastel",
+    "gpen",
+    "sketch",
+
+    "cartoon",
+    "posterise",
+    "watercolor1",
+    "colorpoint1"
+]
+# dict of effects and parameters
+IMAGE_EFFECTS = {
+    "none": {
+        "effect_name":"none",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_none.png")
+    },
+    # solarize would require some image analysis in order to set the right parameters
+    "solarize": { 
+        "effect_name":"solarize",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_solarize.png")
+    },
+    "oilpaint": {
+        "effect_name":"oilpaint",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_oilpaint.png")
+    },
+    "cartoon": {
+        "effect_name":"cartoon",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_cartoon.png")
+    },
+    "colorswap0": {
+        "effect_name":"colorswap",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorswap.png"),
+        "effect_params" : 0 # green faces
+    },
+    "colorswap1": {
+        "effect_name":"colorswap",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorswap1.png"),
+        "effect_params" : 1  # purple faces
+    },
+    "negative": {
+        "effect_name":"negative",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_negative.png")
+    },
+    "pastel": {
+        "effect_name":"pastel",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_pastel.png")
+    },
+    "posterise": {
+        "effect_name":"posterise",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_posterise.png"),
+        "effect_params" : 8
+    },
+    "gpen": {
+        "effect_name":"gpen",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_gpen.png")
+    },
+    "sketch": {
+        "effect_name":"sketch",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_sketch.png")
+    },
+    "watercolor1": {
+        "effect_name" : "watercolor",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_watercolor_170_25.png"),
+        "effect_params" : (170,25) # cyan
+    },
+    "colorpoint1": {
+        "effect_name" : "colorpoint",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorpoint1.png"),
+        "effect_params" : 1 # keep red/yellow, desaturate everything else
+    }
+}
+
 # GPIO pin / Snapshots modes mapping
 # 'button_pins' are matched in this order ["No effect", "Four images", "Animation"]
 # 'pull_up_down' activates a pull_up or a pull_down on the GPIO pin itself (no external resistor needed)
@@ -107,6 +196,7 @@ COUNTDOWN_IMAGE_MAX_HEIGHT_RATIO = 0.2 #[0. - 1.] range
 # Path to button icon ressources
 EMAIL_BUTTON_IMG  = os.path.join("ressources","ic_email.png")
 PRINT_BUTTON_IMG  = os.path.join("ressources","ic_print.png")
+EFFECTS_BUTTON_IMG = os.path.join("ressources","ic_effects.png")
 
 # Interval in ms between two authentication tokens refreshing
 OAUTH2_REFRESH_PERIOD = 1800000 # interval between two OAuth2 token refresh (ms)
