@@ -501,8 +501,8 @@ class UserInterface():
                 snap_filename = 'animation.gif'
                 self.last_picture_mime_type = 'image/gif'
             
-            # cancel image_effect
-            self.camera.image_effect = 'none'
+            # cancel image_effect (hotfix: effect was not reset to 'none' after each shot)
+            self.selected_image_effect = 'none'
 
             # Here, the photo or animation is in snap_filename
             if os.path.exists(snap_filename):
