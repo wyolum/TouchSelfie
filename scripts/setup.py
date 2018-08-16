@@ -72,6 +72,11 @@ class Assistant(Tk):
                 self.config.enable_upload = self.want_upload_var.get() != 0
             self.want_upload_var.trace("w",on_want_upload_change)
 
+            self.want_effects_var = IntVar()
+            self.want_effects_var.set(config.enable_effects == True)
+            def on_want_effects_change(*args):
+                self.config.enable_effects = self.want_effects_var.get() != 0
+            self.want_effects_var.trace("w",on_want_effects_change)
 
             if self.printer_selection_enable == True:
                 self.want_print_var = IntVar()
@@ -85,7 +90,7 @@ class Assistant(Tk):
                             #self.use_print_list.pack()
                             self.__erase_page()
                             self.widgets.pop(0)
-                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb,self.use_print_list])
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb, self.want_effects_cb, self.want_print_cb, self.use_soft_keyboard_cb,self.use_print_list])
 
                             conn = cups.Connection()
                             printers = conn.getPrinters()
@@ -98,7 +103,7 @@ class Assistant(Tk):
                             tkMessageBox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
                             self.__erase_page()
                             self.widgets.pop(0)
-                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
+                            self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.want_effects_cb, self.use_soft_keyboard_cb])
                             self.__draw_page()
                             self.enable_print = False;
                             self.config.enable_print = False; #Fix printing enabled even on error
@@ -113,6 +118,7 @@ class Assistant(Tk):
 
             self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending", variable=self.want_email_var, anchor=W, font='Helvetica')
             self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload", variable=self.want_upload_var, anchor=W, font='Helvetica')
+            self.want_effects_cb  = Checkbutton(self.main_frame, text="Enable image effects", variable=self.want_effects_var, anchor=W, font='Helvetica')
 
             if printer_selection_enable == True:
                 self.want_print_cb = Checkbutton(self.main_frame, text="Enable photo print", variable=self.want_print_var, anchor=W, font='Helvetica')
@@ -137,9 +143,9 @@ class Assistant(Tk):
 
             self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
             if self.printer_selection_enable == True:
-                self.widgets.append([self.want_email_cb, self.want_upload_cb, self.want_print_cb,self.use_soft_keyboard_cb])
+                self.widgets.append([self.want_email_cb, self.want_upload_cb, self.want_effects_cb,self.want_print_cb,self.use_soft_keyboard_cb])
             else:
-                self.widgets.append([self.want_email_cb, self.want_upload_cb,self.use_soft_keyboard_cb])
+                self.widgets.append([self.want_email_cb, self.want_upload_cb,self.want_effects_cb,self.use_soft_keyboard_cb])
 
             #PAGE 1 google credentials
             self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
@@ -789,6 +795,8 @@ def console_assistant():
     config.enable_email = ask_boolean("Do you want the 'send photo by email' feature?",config.enable_email)
     print ""
     config.enable_upload = ask_boolean("Do you want the 'auto-upload photos' feature?",config.enable_upload)
+    print ""
+    config.enable_effects = ask_boolean("Do you want the 'Photos effects' feature?",config.enable_effects)
     print ""
     if printer_selection_enable == True:
         config.enable_print = ask_boolean("Do you want the 'Send photo to printer' feature?", config.enable_print)
