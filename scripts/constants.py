@@ -78,15 +78,19 @@ EFFECTS_THUMB_DIR = os.path.join("ressources","effects")
 # ordered list of IMAGE_EFFECTS keys (only these will be displayed)
 IMAGE_EFFECTS_LIST = [
     "none",
-    "solarize",
-    "oilpaint",
-    "cartoon",
-    "colorswap",
+    "colorswap1",
+    "colorswap0",
     "negative",
+
+    "oilpaint",
     "pastel",
-    "posterise",
     "gpen",
-    "sketch"
+    "sketch",
+
+    "cartoon",
+    "posterise",
+    "watercolor1",
+    "colorpoint1"
 ]
 # dict of effects and parameters
 IMAGE_EFFECTS = {
@@ -94,7 +98,8 @@ IMAGE_EFFECTS = {
         "effect_name":"none",
         "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_none.png")
     },
-    "solarize": {
+    # solarize would require some image analysis in order to set the right parameters
+    "solarize": { 
         "effect_name":"solarize",
         "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_solarize.png")
     },
@@ -106,9 +111,15 @@ IMAGE_EFFECTS = {
         "effect_name":"cartoon",
         "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_cartoon.png")
     },
-    "colorswap": {
+    "colorswap0": {
         "effect_name":"colorswap",
-        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorswap.png")
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorswap.png"),
+        "effect_params" : 0 # green faces
+    },
+    "colorswap1": {
+        "effect_name":"colorswap",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorswap1.png"),
+        "effect_params" : 1  # purple faces
     },
     "negative": {
         "effect_name":"negative",
@@ -120,7 +131,8 @@ IMAGE_EFFECTS = {
     },
     "posterise": {
         "effect_name":"posterise",
-        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_posterise.png")
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_posterise.png"),
+        "effect_params" : 8
     },
     "gpen": {
         "effect_name":"gpen",
@@ -129,6 +141,16 @@ IMAGE_EFFECTS = {
     "sketch": {
         "effect_name":"sketch",
         "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_sketch.png")
+    },
+    "watercolor1": {
+        "effect_name" : "watercolor",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_watercolor_170_25.png"),
+        "effect_params" : (170,25) # cyan
+    },
+    "colorpoint1": {
+        "effect_name" : "colorpoint",
+        "effect_icon": os.path.join(EFFECTS_THUMB_DIR,"eff_colorpoint1.png"),
+        "effect_params" : 1 # keep red/yellow, desaturate everything else
     }
 }
 
