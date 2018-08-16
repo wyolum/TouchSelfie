@@ -4,8 +4,8 @@
 """
 
 SNAP_PATH = "effects_snaps"
-CROP_SIZE = 200 #cropsize of the thumbnail
-DISPLAY_SIZE = 400
+CROP_SIZE = 260 #cropsize of the thumbnail
+DISPLAY_SIZE = 520
 import os
 import sys
 sys.path.append(os.path.join('..','..'))
