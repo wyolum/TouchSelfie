@@ -18,6 +18,12 @@
             with styles "command" and "small"
             with special behavior "caps-lock" (see CapsLock(Key) class)
             [{'lower':  'shift', 'upper': 'shift'},{'styles':['command','small'], 'width':2.0, "special":"caps-lock"}],
+            
+    QWERTY_LAYOUT: A qwerty keyboard layout
+        changes made from azerty
+            qwerty key layout
+            enter key displays "send"
+            email addresses changes to common ".com"
         
     DEFAULT_STYLESHEET: an ordered list of styles element applied css-style to the elements
         style with "tag" "keyboard" allows to define the keyboard default style
@@ -237,6 +243,73 @@ AZERTY_LAYOUT = [
 ]
 
 
+QWERTY_LAYOUT = [ 
+    [
+        [{'lower':  '1', 'upper': '1'},{'styles':['default']}],
+        [{'lower':  '2', 'upper': '2'},{'styles':['default']}],
+        [{'lower':  '3', 'upper': '3'},{'styles':['default']}],
+        [{'lower':  '4', 'upper': '4'},{'styles':['default']}],
+        [{'lower':  '5', 'upper': '5'},{'styles':['default']}],
+        [{'lower':  '6', 'upper': '6'},{'styles':['default']}],
+        [{'lower':  '7', 'upper': '7'},{'styles':['default']}],
+        [{'lower':  '8', 'upper': '8'},{'styles':['default']}],
+        [{'lower':  '9', 'upper': '9'},{'styles':['default']}],
+        [{'lower':  '0', 'upper': '0'},{'styles':['default']}],
+        [{'lower':  'del', 'upper': 'del'},{'styles':['command','small'], 'width':1.0, "special":"backspace"}],
+        #[{'lower':  'enter', 'upper': 'enter'},{'styles':['command'], 'width':2.0, "special":"enter"}],
+    ],
+    [
+        [{'lower':  'q', 'upper': 'Q'},{'styles':['default']}],
+        [{'lower':  'w', 'upper': 'W'},{'styles':['default']}],
+        [{'lower':  'e', 'upper': 'E'},{'styles':['default']}],
+        [{'lower':  'r', 'upper': 'R'},{'styles':['default']}],
+        [{'lower':  't', 'upper': 'T'},{'styles':['default']}],
+        [{'lower':  'y', 'upper': 'Y'},{'styles':['default']}],
+        [{'lower':  'u', 'upper': 'U'},{'styles':['default']}],
+        [{'lower':  'i', 'upper': 'I'},{'styles':['default']}],
+        [{'lower':  'o', 'upper': 'O'},{'styles':['default']}],
+        [{'lower':  'p', 'upper': 'P'},{'styles':['default']}],
+        [{'lower':  '-', 'upper': '_'},{'styles':['default']}],
+    ],
+    [
+
+        [{'lower':  'a', 'upper': 'A'},{'styles':['default']}],
+        [{'lower':  's', 'upper': 'S'},{'styles':['default']}],
+        [{'lower':  'd', 'upper': 'D'},{'styles':['default']}],
+        [{'lower':  'f', 'upper': 'F'},{'styles':['default']}],
+        [{'lower':  'g', 'upper': 'G'},{'styles':['default']}],
+        [{'lower':  'h', 'upper': 'H'},{'styles':['default']}],
+        [{'lower':  'j', 'upper': 'J'},{'styles':['default']}],
+        [{'lower':  'k', 'upper': 'K'},{'styles':['default']}],
+        [{'lower':  'l', 'upper': 'L'},{'styles':['default']}],
+        [{'lower':  ';', 'upper': ':'},{'styles':['default']}],
+        [{'lower':  '?', 'upper': '?'},{'styles':['default']}],
+    ],
+    [
+
+        [{'lower':  'shift', 'upper': 'shift'},{'styles':['command','small'], 'width':2.0, "special":"caps-lock"}],
+        [{'lower':  'z', 'upper': 'Z'},{'styles':['default']}],
+        [{'lower':  'x', 'upper': 'X'},{'styles':['default']}],
+        [{'lower':  'c', 'upper': 'C'},{'styles':['default']}],
+        [{'lower':  'v', 'upper': 'V'},{'styles':['default']}],
+        [{'lower':  'b', 'upper': 'B'},{'styles':['default']}],
+        [{'lower':  'n', 'upper': 'N'},{'styles':['default']}],
+        [{'lower':  'm', 'upper': 'M'},{'styles':['default']}],
+        [{'lower':  '.', 'upper': '.'},{'styles':['default']}],
+        [{'lower':  '@', 'upper': '@'},{'styles':['default']}],
+    ],
+    [
+        [{'lower':  '@yahoo.com', 'upper': '@hotmail.com'},{'styles':['default','small'], 'width':2.0}],
+        [{'lower':  ' ', 'upper': ' '},{'styles':['default'], 'width':4.0}],
+        [{'lower':  '.com', 'upper': '.org'},{'styles':['default', "small"]}],
+        [{'lower':  '@gmail.com', 'upper': '@aol.com'},{'styles':['default','small'], 'width':2.0}],
+        [{'lower':  'send', 'upper': 'send'},{'styles':['command','small'], 'width':2.0, "special":"enter"}],
+
+    ]
+
+]
+
+
 DEFAULT_STYLESHEET = [
     {    "tag": "keyboard",
         "background": "black",
@@ -272,7 +345,7 @@ DEFAULT_STYLESHEET = [
 
 class TouchKeyboard:
     """a keyboard made out of rows of keys"""
-    def __init__(self, Tkroot, bound_entry, onEnter= None, layout = AZERTY_LAYOUT, stylesheet = DEFAULT_STYLESHEET):
+    def __init__(self, Tkroot, bound_entry, onEnter= None, layout = QWERTY_LAYOUT, stylesheet = DEFAULT_STYLESHEET):
         """Build a keyboard based on a layout and a stylesheet
         
         Arguments:
@@ -449,4 +522,3 @@ if __name__ == '__main__':
 
     keyboard = TouchKeyboard(r,myres, onEnter = onEnter)
     r.mainloop()
-
