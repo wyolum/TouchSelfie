@@ -290,9 +290,9 @@ class Assistant(Tk):
                     displayed_list_names=["Drop Box"]
                     album_listbox.delete(0,END)
                     album_listbox.insert(END,"<Default>")
-
+                    inserted_items = 0
                     for i, item in enumerate(album_list):
-                        if i >= list_box_items-1:
+                        if inserted_items >= list_box_items-1:
                             break;
                         title = item['title']
                         title_ = title.lower()
@@ -301,6 +301,7 @@ class Assistant(Tk):
                             album_listbox.insert(END,item['title'])
                             displayed_list_ids.append(id)
                             displayed_list_names.append(title)
+                            inserted_items += 1
 
 
                 populate_list()
