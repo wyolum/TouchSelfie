@@ -524,36 +524,43 @@ class UserInterface():
                 # 2. Upload
                 if self.signed_in:
                     self.status("Uploading image")
-                    self.googleUpload(
-                        self.last_picture_filename,
-                        title= self.last_picture_title,
-                        caption = config.photoCaption + " " + self.last_picture_title)
-                    self.status("")
+                    try:
+                        self.googleUpload(
+                            self.last_picture_filename,
+                            title= self.last_picture_title,
+                            caption = config.photoCaption + " " + self.last_picture_title)
+                        self.status("")
+                    except Exception as e:
+                        self.status("Error uploading image :(")
+                        print(e)
                 # 3. Archive
                 if config.ARCHIVE:
-                    if os.path.exists(config.archive_dir):
-                        new_filename = ""
-                        if mode == 'None':
-                            new_filename = "%s-snap.jpg" % self.last_picture_timestamp
-                        elif mode == 'Four':
-                            new_filename = "%s-collage.jpg" % self.last_picture_timestamp
-                        elif mode == 'Animation':
-                            new_filename = "%s-anim.gif" % self.last_picture_timestamp
+                    try:
+                        if os.path.exists(config.archive_dir):
+                            new_filename = ""
+                            if mode == 'None':
+                                new_filename = "%s-snap.jpg" % self.last_picture_timestamp
+                            elif mode == 'Four':
+                                new_filename = "%s-collage.jpg" % self.last_picture_timestamp
+                            elif mode == 'Animation':
+                                new_filename = "%s-anim.gif" % self.last_picture_timestamp
 
-                        new_filename = os.path.join(config.archive_dir,new_filename)
-                        # bug #40 shows that os.rename does not handle cross-filesystems (ex: usb key)
-                        # So we use (slower) copy and remove when os.rename raises an exception
-                        try:
-                            os.rename(self.last_picture_filename, new_filename)
-                        except:
-                            import shutil
-                            shutil.copy(self.last_picture_filename, new_filename)
-                            os.remove(self.last_picture_filename)
+                            new_filename = os.path.join(config.archive_dir,new_filename)
+                            # bug #40 shows that os.rename does not handle cross-filesystems (ex: usb key)
+                            # So we use (slower) copy and remove when os.rename raises an exception
+                            try:
+                                os.rename(self.last_picture_filename, new_filename)
+                            except:
+                                import shutil
+                                shutil.copy(self.last_picture_filename, new_filename)
+                                os.remove(self.last_picture_filename)
 
-                        self.last_picture_filename = new_filename
-                    else:
-                        print "Error : archive_dir %s doesn't exist"% config.archive_dir
-
+                            self.last_picture_filename = new_filename
+                        else:
+                            print "Error : archive_dir %s doesn't exist"% config.archive_dir
+                    except Exception as e:
+                        self.status("Saving failed :(")
+                        print(e)
 
             else:
                 # error
