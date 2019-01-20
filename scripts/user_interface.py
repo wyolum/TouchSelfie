@@ -393,6 +393,10 @@ class UserInterface():
         self.suspend_poll = True
         # clear status
         self.status("")
+        # keep track of what's happening
+        picture_taken = False
+        picture_saved = False
+        picture_uploaded = False
 
         if mode not in EFFECTS_PARAMETERS.keys():
             print "Wrong mode %s defaults to 'None'" % mode
@@ -427,6 +431,7 @@ class UserInterface():
                 self.camera.stop_preview()
 
                 snapshot = Image.open('snapshot.jpg')
+                picture_taken = True
                 if config.logo_file is not None :
                     config.logo = Image.open(config.logo_file)
                     size = snapshot.size
@@ -465,6 +470,7 @@ class UserInterface():
                 snapshot.paste(Image.open('collage_2.jpg'), (w,   0, w_, h))
                 snapshot.paste(Image.open('collage_3.jpg'), (  0, h,  w, h_))
                 snapshot.paste(Image.open('collage_4.jpg'), (w, h, w_, h_))
+                picture_taken = True
                 #paste the collage enveloppe if it exists
                 try:
                     front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
@@ -505,6 +511,7 @@ class UserInterface():
                 self.status("Assembling animation")
                 command_string = "convert -delay " + str(EFFECTS_PARAMETERS[mode]['gif_period_millis']) + " animframe-*.jpg animation.gif"
                 os.system(command_string)
+                picture_taken = True
                 self.status("")
                 snap_filename = 'animation.gif'
                 self.last_picture_mime_type = 'image/gif'
@@ -529,6 +536,7 @@ class UserInterface():
                             self.last_picture_filename,
                             title= self.last_picture_title,
                             caption = config.photoCaption + " " + self.last_picture_title)
+                        picture_uploaded = True
                         self.status("")
                     except Exception as e:
                         self.status("Error uploading image :(")
@@ -550,9 +558,11 @@ class UserInterface():
                             # So we use (slower) copy and remove when os.rename raises an exception
                             try:
                                 os.rename(self.last_picture_filename, new_filename)
+                                picture_saved = True
                             except:
                                 import shutil
                                 shutil.copy(self.last_picture_filename, new_filename)
+                                picture_saved = True
                                 os.remove(self.last_picture_filename)
 
                             self.last_picture_filename = new_filename
@@ -560,6 +570,7 @@ class UserInterface():
                             print "Error : archive_dir %s doesn't exist"% config.archive_dir
                     except Exception as e:
                         self.status("Saving failed :(")
+                        picture_saved = False
                         print(e)
 
             else:
@@ -571,6 +582,10 @@ class UserInterface():
             traceback.print_exc()
             snapshot = None
         self.suspend_poll = False
+        #check if a picture was taken and not saved
+        if picture_taken and not (picture_saved or picture_uploaded):
+            print("Error! picture was taken but not saved or uploaded")
+            self.status("ERROR: Picture was not saved!")
         return snap_filename
 
     def __countdown_set_led(self,state):
