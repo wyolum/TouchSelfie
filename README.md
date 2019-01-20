@@ -1,3 +1,6 @@
+# WARNING!
+Google photos upload is currently broken (see bug #60), this is due to the deprecation of the Picasa API. We're working on it, any help appreciated! Stay tuned.
+
 # TouchSelfie
 Open Source Photobooth forked and improved from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
