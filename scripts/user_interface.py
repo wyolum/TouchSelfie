@@ -138,12 +138,20 @@ class UserInterface():
             if action in ACTIONS_KEYS_MAPPING.keys():
                 for key in ACTIONS_KEYS_MAPPING[action]:
                     self.root.bind(key,function)
-        install_key_binding("snap_None",lambda *args: self.snap("None"))
-        install_key_binding("snap_Four",lambda *args: self.snap("Four"))
-        install_key_binding("snap_Animation",lambda *args: self.snap("Animation"))
-        install_key_binding("send_email",lambda *args: self.send_email())
-        install_key_binding("configure",lambda *args: self.long_press_cb(self))
-        install_key_binding("send_print",lambda *args: self.send_print())
+
+        # Factory to launch actions only when no snap is being processed
+        def safe_execute_factory(callback):
+            def safe_execute(args):
+                if not self.suspend_poll == True:
+                    callback()
+            return safe_execute
+
+        install_key_binding("snap_None",safe_execute_factory(lambda *args: self.snap("None")))
+        install_key_binding("snap_Four",safe_execute_factory(lambda *args: self.snap("Four")))
+        install_key_binding("snap_Animation",safe_execute_factory(lambda *args: self.snap("Animation")))
+        install_key_binding("send_email",safe_execute_factory(lambda *args: self.send_email()))
+        install_key_binding("configure",safe_execute_factory(lambda *args: self.long_press_cb(self)))
+        install_key_binding("send_print",safe_execute_factory(lambda *args: self.send_print()))
         ## Bind keyboard keys to actions
         
         self.full_screen = config.full_screen
