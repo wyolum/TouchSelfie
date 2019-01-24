@@ -274,7 +274,10 @@ class UserInterface():
             padding = int((self.size[0] - total_width) / (len(SOFTWARE_BUTTONS) - 1))
             # decurrying of callback parameter
             def snap_factory(effect):
-                return lambda *args:self.snap(effect)
+                def snap_fun():
+                    if not self.suspend_poll:
+                        self.snap(effect)
+                return snap_fun
 
             for i, effect in enumerate(SOFTWARE_BUTTONS):
                 #print effect, SOFTWARE_BUTTONS[effect]
