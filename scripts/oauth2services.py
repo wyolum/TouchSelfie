@@ -3,6 +3,8 @@
     Code for Google Photos / Picasa taken from "credentials.py" at https://github.com/wyolum/TouchSelfie
     Code for mail sending with OAuth2 taken from "apadana" at https://stackoverflow.com/a/37267330
     Assemblage and adaptation Laurent Alacoque 2o18
+    
+    - Update Jan 2019: Moving to photoslibrary API (Picasa API is now deprecated)
 """
 import os
 import base64
