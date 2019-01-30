@@ -467,7 +467,7 @@ class Assistant(Tk):
         - <credentials> : Create an OAuth 2.0 client ID
         - Fill whatever your like for application name and ID name
     4/  The last step of the assistant makes you Download
-        a client_id.json file : this is your project's credentials!
+        a json file : this is your project's credentials!
     5/  Copy the downloaded file to : scripts/%s
     6/  Next, on the console.developers.google.com website:
         - go to the "<Menu>/APIs and Services/Library"
