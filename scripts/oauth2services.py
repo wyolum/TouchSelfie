@@ -86,6 +86,8 @@ class OAuthServices:
             return None
         credentials = self.__oauth_login()
         return build('photoslibrary', 'v1', http=credentials.authorize(Http()))
+        
+        
 
     def get_user_albums(self, as_title_id = True):
         """
@@ -124,18 +126,62 @@ class OAuthServices:
             #full stuff
             return albums
 
-    def upload_picture(self, filename, album_id = None , title="photo", caption = ""):
+    def upload_picture(self, filename, album_id = None , title="photo", caption = None):
         """Upload a picture to Google Photos
         
         Arguments:
             filename (str) : path to the file to upload
             album_id (str) : id string of the destination album (see get_user_albums).
                 if None (default), destination album will be Google Photos default 'Drop Box' album
-            title (str)    : title for the photo (example : filename)
+            title (str)  DEPREC  : title for the photo (unused and deprecated)
             caption (str, opt) : a Caption for the photo
         """
-        #Not implemented
-        raise NotImplementedError("upload_picture is not yet implemented")
+        if not self.enable_upload:
+            return False
+        client = self.__get_photo_client()
+        creds = self.__oauth_login()
+        
+        # Step I: post file binary and get Token
+        file = os.path.basename(filename)
+        url = 'https://photoslibrary.googleapis.com/v1/uploads'
+        authorization = 'Bearer ' + creds.access_token
+
+        headers = {
+            "Authorization": authorization,
+            'Content-type': 'application/octet-stream',
+            'X-Goog-Upload-File-Name': file,
+            'X-Goog-Upload-Protocol': 'raw',
+        }
+        http = creds.authorize(Http())
+        
+        try:
+            with open(filename, "rb") as image_file:
+                filecontent=image_file.read()
+            (response,token) = http.request(url,method="POST",body=filecontent,headers=headers)
+            if response.status != 200:
+                raise IOError("Error connecting to %s"%url)
+
+            # Step II: reference file Item
+            if isinstance(caption,str):
+                photo_item = {"simpleMediaItem": {"uploadToken": token}, "description": caption}
+            else:
+                photo_item = {"simpleMediaItem": {"uploadToken": token}}
+
+            media_reference = dict(newMediaItems = [photo_item])
+            if album_id is not None:
+                media_reference["albumId"] = album_id
+            
+            res = client.mediaItems().batchCreate(body=dict(
+                    albumId=album_id,
+                    newMediaItems=[
+                        {"simpleMediaItem": {"uploadToken": token}}]
+                    )).execute()
+            if res["newMediaItemResults"][0]["status"]["message"] == "OK":
+                return True
+            else:
+                return False
+        except Exception as e:
+            print("Error while uploading: %s",str(e))
         return False
  
     def send_message(self,to, subject, body, attachment_file=None):
@@ -229,11 +275,17 @@ def test():
     
     # creating test image
     from PIL import Image
-    im = Image.new("RGB", (32, 32), "red")
+    #random color
+    import random
+    color = (random.randint(0,255),random.randint(0,255),random.randint(0,255))
+    
+    im = Image.new("RGB", (32, 32), color=color)
     im.save("test_image.png")
     
     # Connecting to Google
     gservice = OAuthServices("client_id.json","storage.json",username)
+
+
     print "\nTesting email sending..."
     print gservice.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
     print "\nTesting album list retrieval..."
@@ -243,12 +295,10 @@ def test():
         if i >= 10:
             print "skipping the remaining albums..."
             break
-    print "\nTesting picture upload"
-    gservice.upload_picture("test_image.png")
 
-    
-    
-    
+    print "\nTesting picture upload"
+    print(gservice.upload_picture("test_image.png"))
+
 
 if __name__ == '__main__':
     test()
