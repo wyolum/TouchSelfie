@@ -8,7 +8,6 @@
 """
 import os
 import base64
-import httplib2
 from apiclient import errors, discovery
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -16,19 +15,15 @@ import mimetypes
 from email.mime.image import MIMEImage
 from email.mime.audio import MIMEAudio
 from email.mime.base import MIMEBase
-import gdata
-import gdata.photos.service
-import gdata.media
-import gdata.geo
-import gdata.gauth
 import webbrowser
 from datetime import datetime, timedelta
-from oauth2client.client import flow_from_clientsecrets
-from oauth2client.file import Storage
+from googleapiclient.discovery import build
+from httplib2 import Http
+from oauth2client import file, client, tools
 
 class OAuthServices:
     """Unique entry point for Google Services authentication"""
-    def __init__(self, client_secret, credentials_store, username, enable_upload = True, enable_email = True, authorization_callback = None):
+    def __init__(self, client_secret, credentials_store, username, enable_upload = True, enable_email = True):
         """Create an OAuthService provider
         
         Arguments:
@@ -37,7 +32,6 @@ class OAuthServices:
             username                 : gmail address of the user whom account will be used
             enable_email             : enable send_email feature
             enable_upload            : enable upload pictures feature
-            authorization_callback   : a function callback that is responsible to connect to an authorization url, accept conditions and return a validation code (once)
                  prototype : mycallback(URI): connect(URI); code = raw_input('enter code:'); return code
                  by default a console callback is used, it automatically launches a webbrowser to the authorization URI and asks for a code in the console
         """
@@ -53,22 +47,12 @@ class OAuthServices:
 
         #build scopes
         if self.enable_upload:
-            self.scopes += "https://picasaweb.google.com/data/ "
+            self.scopes += "https://www.googleapis.com/auth/photoslibrary "
         if self.enable_email:
             self.scopes += "https://www.googleapis.com/auth/gmail.send"
         self.scopes = self.scopes.strip()
 
-        self.credential_store = Storage(credentials_store)
-        
-        if authorization_callback == None:
-            def default_authorization_callback(authorization_uri):
-                print "\nLaunching system browser to validate the credentials..."
-                webbrowser.open(uri)
-                code = raw_input('\nEnter the authentication code, then press Enter: ').strip()
-                return code
-            self.authorization_callback = default_authorization_callback
-        else:
-            self.authorization_callback = authorization_callback
+        self.credential_store = file.Storage(credentials_store)
                 
         
     def refresh(self):
@@ -88,15 +72,11 @@ class OAuthServices:
             return None
         credentials = self.credential_store.get()
         if credentials is None or credentials.invalid:
-            flow = flow_from_clientsecrets(self.client_secret, scope=self.scopes, redirect_uri='urn:ietf:wg:oauth:2.0:oob')
-            uri = flow.step1_get_authorize_url()
-            code = self.authorization_callback(uri)
-            credentials = flow.step2_exchange(code)
+            flow = client.flow_from_clientsecrets(self.client_secret, self.scopes)
+            credentials = tools.run_flow(flow, self.credential_store)
 
         if (credentials.token_expiry - datetime.utcnow()) < timedelta(minutes=5):
-            http = httplib2.Http()
-            http = credentials.authorize(http)
-            credentials.refresh(http)
+            credentials.refresh(Http())
 
         self.credential_store.put(credentials)
         return credentials
@@ -105,10 +85,7 @@ class OAuthServices:
         if not self.enable_upload: #we don't want it
             return None
         credentials = self.__oauth_login()
-        user_agent='picasawebuploader'
-        return gdata.photos.service.PhotosService(source=user_agent,
-                                                   email=self.username,
-                                                   additional_headers={'Authorization' : 'Bearer %s' % credentials.access_token})
+        return build('photoslibrary', 'v1', http=credentials.authorize(Http()))
 
     def get_user_albums(self, as_title_id = True):
         """
@@ -119,20 +96,33 @@ class OAuthServices:
         if not self.enable_upload:
             return {}
         client = self.__get_photo_client()
-        albums = client.GetUserFeed()
-
+        albums = []
+        try:
+            request = client.albums().list(pageSize=50).execute()
+            albums.extend(request["albums"])
+            while request.get("nextPageToken",None) is not None:
+                print("loading next album page...")
+                request = client.albums().list(pageSize=50, pageToken = request["nextPageToken"]).execute()
+                albums.extend(request["albums"])
+        except Exception as e:
+            print("Error while fetching albums %s"%str(e))
+            
+        
         if as_title_id:
             #build a list of {"title": "My album Title", "id":"FDQAga124231"} elements
             album_list = []
-            for album in albums.entry:
+            for album in albums:
                 entry = {}
-                entry['title'] = album.title.text
-                entry['id']    = album.gphoto_id.text
+                #skip albums with no title
+                if not ("title" in album.keys()):
+                    continue
+                entry['title'] = album.get("title")
+                entry['id']    = album.get("id")
                 album_list.append(entry)
             return(album_list)
         else:
             #full stuff
-            return album.entry
+            return albums
 
     def upload_picture(self, filename, album_id = None , title="photo", caption = ""):
         """Upload a picture to Google Photos
@@ -144,26 +134,9 @@ class OAuthServices:
             title (str)    : title for the photo (example : filename)
             caption (str, opt) : a Caption for the photo
         """
-        if not self.enable_upload:
-            return False
-        
-        if caption == None:
-            caption =""
-        
-        if album_id == None:
-            album_url = '/data/feed/api/user/default/albumid/default' # default folder
-        else :
-            album_url = '/data/feed/api/user/%s/albumid/%s' % (self.username, album_id)
-        
-        client = self.__get_photo_client()
-        content_type, encoding = mimetypes.guess_type(filename)
-
-        try:
-            client.InsertPhotoSimple(album_url, title, caption, filename ,content_type=content_type)
-        except Exception as error:
-            print "Error uploading image %s",error
-            return False
-        return True
+        #Not implemented
+        raise NotImplementedError("upload_picture is not yet implemented")
+        return False
  
     def send_message(self,to, subject, body, attachment_file=None):
         """ send a message using gmail
@@ -178,7 +151,7 @@ class OAuthServices:
         if not self.enable_email:
             return False
         credentials = self.__oauth_login()
-        http = credentials.authorize(httplib2.Http())
+        http = credentials.authorize(Http())
         service = discovery.build('gmail', 'v1', http=http)
         message = self.__createMessage(self.username, to, subject, body, body, attachment_file=attachment_file)
         
@@ -260,7 +233,7 @@ def test():
     im.save("test_image.png")
     
     # Connecting to Google
-    gservice = OAuthServices("client_id.json","mycredentials.dat",username)
+    gservice = OAuthServices("client_id.json","storage.json",username)
     print "\nTesting email sending..."
     print gservice.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
     print "\nTesting album list retrieval..."
@@ -272,17 +245,7 @@ def test():
             break
     print "\nTesting picture upload"
     gservice.upload_picture("test_image.png")
-    
-    # test a new authorization call_back
-    def myown_authorization_callback(authorization_uri):
-        print "This is my own authorization callback!"
-        print "I will launch a web browser for you to connect"
-        print "Once connected, please enter the validation code below!"
-        webbrowser.open(authorization_uri)
-        mycode = raw_input('\n[code]: ').strip()
-        return mycode
-    alt_gservice = OAuthServices("client_id.json","new_cred.dat",username, authorization_callback = myown_authorization_callback)
-    alt_gservice.get_user_albums()
+
     
     
     
