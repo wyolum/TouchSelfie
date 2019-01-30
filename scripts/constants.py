@@ -206,6 +206,6 @@ HARDWARE_POLL_PERIOD = 100
 
 # Path of various log and configuration files
 CONFIGURATION_FILE = "configuration.json"
-APP_ID_FILE        = "client_id.json"
-CREDENTIALS_STORE_FILE = "credentials.dat"
+APP_ID_FILE        = "google_client_id.json"
+CREDENTIALS_STORE_FILE = "google_credentials.dat"
 EMAILS_LOG_FILE = os.path.join("..","sendmail.log") # you should activate 'enable_mail_logging' key in configuration.json

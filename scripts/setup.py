@@ -231,7 +231,8 @@ class Assistant(Tk):
             def on_album_name_change(*args):
                 self.config.album_name = self.album_name_var.get()
             self.album_name_var.trace("w",on_album_name_change)
-            self.album_name_var.set(config.album_name)
+            #self.album_name_var.set(config.album_name) #TODO restore this eventually
+            self.album_name_var.set("Photo Stream")
 
             self.album_id_var = StringVar()
             def on_albumID_change(*args):
@@ -240,9 +241,13 @@ class Assistant(Tk):
                 if album_id == "":
                     self.config.albumID=None
                 else:
-                    self.config.albumID = self.album_id_var.get()
+                    print("ERROR it's currently impossible to send photos to a specific album")
+                    #self.config.albumID = self.album_id_var.get()
+                    self.config.albumID = None # TODO: find a way to upload in a specific album
             self.album_id_var.trace("w",on_albumID_change)
-            self.album_id_var.set(config.albumID)
+            
+            #self.album_id_var.set(config.albumID) #TODO: restore this eventually
+            self.album_id_var.set(None) # No Album
 
             self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
             self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
@@ -327,7 +332,9 @@ class Assistant(Tk):
 
             #Select Album and test buttons
             self.album_bframe = Frame(self.main_frame, bg='white')
-            self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
+            #TODO restore the ability to upload to a specific album
+            #Disable this until then
+            self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica', state=DISABLED)
             self.album_select_button.pack(side=LEFT)
 
 
@@ -457,10 +464,16 @@ class Assistant(Tk):
     3/  Follow the assistant with these hints:
         - Platform : other (with command-line user interface)
         - Access   : User data
+        - <credentials> : Create an OAuth 2.0 client ID
         - Fill whatever your like for application name and ID name
     4/  The last step of the assistant makes you Download
         a client_id.json file : this is your project's credentials!
     5/  Copy the downloaded file to : scripts/%s
+    6/  Next, on the console.developers.google.com website:
+        - go to the "<Menu>/APIs and Services/Library"
+        - search for "Photos"
+        - click on the "Photos Library API" Card
+        - click on the "Enable" Button
 
     see this page for up-to-date informations:
     https://support.google.com/googleapi/answer/6158849
@@ -532,8 +545,6 @@ Click the Start button below:
     - You will land on an authorization page for this app to
        - send emails
        - upload pictures
-    - Once authorized, you will get an authorization code
-    - Paste the code in the box below
 """)
             message_box.pack(fill=X)
 
@@ -554,7 +565,7 @@ Click the Start button below:
         #try to connect
         try:
 
-            self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get(),authorization_callback = auth_handler )
+            self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get() )
             print self.google_service.refresh()
         except Exception as error:
             self.google_service = None
@@ -597,7 +608,7 @@ Click the Start button below:
                 return None
             try:
                 #Try to connect to Google Services
-                self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get(),authorization_callback = exception_handler )
+                self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get())
                 return self.google_service.refresh()
             except Exception as error:
 #                print error
@@ -753,7 +764,7 @@ Click the Start button below:
             print "\nSending a test message to %s"%username
             self.google_service.send_message(username,self.config.emailSubject,self.config.emailMsg,attachment_file="test_image.png")
         if test_upload:
-            print "\nTesting picture upload in %s's album with id :"%username
+            print "\nTesting picture upload in %s's album with id %s:"%(username,self.config.albumID)
 
             self.google_service.upload_picture("test_image.png", album_id = self.config.albumID)
 
@@ -905,7 +916,7 @@ def console_assistant():
         import oauth2services
         try:
             print "\n** Connecting..."
-            service = oauth2services.OAuthServices(app_id,cred_store,config.user_name, authorization_callback = auth_callback)
+            service = oauth2services.OAuthServices(app_id,cred_store,config.user_name)
             connected = service.refresh() # will call 'auth_callback' if needed
             print "... Done"
         except Exception as error:
@@ -920,12 +931,18 @@ def console_assistant():
             sys.exit()
 
         # Successfully connected!
-        if config.albumID != None:
-            keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
-            change_album_id = not keep_album
-        else:
-            print "\nNo photo album selected, images will be uploaded to\nGoogle Photo album 'Drop Box'"
-            change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
+        # FORCE album_name to "photo stream" and album_id to None since it's impossible to upload in an existing album
+        #TODO remove this eventually
+        config.albumID = None
+        config.album_name = "Photo Stream"
+        change_album_id = False
+        #TODO
+        # if config.albumID != None:
+            # keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
+            # change_album_id = not keep_album
+        # else:
+            # print "\nNo photo album selected, images will be uploaded to\nGoogle Photo album 'Drop Box'"
+            # change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
 
         if change_album_id:
             try:
