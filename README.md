@@ -4,7 +4,7 @@ Original version of TouchSelfie was based on the, now deprecated, PICASA web API
 The Picasa Web API is discontinued since January 2019.
 This version of TouchSelfie handles the new API with the following conditions:
 
-- You must enable 'Google Photos API' (and 'Gmail' if you want the 'send email' feature) on your google developers console
+- You must enable 'Google Photos API' (and 'Gmail' if you want the 'send email' feature) on your [google developers console](https://console.developers.google.com)
 - You must download your app secret file to the following file : `scripts/google_client_id.json`
 - You must relaunch the setup 
 
