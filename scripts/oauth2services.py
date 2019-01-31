@@ -209,16 +209,19 @@ class OAuthServices:
             if album_id is not None:
                 media_reference["albumId"] = album_id
             try:
-                res = client.mediaItems().batchCreate(body=dict(
-                    albumId=album_id,
-                    newMediaItems=[
-                        {"simpleMediaItem": {"uploadToken": token}}]
-                    )).execute()
-
+                try:
+                    res = client.mediaItems().batchCreate(body=dict(albumId=album_id,newMediaItems=[{"simpleMediaItem": {"uploadToken": token}}])).execute()
+                except HttpError as e:
+                    if "Invalid album ID" in str(e):
+                        print("ERROR, bad album, uploading to user's stream")
+                        #Album is invalid, try to upload to user stream instead
+                        res = client.mediaItems().batchCreate(body=dict(newMediaItems=[{"simpleMediaItem": {"uploadToken": token}}])).execute()
                 if res["newMediaItemResults"][0]["status"]["message"] == "OK":
                     return True
                 else:
                     return False
+
+                    
             except Exception as e:
                 print("Error while referencing:",e)
                 return False
@@ -341,8 +344,8 @@ def test():
     print "\nTesting album creation and image upload"
     album_id = gservice.create_album(album_name="Test", add_placeholder_picture = True)
     print "New album id:",album_id
-    #print("Uploading to a bogus album")
-    #print(gservice.upload_picture("testfile.png",album_id = "BOGUS STRING" , caption="In bogus album", generate_placeholder_picture = True))
+    print("Uploading to a bogus album")
+    print(gservice.upload_picture("testfile.png",album_id = "BOGUS STRING" , caption="In bogus album", generate_placeholder_picture = True))
     
 
 if __name__ == '__main__':
