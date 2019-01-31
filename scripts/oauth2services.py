@@ -20,6 +20,7 @@ from datetime import datetime, timedelta
 from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
+from googleapiclient.errors import HttpError
 
 class OAuthServices:
     """Unique entry point for Google Services authentication"""
@@ -47,7 +48,7 @@ class OAuthServices:
 
         #build scopes
         if self.enable_upload:
-            self.scopes += "https://www.googleapis.com/auth/photoslibrary "
+            self.scopes += "https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata"
         if self.enable_email:
             self.scopes += "https://www.googleapis.com/auth/gmail.send"
         self.scopes = self.scopes.strip()
@@ -87,27 +88,50 @@ class OAuthServices:
         credentials = self.__oauth_login()
         return build('photoslibrary', 'v1', http=credentials.authorize(Http()))
         
+    def create_album(self, album_name = "New Album", add_placeholder_picture = False):
+        """ Create a new album in user's photo library
+            RETURNS: albumId or None if there was an error
+            ARGS: 
+                album_name (str): the album name (deflt: "New Album")
+                add_placeholder_picture (bool): add a small random colored placeholder image to the album (dflt: False)
+        """
+        if not self.enable_upload:
+            return {}
+        client = self.__get_photo_client()
+        try:
+            res = client.albums().create(body={"album":{"title":album_name}}).execute()
+            if add_placeholder_picture:
+                self.upload_picture("placeholder.png", album_id = res["id"], generate_placeholder_picture=True)
+            return res["id"]
+        except Exception as e:
+            print("Error while creating album %s:"%str(e))
+            return None
         
 
-    def get_user_albums(self, as_title_id = True):
+    def get_user_albums(self, as_title_id = True, exclude_non_app_created_data = True):
         """
         Retrieves connected user list of photo albums as:
             - a list({"title": "the title", "id":"jfqmfjqsjklfaz"}) if as_title_id argument is True (default)
-            - a gdata userfeed otherwise
+            - the album list
         """
         if not self.enable_upload:
             return {}
         client = self.__get_photo_client()
         albums = []
         try:
-            request = client.albums().list(pageSize=50).execute()
+            request = client.albums().list(pageSize=50,excludeNonAppCreatedData=exclude_non_app_created_data).execute()
             albums.extend(request["albums"])
-            while request.get("nextPageToken",None) is not None:
+            while (request.get("nextPageToken",None) is not None) and (len(request.get("albums",[])) == 50):
                 print("loading next album page...")
-                request = client.albums().list(pageSize=50, pageToken = request["nextPageToken"]).execute()
+                request = client.albums().list(pageSize=50, pageToken = request["nextPageToken"],excludeNonAppCreatedData=exclude_non_app_created_data).execute()
                 albums.extend(request["albums"])
+        except KeyError:
+            #no albums
+            return list()
         except Exception as e:
-            print("Error while fetching albums %s"%str(e))
+            import json
+            print("Error while fetching albums %s request result:%s"%(str(e),json.dumps(request,indent=4)))
+            raise(e)
             
         
         if as_title_id:
@@ -126,7 +150,7 @@ class OAuthServices:
             #full stuff
             return albums
 
-    def upload_picture(self, filename, album_id = None , title="photo", caption = None):
+    def upload_picture(self, filename, album_id = None , title="photo", caption = None, generate_placeholder_picture = False):
         """Upload a picture to Google Photos
         
         Arguments:
@@ -135,6 +159,9 @@ class OAuthServices:
                 if None (default), destination album will be Google Photos default 'Drop Box' album
             title (str)  DEPREC  : title for the photo (unused and deprecated)
             caption (str, opt) : a Caption for the photo
+            generate_placeholder_picture (bool, opt, deflt: False) : 
+                if set to True, <filename> picture won't be used and a 32x32 colored picture will be used instead
+                This is usefull to create an album and upload a random picture to it so that it shows up in google photos
         """
         if not self.enable_upload:
             return False
@@ -155,8 +182,19 @@ class OAuthServices:
         http = creds.authorize(Http())
         
         try:
-            with open(filename, "rb") as image_file:
-                filecontent=image_file.read()
+            if generate_placeholder_picture:
+                from PIL import Image
+                from random import randint
+                # creating test image
+                color = (randint(0,255),randint(0,255),randint(0,255))
+                im = Image.new("RGB", (32, 32), color=color)
+                import io
+                with io.BytesIO() as output:
+                    im.save(output, format="PNG")
+                    filecontent = output.getvalue()
+            else:
+                with open(filename, "rb") as image_file:
+                    filecontent=image_file.read()
             (response,token) = http.request(url,method="POST",body=filecontent,headers=headers)
             if response.status != 200:
                 raise IOError("Error connecting to %s"%url)
@@ -170,18 +208,23 @@ class OAuthServices:
             media_reference = dict(newMediaItems = [photo_item])
             if album_id is not None:
                 media_reference["albumId"] = album_id
-            
-            res = client.mediaItems().batchCreate(body=dict(
+            try:
+                res = client.mediaItems().batchCreate(body=dict(
                     albumId=album_id,
                     newMediaItems=[
                         {"simpleMediaItem": {"uploadToken": token}}]
                     )).execute()
-            if res["newMediaItemResults"][0]["status"]["message"] == "OK":
-                return True
-            else:
+
+                if res["newMediaItemResults"][0]["status"]["message"] == "OK":
+                    return True
+                else:
+                    return False
+            except Exception as e:
+                print("Error while referencing:",e)
                 return False
         except Exception as e:
-            print("Error while uploading: %s",str(e))
+            print("Error while uploading:",e)
+            return False
         return False
  
     def send_message(self,to, subject, body, attachment_file=None):
@@ -295,10 +338,12 @@ def test():
         if i >= 10:
             print "skipping the remaining albums..."
             break
-
-    print "\nTesting picture upload"
-    print(gservice.upload_picture("test_image.png"))
-
+    print "\nTesting album creation and image upload"
+    album_id = gservice.create_album(album_name="Test", add_placeholder_picture = True)
+    print "New album id:",album_id
+    #print("Uploading to a bogus album")
+    #print(gservice.upload_picture("testfile.png",album_id = "BOGUS STRING" , caption="In bogus album", generate_placeholder_picture = True))
+    
 
 if __name__ == '__main__':
     test()
