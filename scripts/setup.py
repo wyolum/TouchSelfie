@@ -231,7 +231,8 @@ class Assistant(Tk):
             def on_album_name_change(*args):
                 self.config.album_name = self.album_name_var.get()
             self.album_name_var.trace("w",on_album_name_change)
-            self.album_name_var.set(config.album_name)
+            self.album_name_var.set(config.album_name) #TODO restore this eventually
+            #self.album_name_var.set("Photo Stream")
 
             self.album_id_var = StringVar()
             def on_albumID_change(*args):
@@ -240,9 +241,13 @@ class Assistant(Tk):
                 if album_id == "":
                     self.config.albumID=None
                 else:
+                    #print("ERROR it's currently impossible to send photos to a specific album")
                     self.config.albumID = self.album_id_var.get()
+                    #self.config.albumID = None # TODO: find a way to upload in a specific album
             self.album_id_var.trace("w",on_albumID_change)
-            self.album_id_var.set(config.albumID)
+            
+            self.album_id_var.set(config.albumID) #TODO: restore this eventually
+            #self.album_id_var.set(None) # No Album
 
             self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
             self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
@@ -267,6 +272,8 @@ class Assistant(Tk):
                 loading_lbl.pack(fill=X)
                 top.update()
                 album_list = self.google_service.get_user_albums()
+                
+                        
                 loading_lbl.config(text='Use field below to search\nDouble-click on the list to apply')
                 #entry and listbox
                 pattern_var = StringVar()
@@ -286,10 +293,11 @@ class Assistant(Tk):
                     pattern = pattern_var.get()
                     #print "applying pattern %s"%pattern
                     #clear
-                    displayed_list_ids = [""]
-                    displayed_list_names=["Drop Box"]
+                    displayed_list_ids = ["","<New>"]
+                    displayed_list_names=["<No Album>","<Create New>"]
                     album_listbox.delete(0,END)
-                    album_listbox.insert(END,"<Default>")
+                    album_listbox.insert(END,"<No Album>")
+                    album_listbox.insert(END,"<Create New>")
                     inserted_items = 0
                     for i, item in enumerate(album_list):
                         if inserted_items >= list_box_items-1:
@@ -315,8 +323,17 @@ class Assistant(Tk):
                     #print displayed_list_ids
                     #print displayed_list_names
                     print "selected album '%s' with id '%s'"%(displayed_list_names[cursel],displayed_list_ids[cursel])
-                    self.album_id_var.set(displayed_list_ids[cursel])
-                    self.album_name_var.set(displayed_list_names[cursel])
+                    if displayed_list_names[cursel] == "<Create New>":
+                        try:
+                            #No album found, create one
+                            album_id = self.google_service.create_album(album_name = "TouchSelfie", add_placeholder_picture = True)
+                            self.album_id_var.set(album_id)   
+                            self.album_name_var.set("TouchSelfie")
+                        except Exception as e:
+                            print(e)
+                    else:
+                        self.album_id_var.set(displayed_list_ids[cursel])
+                        self.album_name_var.set(displayed_list_names[cursel])
                     top.destroy()
 
                 album_listbox.bind("<Double-Button-1>",item_selected)
@@ -327,9 +344,11 @@ class Assistant(Tk):
 
             #Select Album and test buttons
             self.album_bframe = Frame(self.main_frame, bg='white')
-            self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
+
+            self.album_select_button = Button(self.album_bframe,text='Select',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
             self.album_select_button.pack(side=LEFT)
 
+            
 
 
 
@@ -457,10 +476,16 @@ class Assistant(Tk):
     3/  Follow the assistant with these hints:
         - Platform : other (with command-line user interface)
         - Access   : User data
+        - <credentials> : Create an OAuth 2.0 client ID
         - Fill whatever your like for application name and ID name
     4/  The last step of the assistant makes you Download
-        a client_id.json file : this is your project's credentials!
+        a json file : this is your project's credentials!
     5/  Copy the downloaded file to : scripts/%s
+    6/  Next, on the console.developers.google.com website:
+        - go to the "<Menu>/APIs and Services/Library"
+        - search for "Photos"
+        - click on the "Photos Library API" Card
+        - click on the "Enable" Button
 
     see this page for up-to-date informations:
     https://support.google.com/googleapi/answer/6158849
@@ -532,8 +557,6 @@ Click the Start button below:
     - You will land on an authorization page for this app to
        - send emails
        - upload pictures
-    - Once authorized, you will get an authorization code
-    - Paste the code in the box below
 """)
             message_box.pack(fill=X)
 
@@ -554,7 +577,7 @@ Click the Start button below:
         #try to connect
         try:
 
-            self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get(),authorization_callback = auth_handler )
+            self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get() )
             print self.google_service.refresh()
         except Exception as error:
             self.google_service = None
@@ -597,7 +620,7 @@ Click the Start button below:
                 return None
             try:
                 #Try to connect to Google Services
-                self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get(),authorization_callback = exception_handler )
+                self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get())
                 return self.google_service.refresh()
             except Exception as error:
 #                print error
@@ -753,7 +776,7 @@ Click the Start button below:
             print "\nSending a test message to %s"%username
             self.google_service.send_message(username,self.config.emailSubject,self.config.emailMsg,attachment_file="test_image.png")
         if test_upload:
-            print "\nTesting picture upload in %s's album with id :"%username
+            print "\nTesting picture upload in %s's album with id %s:"%(username,self.config.albumID)
 
             self.google_service.upload_picture("test_image.png", album_id = self.config.albumID)
 
@@ -905,7 +928,7 @@ def console_assistant():
         import oauth2services
         try:
             print "\n** Connecting..."
-            service = oauth2services.OAuthServices(app_id,cred_store,config.user_name, authorization_callback = auth_callback)
+            service = oauth2services.OAuthServices(app_id,cred_store,config.user_name)
             connected = service.refresh() # will call 'auth_callback' if needed
             print "... Done"
         except Exception as error:
@@ -919,12 +942,13 @@ def console_assistant():
             print "Exiting..."
             sys.exit()
 
-        # Successfully connected!
+
+       
         if config.albumID != None:
             keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
             change_album_id = not keep_album
         else:
-            print "\nNo photo album selected, images will be uploaded to\nGoogle Photo album 'Drop Box'"
+            print "\nNo photo album selected, images will be uploaded to\nGoogle Photo Library (No Album)"
             change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
 
         if change_album_id:
@@ -937,10 +961,10 @@ def console_assistant():
                 album_title = None
                 album_id    = None
                 while True:
-                    search_string = raw_input("Type a part of an existing album name: ")
+                    search_string = raw_input("Type a part of an existing album name (or return for all): ")
                     search_string = search_string.lower()
-                    candidates    = []
-                    candidates_id = []
+                    candidates    = ["<No Album>","<Create New>"]
+                    candidates_id = ["","<New>"]
                     for album in albums:
                         title = album['title']
                         title_ = title.lower()
@@ -964,10 +988,16 @@ def console_assistant():
                         break
                     except:
                         print "Bad album number!"
-                config.albumID = album_id
+                if album_id == "":
+                    config.albumID = None
+                elif album_id == "<New>":
+                    config.albumID = service.create_album(album_name = "TouchSelfie", add_placeholder_picture = True)
+                    album_title = "TouchSelfie"
+                else:
+                    config.albumID = album_id
                 config.album_name = album_title
                 config.write()
-                print "\nAlbum %s with id %s successfully selected!\n"%(album_title, album_id)
+                print "\nAlbum '%s' with id '%s' successfully selected!\n"%(album_title, album_id)
             except:
                 import traceback
                 traceback.print_exc()

@@ -1,5 +1,12 @@
-# WARNING!
-Google photos upload is currently broken (see bug #60), this is due to the deprecation of the Picasa API. We're working on it, any help appreciated! Stay tuned.
+# News! Now fully compatible with Google Photos API
+
+Original version of TouchSelfie was based on the, now deprecated, PICASA web API.
+The Picasa Web API is discontinued since January 2019.
+This version of TouchSelfie handles the new API with the following conditions:
+
+- You must enable 'Google Photos API' (and 'Gmail' if you want the 'send email' feature) on your [google developers console](https://console.developers.google.com)
+- You must download your app secret file to the following file : `scripts/google_client_id.json`
+- You must relaunch the setup 
 
 # TouchSelfie
 Open Source Photobooth forked and improved from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
