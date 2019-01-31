@@ -942,19 +942,14 @@ def console_assistant():
             print "Exiting..."
             sys.exit()
 
-        # Successfully connected!
-        # FORCE album_name to "photo stream" and album_id to None since it's impossible to upload in an existing album
-        #TODO remove this eventually
-        config.albumID = None
-        config.album_name = "Photo Stream"
-        change_album_id = False
-        #TODO
-        # if config.albumID != None:
-            # keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
-            # change_album_id = not keep_album
-        # else:
-            # print "\nNo photo album selected, images will be uploaded to\nGoogle Photo album 'Drop Box'"
-            # change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
+
+       
+        if config.albumID != None:
+            keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
+            change_album_id = not keep_album
+        else:
+            print "\nNo photo album selected, images will be uploaded to\nGoogle Photo Library (No Album)"
+            change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
 
         if change_album_id:
             try:
@@ -966,10 +961,10 @@ def console_assistant():
                 album_title = None
                 album_id    = None
                 while True:
-                    search_string = raw_input("Type a part of an existing album name: ")
+                    search_string = raw_input("Type a part of an existing album name (or return for all): ")
                     search_string = search_string.lower()
-                    candidates    = []
-                    candidates_id = []
+                    candidates    = ["<No Album>","<Create New>"]
+                    candidates_id = ["","<New>"]
                     for album in albums:
                         title = album['title']
                         title_ = title.lower()
@@ -993,10 +988,16 @@ def console_assistant():
                         break
                     except:
                         print "Bad album number!"
-                config.albumID = album_id
+                if album_id == "":
+                    config.albumID = None
+                elif album_id == "<New>":
+                    config.albumID = service.create_album(album_name = "TouchSelfie", add_placeholder_picture = True)
+                    album_title = "TouchSelfie"
+                else:
+                    config.albumID = album_id
                 config.album_name = album_title
                 config.write()
-                print "\nAlbum %s with id %s successfully selected!\n"%(album_title, album_id)
+                print "\nAlbum '%s' with id '%s' successfully selected!\n"%(album_title, album_id)
             except:
                 import traceback
                 traceback.print_exc()
