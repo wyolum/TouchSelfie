@@ -156,7 +156,7 @@ class OAuthServices:
         Arguments:
             filename (str) : path to the file to upload
             album_id (str) : id string of the destination album (see get_user_albums).
-                if None (default), destination album will be Google Photos default 'Drop Box' album
+                if None (default), destination album will be Google Photos Library
             title (str)  DEPREC  : title for the photo (unused and deprecated)
             caption (str, opt) : a Caption for the photo
             generate_placeholder_picture (bool, opt, deflt: False) : 
@@ -210,7 +210,7 @@ class OAuthServices:
                 media_reference["albumId"] = album_id
             try:
                 try:
-                    res = client.mediaItems().batchCreate(body=dict(albumId=album_id,newMediaItems=[{"simpleMediaItem": {"uploadToken": token}}])).execute()
+                    res = client.mediaItems().batchCreate(body=media_reference).execute()
                 except HttpError as e:
                     if "Invalid album ID" in str(e):
                         print("ERROR, bad album, uploading to user's stream")
