@@ -4,7 +4,7 @@ Original version of TouchSelfie was based on the, now deprecated, PICASA web API
 The Picasa Web API is discontinued since January 2019.
 This version of TouchSelfie handles the new API with the following conditions:
 
-- You must enable 'Google Photos API' (and 'Gmail' if you want the 'send email' feature) on your [google developers console](https://console.developers.google.com)
+- You must enable 'Google Photos API' (and 'Gmail' if you want the 'send email' feature) on your [google developers console](https://console.developers.google.com). [See this article](https://github.com/laurentalacoque/TouchSelfie-extended/wiki/CreateGoogleProject) for help configuring your Google project and downloading your credentials file.
 - You must download your app secret file to the following file : `scripts/google_client_id.json`
 - You must relaunch the setup 
 
@@ -55,12 +55,14 @@ If google chrome is not on your system, the following might be necessary:
 sudo apt-get install luakit
 sudo update-alternatives --config x-www-browser
 ```
+### Optional: create a Google project and enable the APIs
+This is only needed if you plan to use the 'send email' or 'upload images to cloud' features of TouchSelfie.
+[Here's an article](https://github.com/laurentalacoque/TouchSelfie-extended/wiki/CreateGoogleProject) that will help you creating a project and downloading its credentials
 
 ### Configure the program
 
 1. run `setup.sh` script, this will:
   - guide you through the feature selection (email feature, upload feature)
-  - Google credentials retrieval and installation
   - Google Photos album selection
   - and will create a `photobooth.sh` launcher
 
@@ -80,17 +82,16 @@ sudo update-alternatives --config x-www-browser
 ## <a id="changes"></a>Changes from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
 ### Zero password
-- Now integrally based on OAuth2, neither the send-email, nor the upload-pictures will ask for and store a password
+- Now integrally based on OAuth2, neither the send-email, nor the upload-pictures will ask for and store a password. You will need to [create a Google project](https://github.com/laurentalacoque/TouchSelfie-extended/wiki/CreateGoogleProject) if you plan to use these features
 
 ### Send mails even from protected networks
-- Many faculty/company networks block the sendmail port. By using OAuth2 authentication, photobooth emails are seen as https connection and are not blocked by the network anymore
+- Many faculty/company networks block the sendmail port. By using OAuth2 authentication, photobooth emails are seen as https connection and are not blocked by the network anymore. (Again, [create a Google project](https://github.com/laurentalacoque/TouchSelfie-extended/wiki/CreateGoogleProject) for this)
 
 ### Easier setup
 - a new `setup.sh` assistant will guide you through the configuration of the features you need (send_email, auto-upload) and will help you install the Google credentials.
-- credentials installation now points to a google-hosted wizard to simplify the application-id creation
 
 ### Hardware buttons support
-- Added GPIO hardware interface for three buttons (with connections in hardware/ directory). Each button triggers a different effect. Software buttons are added if GPIO is not available
+- Added GPIO hardware interface for three buttons (with connections in hardware/ directory). Each button triggers a different effect. Software buttons are added if GPIO is not available. See `scripts/constants.py` to enable hardware buttons.
 
 ### Print selfies immediately
 - A new 'print' button allows you to print selfies on a preconfigured printer (courtesy [Pikokosan](https://github.com/Pikokosan))
