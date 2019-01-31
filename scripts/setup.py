@@ -231,8 +231,8 @@ class Assistant(Tk):
             def on_album_name_change(*args):
                 self.config.album_name = self.album_name_var.get()
             self.album_name_var.trace("w",on_album_name_change)
-            #self.album_name_var.set(config.album_name) #TODO restore this eventually
-            self.album_name_var.set("Photo Stream")
+            self.album_name_var.set(config.album_name) #TODO restore this eventually
+            #self.album_name_var.set("Photo Stream")
 
             self.album_id_var = StringVar()
             def on_albumID_change(*args):
@@ -241,13 +241,13 @@ class Assistant(Tk):
                 if album_id == "":
                     self.config.albumID=None
                 else:
-                    print("ERROR it's currently impossible to send photos to a specific album")
-                    #self.config.albumID = self.album_id_var.get()
-                    self.config.albumID = None # TODO: find a way to upload in a specific album
+                    #print("ERROR it's currently impossible to send photos to a specific album")
+                    self.config.albumID = self.album_id_var.get()
+                    #self.config.albumID = None # TODO: find a way to upload in a specific album
             self.album_id_var.trace("w",on_albumID_change)
             
-            #self.album_id_var.set(config.albumID) #TODO: restore this eventually
-            self.album_id_var.set(None) # No Album
+            self.album_id_var.set(config.albumID) #TODO: restore this eventually
+            #self.album_id_var.set(None) # No Album
 
             self.album_id_label = Label(self.main_frame,text="Album ID", font='Helvetica', anchor=W)
             self.album_name_entry = Entry(self.main_frame,textvariable=self.album_name_var, font='Helvetica', state=DISABLED, disabledbackground="#eeeeee", disabledforeground="#222222")
@@ -272,6 +272,8 @@ class Assistant(Tk):
                 loading_lbl.pack(fill=X)
                 top.update()
                 album_list = self.google_service.get_user_albums()
+                
+                        
                 loading_lbl.config(text='Use field below to search\nDouble-click on the list to apply')
                 #entry and listbox
                 pattern_var = StringVar()
@@ -291,10 +293,11 @@ class Assistant(Tk):
                     pattern = pattern_var.get()
                     #print "applying pattern %s"%pattern
                     #clear
-                    displayed_list_ids = [""]
-                    displayed_list_names=["Drop Box"]
+                    displayed_list_ids = ["","<New>"]
+                    displayed_list_names=["<No Album>","<Create New>"]
                     album_listbox.delete(0,END)
-                    album_listbox.insert(END,"<Default>")
+                    album_listbox.insert(END,"<No Album>")
+                    album_listbox.insert(END,"<Create New>")
                     inserted_items = 0
                     for i, item in enumerate(album_list):
                         if inserted_items >= list_box_items-1:
@@ -320,8 +323,17 @@ class Assistant(Tk):
                     #print displayed_list_ids
                     #print displayed_list_names
                     print "selected album '%s' with id '%s'"%(displayed_list_names[cursel],displayed_list_ids[cursel])
-                    self.album_id_var.set(displayed_list_ids[cursel])
-                    self.album_name_var.set(displayed_list_names[cursel])
+                    if displayed_list_names[cursel] == "<Create New>":
+                        try:
+                            #No album found, create one
+                            album_id = self.google_service.create_album(album_name = "TouchSelfie", add_placeholder_picture = True)
+                            self.album_id_var.set(album_id)   
+                            self.album_name_var.set("TouchSelfie")
+                        except Exception as e:
+                            print(e)
+                    else:
+                        self.album_id_var.set(displayed_list_ids[cursel])
+                        self.album_name_var.set(displayed_list_names[cursel])
                     top.destroy()
 
                 album_listbox.bind("<Double-Button-1>",item_selected)
@@ -332,11 +344,11 @@ class Assistant(Tk):
 
             #Select Album and test buttons
             self.album_bframe = Frame(self.main_frame, bg='white')
-            #TODO restore the ability to upload to a specific album
-            #Disable this until then
-            self.album_select_button = Button(self.album_bframe,text='Select Album',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica', state=DISABLED)
+
+            self.album_select_button = Button(self.album_bframe,text='Select',fg='white',bg=self.BUTTONS_BG, command=select_album, font='Helvetica')
             self.album_select_button.pack(side=LEFT)
 
+            
 
 
 
