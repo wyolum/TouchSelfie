@@ -48,7 +48,7 @@ class OAuthServices:
 
         #build scopes
         if self.enable_upload:
-            self.scopes += "https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata"
+            self.scopes += "https://www.googleapis.com/auth/photoslibrary.appendonly https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata "
         if self.enable_email:
             self.scopes += "https://www.googleapis.com/auth/gmail.send"
         self.scopes = self.scopes.strip()
