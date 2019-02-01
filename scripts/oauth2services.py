@@ -230,7 +230,7 @@ class OAuthServices:
             else:
                 with open(filename, "rb") as image_file:
                     filecontent=image_file.read()
-            log.info("upload_picture: uploading picture %s (%d bytes)"%(filename,len(filecontent)))
+            log.debug("upload_picture: uploading picture %s (%d bytes)"%(filename,len(filecontent)))
             (response,token) = http.request(url,method="POST",body=filecontent,headers=headers)
             if response.status != 200:
                 log.warning("upload_picture: response code for upload %d != 200"%response.status)
@@ -258,7 +258,7 @@ class OAuthServices:
                         #Album is invalid, try to upload to user stream instead
                         res = client.mediaItems().batchCreate(body=dict(newMediaItems=[{"simpleMediaItem": {"uploadToken": token}}])).execute()
                 if res["newMediaItemResults"][0]["status"]["message"] == "OK":
-                    log.debug("upload_picture: successfully uploaded image")
+                    log.info("upload_picture: successfully uploaded image %s"%filename)
                     return True
                 else:
                     log.warning("upload_picture: Unrecognized response")
