@@ -23,15 +23,12 @@ from oauth2client import file, client, tools
 from googleapiclient.errors import HttpError
 
 import logging
-logging.getLogger("googleapiclient.discovery_cache").setLevel(logging.WARNING)
-logging.getLogger("googleapiclient.discovery").setLevel(logging.WARNING)
-
 log = logging.getLogger(__name__)
 
 
 class OAuthServices:
     """Unique entry point for Google Services authentication"""
-    def __init__(self, client_secret, credentials_store, username, enable_upload = True, enable_email = True):
+    def __init__(self, client_secret, credentials_store, username, enable_upload = True, enable_email = True, log_level = logging.WARNING):
         """Create an OAuthService provider
         
         Arguments:
@@ -40,8 +37,7 @@ class OAuthServices:
             username                 : gmail address of the user whom account will be used
             enable_email             : enable send_email feature
             enable_upload            : enable upload pictures feature
-                 prototype : mycallback(URI): connect(URI); code = raw_input('enter code:'); return code
-                 by default a console callback is used, it automatically launches a webbrowser to the authorization URI and asks for a code in the console
+            log_level                : level of logging (integer, see python module logging)     
         """
         self.client_secret = client_secret
         self.credentials_store = None
@@ -61,6 +57,15 @@ class OAuthServices:
         self.scopes = self.scopes.strip()
 
         self.credential_store = file.Storage(credentials_store)
+        
+        log.setLevel(log_level)
+        #mask googleapiclient info and debug messages, except in debug mode
+        if (log_level == "DEBUG") or (log_level == logging.DEBUG):
+            logging.getLogger("googleapiclient.discovery_cache").setLevel(logging.INFO)
+            logging.getLogger("googleapiclient.discovery").setLevel(logging.INFO)
+        else:
+            logging.getLogger("googleapiclient.discovery_cache").setLevel(logging.WARNING)
+            logging.getLogger("googleapiclient.discovery").setLevel(logging.WARNING)
                 
         
     def refresh(self):
@@ -84,8 +89,12 @@ class OAuthServices:
         credentials = self.credential_store.get()
         if credentials is None or credentials.invalid:
             log.warning("__oauth_login: No valid credentials found, starting authorization flow")
-            flow = client.flow_from_clientsecrets(self.client_secret, self.scopes)
-            credentials = tools.run_flow(flow, self.credential_store)
+            try:
+                flow = client.flow_from_clientsecrets(self.client_secret, self.scopes)
+                credentials = tools.run_flow(flow, self.credential_store)
+            except Exception as e:
+                log.error("__oauth_login: Error authenticating")
+                raise e
 
         if (credentials.token_expiry - datetime.utcnow()) < timedelta(minutes=5):
             log.debug("__oauth_login: caching period reached, refreshing token online")
@@ -354,7 +363,7 @@ class OAuthServices:
 
 def test():
     """ test email and uploading """
-    logging.basicConfig(level=logging.ERROR)
+    logging.basicConfig()
 
     username = raw_input("Please enter your email address: ")
     
@@ -368,7 +377,7 @@ def test():
     im.save("test_image.png")
     
     # Connecting to Google
-    gservice = OAuthServices("client_id.json","storage.json",username)
+    gservice = OAuthServices("client_id.json","storage.json",username,log_level=logging.DEBUG)
 
 
     print "\nTesting email sending..."
