@@ -382,7 +382,7 @@ class UserInterface():
     def run_periodically(self):
         """hardware poll function launched by start_ui"""
         if not self.suspend_poll == True:
-            self.status('')
+            #self.status('')
             btn_state = self.buttons.state()
             if btn_state == 1:
                 self.snap("None")
@@ -816,6 +816,9 @@ class UserInterface():
                 def onEnter(*args):
                     self.kill_tkkb()
                     res = self.__send_picture()
+                    if not res:
+                        self.status("Error sending email")
+                        self.log.error("Error sending email")
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
                 TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter)
                 self.tkkb.wm_attributes("-topmost", 1)
@@ -875,7 +878,8 @@ class UserInterface():
                 self.log.exception('send_picture: Mail sending Failed')
                 self.status("Send failed :(")
                 retcode = False
-            self.status("")
+            else:
+                self.status("")
         else:
             self.log.error('send_picture: Not signed in')
             retcode = False
@@ -966,8 +970,7 @@ class UserInterface():
         self.root.wait_window(top)
         
 if __name__ == '__main__':
-    log_level = logging.DEBUG
-    logging.basicConfig(level=log_level)
+
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-de", "--disable-email", help="disable the 'send photo by email' feature",
@@ -978,8 +981,24 @@ if __name__ == '__main__':
                     action="store_true")
     parser.add_argument("-dh", "--disable-hardware-buttons", help="disable the hardware buttons (on-screen buttons instead)",
                     action="store_true")
+    parser.add_argument("--log-level", type=str, choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                    help="Log level (defaults to WARNING)")
     args = parser.parse_args()
-
+    
+    if args.log_level is None:
+        args.log_level = "WARNING"
+        
+    logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S',
+                filename='touchselfie.log',
+                filemode='w',
+                level = logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(args.log_level)
+    ch.setFormatter(logging.Formatter(fmt='%(levelname)-8s|%(asctime)s| %(message)s', datefmt="%H:%M:%S"))
+    logging.getLogger("").addHandler(ch)
+    log = logging.getLogger("main")
+    
     #print args
     import configuration
     config = configuration.Configuration("configuration.json")
@@ -1006,6 +1025,6 @@ if __name__ == '__main__':
 
 
     #TODO move every arguments into config file
-    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H),log_level = log_level)
+    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H),log_level = logging.DEBUG)
 
     ui.start_ui()
