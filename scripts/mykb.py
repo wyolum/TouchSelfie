@@ -48,6 +48,10 @@
 
 
 """
+
+import logging
+log=logging.getLogger(__name__)
+
 from Tkinter import *
 
 class Key:
@@ -367,7 +371,7 @@ class TouchKeyboard:
         except:
             #if we fail, this means that this should be a stringvar
             # build an entry and link it to the variable
-            print "creating entry..."
+            log.warning("No bound Entry found: creating entry...")
             f = Frame(Tkroot)
             self.bound_entry = Entry(f,width=40, textvariable = bound_entry, font='Helvetica')
             f.pack()
@@ -438,6 +442,7 @@ class TouchKeyboard:
     
         #install event handler
         self.canvas.bind('<Button-1>', self.dispatch_event)     # bind the click to the dispatcher
+        log.info("Keyboard created")
 
     def dispatch_event(self,event):
         """ dispatch a click event to every created key"""
@@ -506,12 +511,12 @@ class TouchKeyboard:
                         elif style == "":
                             self.canvas.itemconfigure(tag,outline=value)
                         else:
-                            print "Unknown style %s for tag %s"%(style,tag)
+                            log.error("Unknown style %s for tag %s"%(style,tag))
                     except:
                         pass
                 self.canvas.update()
             except Exception, e:
-                print e
+                log.exception("Error while applying stylesheet")
             
 if __name__ == '__main__':
     r = Tk()

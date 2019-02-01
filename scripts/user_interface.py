@@ -3,6 +3,9 @@ New interface for the photobooth
 
 @author: Laurent Alacoque 2o18
 """
+import logging
+log = logging.getLogger(__name__)
+logging.getLogger("PIL").setLevel(logging.WARNING)
 
 from Tkinter import *
 import tkMessageBox
@@ -14,12 +17,13 @@ from constants import *
 import time
 import traceback
 
+
 try:
     import cups
     import getpass
     printer_selection_enable = True
 except ImportError:
-    print "Cups not installed. removing option"
+    log.error("Cups not installed. removing option")
     printer_selection_enable = False
 
 import os
@@ -30,7 +34,7 @@ import oauth2services
 try:
     import hardware_buttons as HWB
 except ImportError:
-    print "Error importing hardware_buttons, using fakehardware instead"
+    log.error("Error importing hardware_buttons, using fakehardware instead")
     print traceback.print_exc()
     import fakehardware as HWB
 
@@ -38,11 +42,11 @@ try:
     import picamera as mycamera
     from picamera.color import Color
 except ImportError:
-    print "picamera not found, trying cv2_camera"
+    log.warning("picamera not found, trying cv2_camera")
     try:
         import cv2_camera as mycamera
     except ImportError:
-        print "cv2_camera import failed : using fake hardware instead"
+        log.warning("cv2_camera import failed : using fake hardware instead")
         import fakehardware as mycamera
         from fakehardware import Color
 
@@ -90,14 +94,18 @@ class LongPressDetector:
 
 class UserInterface():
     """A User Interface for the photobooth"""
-    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD):
+    def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD, log_level=logging.WARNING):
         """Constructor for the UserInterface object
 
         Arguments:
             config (configuration.Configuration()) : the configuration object
             window_size  tupple(w,h) : the window size (defaults to size in constants.py)
             poll_period : polling period for hardware buttons changes (ms)
+            log_level : amount of log (see python module 'logging')
         """
+        self.log = logging.getLogger("user_interface")
+        self.log_level = log_level
+        self.log.setLevel(self.log_level)
         upload_images = config.enable_upload
         send_emails   = config.enable_email
         hardware_buttons = config.enable_hardware_buttons
@@ -137,7 +145,10 @@ class UserInterface():
         def install_key_binding(action,function):
             if action in ACTIONS_KEYS_MAPPING.keys():
                 for key in ACTIONS_KEYS_MAPPING[action]:
+                    self.log.debug("Installing keybinding '%s' for action '%s'"%(key,action))
                     self.root.bind(key,function)
+            else:
+                self.log.warning("install_key_binding: no action '%s'"%action)
 
         # Factory to launch actions only when no snap is being processed
         def safe_execute_factory(callback):
@@ -145,7 +156,7 @@ class UserInterface():
                 if not self.suspend_poll == True:
                     callback()
             return safe_execute
-
+            
         install_key_binding("snap_None",safe_execute_factory(lambda *args: self.snap("None")))
         install_key_binding("snap_Four",safe_execute_factory(lambda *args: self.snap("Four")))
         install_key_binding("snap_Animation",safe_execute_factory(lambda *args: self.snap("Animation")))
@@ -245,7 +256,8 @@ class UserInterface():
             os.path.join(self.configdir, CREDENTIALS_STORE_FILE),
             self.account_email,
             enable_email = send_emails,
-            enable_upload = upload_images)
+            enable_upload = upload_images,
+            log_level = self.log_level)
 
         #Hardware buttons
         if hardware_buttons:
@@ -255,7 +267,7 @@ class UserInterface():
 
         if not self.buttons.has_buttons():
             #oh oh, we don't have hardware buttons, create soft ones
-            print "No hardware buttons found, generating software buttons"
+            self.log.warning("No hardware buttons found, generating software buttons")
 
             self.software_buttons_images = {}
             self.software_buttons = []
@@ -370,7 +382,7 @@ class UserInterface():
     def run_periodically(self):
         """hardware poll function launched by start_ui"""
         if not self.suspend_poll == True:
-            self.status('')
+            #self.status('')
             btn_state = self.buttons.state()
             if btn_state == 1:
                 self.snap("None")
@@ -392,7 +404,7 @@ class UserInterface():
         Arguments:
             mode ("None"|"Four"|"Animation") : the selected mode
         """
-        print "snap (mode=%s)" % mode
+        self.log.info("Snaping photo (mode=%s)" % mode)
         self.suspend_poll = True
         # clear status
         self.status("")
@@ -402,7 +414,7 @@ class UserInterface():
         picture_uploaded = False
 
         if mode not in EFFECTS_PARAMETERS.keys():
-            print "Wrong mode %s defaults to 'None'" % mode
+            self.log.error("Wrong effectmode %s defaults to 'None'" % mode)
             mode = "None"
 
         #hide backgroud image
@@ -421,13 +433,14 @@ class UserInterface():
                     if 'effect_params' in IMAGE_EFFECTS[self.selected_image_effect]:
                         self.camera.image_effect_params = IMAGE_EFFECTS[self.selected_image_effect]['effect_params']
                 except:
-                    print ("Error setting effect to",self.selected_image_effect)
+                    self.log.error("snap: Error setting effect to %s"%self.selected_image_effect)
             # 1. Start Preview
             self.camera.resolution = snap_size
             self.camera.start_preview()
             # 2. Show initial countdown
             # 3. Take snaps and combine them
             if mode == 'None':
+                self.log.debug("snap: single picture")
                 self.__show_countdown(config.countdown1,annotate_size = 160)
                 # simple shot with logo
                 self.camera.capture('snapshot.jpg')
@@ -436,6 +449,7 @@ class UserInterface():
                 snapshot = Image.open('snapshot.jpg')
                 picture_taken = True
                 if config.logo_file is not None :
+                    self.log.debug("snap: adding logo")
                     config.logo = Image.open(config.logo_file)
                     size = snapshot.size
                     #resize logo to the wanted size
@@ -445,6 +459,7 @@ class UserInterface():
                     yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
                     xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
                     snapshot.paste(config.logo,(xoff, yoff), config.logo)
+                self.log.debug("snap: saving snapshot")
                 snapshot.save('snapshot.jpg')
                 snap_filename = 'snapshot.jpg'
                 self.last_picture_mime_type = 'image/jpg'
@@ -452,6 +467,7 @@ class UserInterface():
             elif mode == 'Four':
                 # collage of four shots
                 # compute collage size
+                self.log.debug("snap: starting collage of four")
                 w = snap_size[0]
                 h = snap_size[1]
                 w_ = w * 2
@@ -468,6 +484,7 @@ class UserInterface():
                 # Assemble collage
                 self.camera.stop_preview()
                 self.status("Assembling collage")
+                self.log.debug("snap: assembling collage")
                 snapshot = Image.new('RGBA', (w_, h_))
                 snapshot.paste(Image.open('collage_1.jpg'), (  0,   0,  w, h))
                 snapshot.paste(Image.open('collage_2.jpg'), (w,   0, w_, h))
@@ -476,6 +493,7 @@ class UserInterface():
                 picture_taken = True
                 #paste the collage enveloppe if it exists
                 try:
+                    self.log.debug("snap: Adding  the collage cover")
                     front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
                     front = front.resize((w_,h_))
                     front = front.convert('RGBA')
@@ -485,10 +503,12 @@ class UserInterface():
                     snapshot=Image.alpha_composite(snapshot,front)
 
                 except Exception, e:
-                    traceback.print_exc()
+                    self.log.error("snap: unable to paste collage cover: %s"%repr(e))
+
 
                 self.status("")
                 snapshot = snapshot.convert('RGB')
+                self.log.debug("snap: Saving collage")
                 snapshot.save('collage.jpg')
                 snap_filename = 'collage.jpg'
                 self.last_picture_mime_type = 'image/jpg'
@@ -497,14 +517,16 @@ class UserInterface():
                 # animated gifs
                 # below is taken from official PiCamera doc and adapted
                 # take GIF_FRAME_NUMBER pictures resize to GIF_SIZE
+                self.log.debug("snap: starting animation")
                 self.__show_countdown(config.countdown1,annotate_size = 50)
                 for i, filename in enumerate(self.camera.capture_continuous('animframe-{counter:03d}.jpg')):
+                    self.log.debug("snap:animation: capturing image %d"%i)
                     # print(filename)
                     # TODO : enqueue the filenames and use that in the command line
                     time.sleep(EFFECTS_PARAMETERS[mode]['snap_period_millis'] / 1000.0)
                     # preload first frame because convert can be slow
                     if i == 0:
-                        print "changing " + filename
+                        self.log.debug("changing " + filename)
                         self.image.load(str(filename))
                     if i >= EFFECTS_PARAMETERS[mode]['frame_number']:
                         break
@@ -512,6 +534,7 @@ class UserInterface():
 
                 # Assemble images using image magick
                 self.status("Assembling animation")
+                self.log.debug("snap: assembling animation")
                 command_string = "convert -delay " + str(EFFECTS_PARAMETERS[mode]['gif_period_millis']) + " animframe-*.jpg animation.gif"
                 os.system(command_string)
                 picture_taken = True
@@ -530,22 +553,26 @@ class UserInterface():
                 self.last_picture_timestamp = datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d_%H-%M-%S")
                 self.last_picture_title = datetime.datetime.fromtimestamp(time.time()).strftime("%d-%m-%Y %H:%M:%S")  #TODO add event name
                 # 1. Display
+                self.log.debug("snap: displaying image")
                 self.image.load(snap_filename)
                 # 2. Upload
                 if self.signed_in:
                     self.status("Uploading image")
+                    self.log.debug("Uploading image")
                     try:
                         self.googleUpload(
                             self.last_picture_filename,
                             title= self.last_picture_title,
                             caption = config.photoCaption + " " + self.last_picture_title)
                         picture_uploaded = True
+                        self.log.info("Image %s successfully uploaded"%self.last_picture_title)
                         self.status("")
                     except Exception as e:
                         self.status("Error uploading image :(")
-                        print(e)
+                        self.log.exception("snap: Error uploading image")
                 # 3. Archive
                 if config.ARCHIVE:
+                    self.log.debug("Archiving image %s"%self.last_picture_title)
                     try:
                         if os.path.exists(config.archive_dir):
                             new_filename = ""
@@ -570,25 +597,29 @@ class UserInterface():
 
                             self.last_picture_filename = new_filename
                         else:
-                            print "Error : archive_dir %s doesn't exist"% config.archive_dir
+                            self.log.error("snap: Error : archive_dir %s doesn't exist"% config.archive_dir)
                     except Exception as e:
                         self.status("Saving failed :(")
+                        self.log.exception("Image %s couldn't be saved"%self.last_picture_title)
                         picture_saved = False
-                        print(e)
+                        
 
             else:
                 # error
                 self.status("Snap failed :(")
+                self.log.critical("snap: snapshot file doesn't exists: %s"%snap_filename)
                 self.image.unload()
         except Exception, e:
-            print e
-            traceback.print_exc()
+
+            #traceback.print_exc()
+            self.log.exception("snap: error during snapshot")
             snapshot = None
         self.suspend_poll = False
         #check if a picture was taken and not saved
         if picture_taken and not (picture_saved or picture_uploaded):
-            print("Error! picture was taken but not saved or uploaded")
+            self.log.critical("Error! picture was taken but not saved or uploaded")
             self.status("ERROR: Picture was not saved!")
+            return None
         return snap_filename
 
     def __countdown_set_led(self,state):
@@ -733,7 +764,7 @@ class UserInterface():
             if self.send_emails:
                 self.mail_btn.configure(state=DISABLED)
             self.signed_in = False
-            print 'refresh failed'
+            self.log.error('refresh_auth: refresh failed')
 
         #relaunch periodically
         self.auth_after_id = self.root.after(OAUTH2_REFRESH_PERIOD, self.refresh_auth)
@@ -785,6 +816,9 @@ class UserInterface():
                 def onEnter(*args):
                     self.kill_tkkb()
                     res = self.__send_picture()
+                    if not res:
+                        self.status("Error sending email")
+                        self.log.error("Error sending email")
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
                 TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter)
                 self.tkkb.wm_attributes("-topmost", 1)
@@ -803,18 +837,18 @@ class UserInterface():
 
 
     def send_print(self):
+        self.log.debug("send_print: Printing image")
         try:
             conn = cups.Connection()
             printers = conn.getPrinters()
-            print self.selected_printer
             default_printer = printers.keys()[self.selected_printer]#defaults to the first printer installed
             cups.setUser(getpass.getuser())
             conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
-            print 'Sending to printer...'
+            self.log.info('send_print: Sending to printer...')
         except:
-            print 'print failed :: '
+            self.log.exception('print failed')
             self.status("Print failed :(")
-            self.status("")
+        self.log.info("send_print: Image printed")
 
 
     def kill_tkkb(self):
@@ -832,6 +866,7 @@ class UserInterface():
         retcode = False
         if self.signed_in:
             #print 'sending photo by email to %s' % self.email_addr.get()
+            self.log.debug("send_picture: sending picture by email")
             self.status("Sending Email")
             try:
                 retcode = self.oauth2service.send_message(
@@ -840,12 +875,13 @@ class UserInterface():
                     config.emailMsg,
                     self.last_picture_filename)
             except Exception, e:
-                print 'Send Failed ::', e
+                self.log.exception('send_picture: Mail sending Failed')
                 self.status("Send failed :(")
                 retcode = False
-            self.status("")
+            else:
+                self.status("")
         else:
-            print 'Not signed in'
+            self.log.error('send_picture: Not signed in')
             retcode = False
         return retcode
 
@@ -903,7 +939,7 @@ class UserInterface():
         def cb_factory(img_effect):
             def mod_effect():
                 self.selected_image_effect = img_effect
-                print "Effect",img_effect,"selected"
+                self.log.info("Effect " + str(img_effect) +" selected")
                 top.destroy()
             return mod_effect
             
@@ -918,7 +954,7 @@ class UserInterface():
                 button_images.append(button_img_tk)
                 button = Button(top, image = button_img_tk, text=effect, height=button_size, width=button_size, background = 'black',command=cb_factory(effect))
             except:
-                print "Error for effect",effect,"trying text button"
+                self.log.error("Error for effect " + str(effect)+" trying text button")
                 button = Button(top, text=effect, background = "#333333",fg="white",font='Helvetica',command=cb_factory(effect))
             row = int(index/NCOLS)
             col = index % NCOLS
@@ -934,6 +970,7 @@ class UserInterface():
         self.root.wait_window(top)
         
 if __name__ == '__main__':
+
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("-de", "--disable-email", help="disable the 'send photo by email' feature",
@@ -944,34 +981,50 @@ if __name__ == '__main__':
                     action="store_true")
     parser.add_argument("-dh", "--disable-hardware-buttons", help="disable the hardware buttons (on-screen buttons instead)",
                     action="store_true")
+    parser.add_argument("--log-level", type=str, choices=['DEBUG','INFO','WARNING','ERROR','CRITICAL'],
+                    help="Log level (defaults to WARNING)")
     args = parser.parse_args()
-
+    
+    if args.log_level is None:
+        args.log_level = "WARNING"
+        
+    logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)s',
+                datefmt='%Y-%m-%d %H:%M:%S',
+                filename='touchselfie.log',
+                filemode='w',
+                level = logging.DEBUG)
+    ch = logging.StreamHandler()
+    ch.setLevel(args.log_level)
+    ch.setFormatter(logging.Formatter(fmt='%(levelname)-8s|%(asctime)s| %(message)s', datefmt="%H:%M:%S"))
+    logging.getLogger("").addHandler(ch)
+    log = logging.getLogger("main")
+    
     #print args
     import configuration
     config = configuration.Configuration("configuration.json")
     if not config.is_valid:
-        print "No configuration file found, please run setup.sh script to create one"
+        log.critical("No configuration file found, please run setup.sh script to create one")
         sys.exit()
 
     # command line arguments have higher precedence than config
     if args.disable_upload and config.enable_upload:
-        print "* Command line argument '--disable-upload' takes precedence over configuration"
+        log.warning("* Command line argument '--disable-upload' takes precedence over configuration")
         config.enable_upload = False
 
     if args.disable_email and config.enable_email:
-        print "* Command line argument '--disable-email' takes precedence over configuration"
+        log.warning("* Command line argument '--disable-email' takes precedence over configuration")
         config.enable_email = False
 
     if args.disable_hardware_buttons and config.enable_hardware_buttons:
-        print "* Command line argument '--disable-hardware-buttons' takes precedence over configuration"
+        log.warning("* Command line argument '--disable-hardware-buttons' takes precedence over configuration")
         config.enable_hardware_buttons = False
 
     if args.disable_full_screen and config.full_screen:
-        print "* Command line argument '--disable-full-screen' takes precedence over configuration"
+        log.warning("* Command line argument '--disable-full-screen' takes precedence over configuration")
         config.full_screen = False
 
 
     #TODO move every arguments into config file
-    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H))
+    ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H),log_level = logging.DEBUG)
 
     ui.start_ui()

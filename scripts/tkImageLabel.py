@@ -8,6 +8,8 @@ Thanks!
 from Tkinter import *
 from PIL import ImageTk,Image
 from itertools import count
+import logging
+log = logging.getLogger(__name__)
 
 class ImageLabel(Label):
     """a label containing and image"""
@@ -21,6 +23,7 @@ class ImageLabel(Label):
         Label.__init__(self,Tk_root)
         self.size=size
         self.root = Tk_root # for update()
+        log.debug("Created ImageLabel with size %s"%repr(size))
         
     def load(self, im):
         """Load a new image in the ImageLabel
@@ -28,6 +31,7 @@ class ImageLabel(Label):
         Arguments:
             im (path or PIL Image) : the image or image file to be loaded
         """
+        log.debug("Loading image %s",repr(im))
         if isinstance(im, str):
             im = Image.open(im)
         self.loc = 0
@@ -62,6 +66,7 @@ class ImageLabel(Label):
 
     def unload(self):
         """Remove the image"""
+        log.debug("Unloading image")
         self.config(image="")
         self.frames = None
         self.root.update()
