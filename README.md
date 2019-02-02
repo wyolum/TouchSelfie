@@ -6,7 +6,15 @@ This version of TouchSelfie handles the new API with the following conditions:
 
 - You must enable 'Google Photos API' (and 'Gmail' if you want the 'send email' feature) on your [google developers console](https://console.developers.google.com). [See this article](https://github.com/laurentalacoque/TouchSelfie-extended/wiki/CreateGoogleProject) for help configuring your Google project and downloading your credentials file.
 - You must download your app secret file to the following file : `scripts/google_client_id.json`
-- You must relaunch the setup 
+- You must relaunch the setup
+
+### Difference with previous Picasa Web API
+
+- This new API is safer and better for your privacy!
+  - TouchSelfie only asks for the minimum amount of permission: it can only **append** photos and albums and only can access to items created by the application. This way, it makes it impossible for TouchSelfie to access informations or photos that you uploaded yourself
+- This means that you can't select any album of your photo library, but your MUST create an album using the `setup.py` script. For this, just use the `Select Album` button and choose the `<Create new>` entry. (If you prefer to upload your photos in your photos library instead of an album as your camera does, just select `<No Album>` instead). Once your album is created, it will be populated with a random color square: don't remove it, otherwise this will delete the album)
+
+
 
 # TouchSelfie
 Open Source Photobooth forked and improved from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
