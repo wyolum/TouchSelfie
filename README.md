@@ -178,11 +178,13 @@ Hint for future verifyiers: the `scripts/oaut2services.py` contains all the code
 
 
   - **Will YOU have access to my photos?**
+  
 No, but again, don't take my word for it ;)
 take a look at `scripts/oauth2services.py` where all Google account access are done. In the `__init__` method of the `OAuthServices` class, the only _scope_(s) that are requested for the photo library are:
  - `https://www.googleapis.com/auth/photoslibrary.appendonly` : can't browse for your photos or directories
  - `https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata`: can only access items created by _this_ app
- See [official doc](https://developers.google.com/photos/library/guides/authentication-authorization#AboutAuthorization) for the Google Photos API scopes.
+ 
+See [official doc](https://developers.google.com/photos/library/guides/authentication-authorization#AboutAuthorization) for the Google Photos API scopes.
 
 
 
