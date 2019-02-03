@@ -174,7 +174,17 @@ This is the beauty of opensource: everybody can read the source code and check i
 
 Maybe you don't have the competency to verify the sourcecode, but others have and I trust they will alert the world if they find something nasty (or just file an [Issue!](../../issues)).
 
-Hint for future verifyiers: the `scripts/oaut2services.py` contains all the code that accesses the Google Accounts. As you will see, there's no methods designed to read emails, only to send them.
+Hint for future verifyiers: the `scripts/oaut2services.py` contains all the code that accesses the Google Accounts. As you will see in the `__init__` method of the `OAuthServices` class, the only _scope_ that is requested it the `https://www.googleapis.com/auth/gmail.send` that restricts the permission of the application to only sending emails on your behalf. (See [this official doc](https://developers.google.com/gmail/api/auth/scopes#gmail_scopes))
+
+
+  - **Will YOU have access to my photos?**
+No, but again, don't take my word for it ;)
+take a look at `scripts/oauth2services.py` where all Google account access are done. In the `__init__` method of the `OAuthServices` class, the only _scope_(s) that are requested for the photo library are:
+ - `https://www.googleapis.com/auth/photoslibrary.appendonly` : can't browse for your photos or directories
+ - `https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata`: can only access items created by _this_ app
+ See [official doc](https://developers.google.com/photos/library/guides/authentication-authorization#AboutAuthorization) for the Google Photos API scopes.
+
+
 
   - **Why do I need to create a project on Google Developers? Can't you provide one?**
 
