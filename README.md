@@ -28,6 +28,14 @@ For hardware construction, see [Make Magazine article](https://makezine.com/proj
 
 ## <a id="install"></a>Installing (extracted and adapted from [Make Magazine](https://makezine.com/projects/raspberry-pi-photo-booth/))
 
+### Complete Video Howto
+
+For a very nice How-To of how to set up your photobooth, don't miss the video below!
+Many thanks to [Caroline Dunn](http://carolinedunn.org/) for her great teaching skills.
+
+[![Caroline Dunn's TouchSelfie installation howto](https://img.youtube.com/vi/Gd0RKYRNJmo/0.jpg)](https://www.youtube.com/watch?v=Gd0RKYRNJmo)
+
+
 ### Get the necessary packages
 
 ```
