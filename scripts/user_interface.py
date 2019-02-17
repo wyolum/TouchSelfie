@@ -534,6 +534,10 @@ class UserInterface():
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
                 for i in range(9):
+                    self.camera.image_effect = IMAGE_EFFECTS[i]['effect_name']
+                    if 'effect_params' in IMAGE_EFFECTS[i]:
+                        self.camera.image_effect_params = IMAGE_EFFECTS[self.selected_image_effect]['effect_params']
+                    
                     self.camera.capture('collage_%d.jpg' % i)
                 # Assemble collage
                 self.camera.stop_preview()
