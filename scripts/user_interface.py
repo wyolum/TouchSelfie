@@ -170,7 +170,7 @@ class UserInterface():
         install_key_binding("configure",safe_execute_factory(lambda *args: self.long_press_cb(self)))
         try:
             import screenshot
-            install_key_binding("screenshot",safe_execute_factory(lambda *args: screenshot.screenshot(self)))
+            install_key_binding("screenshot",safe_execute_factory(lambda *args: screenshot.snap()))
         except:
             install_key_binding("screenshot",safe_execute_factory(lambda *args: long_press_cb(self)))
             self.log.warn("Failed to load screenshot")
