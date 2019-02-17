@@ -6,6 +6,7 @@ New interface for the photobooth
 import logging
 log = logging.getLogger(__name__)
 logging.getLogger("PIL").setLevel(logging.WARNING)
+logging.basicConfig(level="INFO")
 
 from Tkinter import *
 import tkMessageBox
@@ -23,7 +24,7 @@ try:
     import getpass
     printer_selection_enable = True
 except ImportError:
-    log.error("Cups not installed. removing option")
+    log.warning("Cups not installed. removing option")
     printer_selection_enable = False
 
 import os
@@ -45,6 +46,7 @@ except ImportError:
     log.warning("picamera not found, trying cv2_camera")
     try:
         import cv2_camera as mycamera
+        from fakehardware import Color
     except ImportError:
         log.warning("cv2_camera import failed : using fake hardware instead")
         import fakehardware as mycamera
