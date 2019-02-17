@@ -586,7 +586,7 @@ class UserInterface():
                                 new_filename = "%s-anim.gif" % self.last_picture_timestamp
 
                             # Try to write the picture we've just taken to ALL plugged-in usb keys
-                            if True: #Add this to the configuration
+                            if config.archive_to_all_usb_drives:
                                 self.log.info("Archiving to USB keys")
                                 try:
                                     usb_mount_point_root = "/media/pi/"

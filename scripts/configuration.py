@@ -12,6 +12,7 @@ class Configuration():
     photoCaption = "" # Caption in the photo album
     ARCHIVE      = True # Do we archive photos locally
     archive_dir  = os.path.join("..","Photos") # Where do we archive photos
+    archive_to_all_usb_drives  = True
     albumID      = None #  use install_credentials.py to create 'album.id'
     album_name   = "Drop Box"
     emailSubject = "Here's your photo!" # subject line of the email sent from the photobooth
@@ -60,6 +61,7 @@ class Configuration():
         if "countdown_inter_snap" in config.keys():  self.countdown2 = config["countdown_inter_snap"]
         if "snap_caption" in config.keys():  self.photoCaption = config["snap_caption"]
         if "local_archive" in config.keys():  self.ARCHIVE = config["local_archive"]
+        if "archive_to_all_usb_drives" in config.keys():  self.archive_to_all_usb_drives = config["archive_to_all_usb_drives"]
         if "local_archive_dir" in config.keys():  self.archive_dir = config["local_archive_dir"]
         if "google_photo_album_id" in config.keys():  self.albumID = config["google_photo_album_id"]
         if "google_photo_album_name" in config.keys(): self.album_name = config["google_photo_album_name"]
@@ -87,6 +89,7 @@ class Configuration():
             "countdown_inter_snap": self.countdown2,
             "snap_caption": self.photoCaption,
             "local_archive" : self.ARCHIVE,
+            "archive_to_all_usb_drives" : self.archive_to_all_usb_drives,
             "local_archive_dir" : self.archive_dir,
             "google_photo_album_id" : self.albumID,
             "google_photo_album_name" : self.album_name,
