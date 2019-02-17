@@ -281,6 +281,7 @@ class UserInterface():
             total_width = 0
             # first, open images and load them + compute the total width
             for i, effect in enumerate(SOFTWARE_BUTTONS):
+                self.log.debug("    adding %s" % effect)
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = effect_image.size
                 tkimage = ImageTk.PhotoImage(effect_image)
@@ -454,17 +455,16 @@ class UserInterface():
 
                 snapshot = Image.open('snapshot.jpg')
                 picture_taken = True
-                if config.logo_file is not None :
+                if config.logo is not None :
                     try:
-                        self.log.debug("snap: adding logo")
-                        config.logo = Image.open(config.logo_file)
                         size = snapshot.size
-                        #resize logo to the wanted size
-                        config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
+                        ### resize logo to the wanted size### TJS: I like to make logos the correct size to start with.
+                        # config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
                         logo_size = config.logo.size
                         #put logo on bottom right with padding
                         yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
                         xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        self.log.debug("snap: adding logo '%s @ (%d, %d)'" % (config.logo_file, xoff, yoff))
                         snapshot.paste(config.logo,(xoff, yoff), config.logo)
                     except Exception as e:
                         self.log.warning("Could not add logo to image : %r"%e)
@@ -1036,10 +1036,16 @@ if __name__ == '__main__':
     #print args
     import configuration
     config = configuration.Configuration("configuration.json")
+
     if not config.is_valid:
         log.critical("No configuration file found, please run setup.sh script to create one")
         sys.exit()
 
+    if config.logo_file is not None:
+        config.logo = Image.open(config.logo_file)
+    else:
+        config.logo = None
+        
     # command line arguments have higher precedence than config
     if args.disable_upload and config.enable_upload:
         log.warning("* Command line argument '--disable-upload' takes precedence over configuration")
@@ -1064,5 +1070,4 @@ if __name__ == '__main__':
 
     #TODO move every arguments into config file
     ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H),log_level = logging.DEBUG)
-
     ui.start_ui()

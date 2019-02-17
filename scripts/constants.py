@@ -42,7 +42,7 @@ EFFECTS_PARAMETERS = {
     },
     "Four": { 
         'snap_size' : (820,616),                       #(width, height) of each shots of the 2x2 collage
-        'foreground_image' : "collage_four_square.png" # Overlay image on top of the collage
+        'foreground_image' : "../logos/collage_four_square.png" # Overlay image on top of the collage
     },
     "Animation": {
         'snap_size' : (500, 500),   #(width, height) => Caution, gif animation can be huge, keep this small
@@ -55,10 +55,10 @@ EFFECTS_PARAMETERS = {
 # Path to icons for the software buttons (no hardware buttons setup)
 SOFTWARE_BUTTONS = {
     "None": {
-        "icon" : os.path.join("ressources","ic_photo.png")
+        "icon" : os.path.join("ressources","ic_portriat.png")
         },
     "Four": {
-        "icon" : os.path.join("ressources","ic_portrait.png")
+        "icon" : os.path.join("ressources","ic_four.png")
         },
     "Animation": {
         "icon" : os.path.join("ressources","ic_anim.png")
