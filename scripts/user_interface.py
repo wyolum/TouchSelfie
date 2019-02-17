@@ -172,7 +172,7 @@ class UserInterface():
             import screenshot
             install_key_binding("screenshot",safe_execute_factory(lambda *args: screenshot.screenshot(self)))
         except:
-            install_key_binding("screenshot",safe_execute_factory(lambda *args: pass))
+            install_key_binding("screenshot",safe_execute_factory(lambda *args: long_press_cb(self)))
             self.log.warn("Failed to load screenshot")
         install_key_binding("send_print",safe_execute_factory(lambda *args: self.send_print()))
         ## Bind keyboard keys to actions
