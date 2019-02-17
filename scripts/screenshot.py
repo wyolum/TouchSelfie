@@ -15,6 +15,7 @@ import datetime
 import os
 
 def snap(delay=0):
+    time.sleep(delay)
     now = datetime.datetime.now()
     Y = now.year
     M = now.month
