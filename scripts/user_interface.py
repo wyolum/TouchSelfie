@@ -546,6 +546,7 @@ class UserInterface():
             self.selected_image_effect = 'none'
 
             # Here, the photo or animation is in snap_filename
+            import os
             if os.path.exists(snap_filename):
                 self.last_picture_filename = snap_filename
                 self.last_picture_time = time.time()
@@ -570,9 +571,10 @@ class UserInterface():
                     except Exception as e:
                         self.status("Error uploading image :(")
                         self.log.exception("snap: Error uploading image")
+                
                 # 3. Archive
                 if config.ARCHIVE:
-                    self.log.debug("Archiving image %s"%self.last_picture_title)
+                    self.log.info("Archiving image %s"%self.last_picture_title)
                     try:
                         if os.path.exists(config.archive_dir):
                             new_filename = ""
@@ -583,15 +585,45 @@ class UserInterface():
                             elif mode == 'Animation':
                                 new_filename = "%s-anim.gif" % self.last_picture_timestamp
 
+                            # Try to write the picture we've just taken to ALL plugged-in usb keys
+                            if True: #Add this to the configuration
+                                self.log.info("Archiving to USB keys")
+                                try:
+                                    usb_mount_point_root = "/media/pi/"
+                                    import os
+                                    root, dirs, files = next(os.walk(usb_mount_point_root))
+                                    for directory in dirs:
+                                        mountpoint = os.path.join(root,directory)
+                                        if mountpoint.find("SETTINGS") != -1:
+                                            #don't write into SETTINGS directories
+                                            continue
+                                        if os.access(mountpoint,os.W_OK):
+                                            #can write in this mountpoint
+                                            self.log.info("Writing snaphshot to %s"%mountpoint)
+                                            try:
+                                                dest_dir = os.path.join(mountpoint,"TouchSelfiePhotos")
+                                                os.mkdirs(dest_dir)
+                                                import shutil
+                                                shutil.copy(self.last_picture_filename,os.path.join(dest_dir,new_filename))
+                                                picture_saved = True
+                                            except:
+                                                self.log.warning("Could not write %s to %s mountpoint"%(new_filename,mountpoint))
+                                except:
+                                    self.log.warning("Unable to write %s file to usb key"%(new_filename))
+
+                            #Archive on the setup defined directory
+                            self.log.info("Archiving to local directory %s"%config.archive_dir)
                             new_filename = os.path.join(config.archive_dir,new_filename)
                             # bug #40 shows that os.rename does not handle cross-filesystems (ex: usb key)
                             # So we use (slower) copy and remove when os.rename raises an exception
                             try:
                                 os.rename(self.last_picture_filename, new_filename)
+                                self.log.info("Snap saved to %s"%new_filename)
                                 picture_saved = True
                             except:
                                 import shutil
                                 shutil.copy(self.last_picture_filename, new_filename)
+                                self.log.info("Snap saved to %s"%new_filename)
                                 picture_saved = True
                                 os.remove(self.last_picture_filename)
 
@@ -986,7 +1018,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.log_level is None:
-        args.log_level = "WARNING"
+        args.log_level = "INFO"
         
     logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)s',
                 datefmt='%Y-%m-%d %H:%M:%S',
