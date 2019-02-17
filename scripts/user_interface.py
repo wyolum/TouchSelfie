@@ -165,6 +165,7 @@ class UserInterface():
             
         install_key_binding("snap_None",safe_execute_factory(lambda *args: self.snap("None")))
         install_key_binding("snap_Four",safe_execute_factory(lambda *args: self.snap("Four")))
+        install_key_binding("snap_Nine",safe_execute_factory(lambda *args: self.snap("Nine")))
         install_key_binding("snap_Animation",safe_execute_factory(lambda *args: self.snap("Animation")))
         install_key_binding("send_email",safe_execute_factory(lambda *args: self.send_email()))
         install_key_binding("configure",safe_execute_factory(lambda *args: self.long_press_cb(self)))
@@ -409,7 +410,7 @@ class UserInterface():
             - upload them to Google Photos
 
         Arguments:
-            mode ("None"|"Four"|"Animation") : the selected mode
+            mode ("None"|"Four"|"Animation"|"Nine") : the selected mode
         """
         self.log.info("Snaping photo (mode=%s)" % mode)
         self.suspend_poll = True
@@ -514,6 +515,38 @@ class UserInterface():
                 except Exception, e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
 
+
+                self.status("")
+                snapshot = snapshot.convert('RGB')
+                self.log.debug("snap: Saving collage")
+                snapshot.save('collage.jpg')
+                snap_filename = 'collage.jpg'
+                self.last_picture_mime_type = 'image/jpg'
+
+            elif mode == 'Nine':
+                # collage of Nine shots
+                # compute collage size
+                self.log.debug("snap: starting collage of Nine")
+                w = snap_size[0]
+                h = snap_size[1]
+                w_ = w
+                h_ = h
+                # take 9 photos and merge into one image.
+                self.__show_countdown(config.countdown1,annotate_size = 80)
+                for i in range(9):
+                    self.camera.capture('collage_%d.jpg' % i)
+                # Assemble collage
+                self.camera.stop_preview()
+                self.status("Assembling collage")
+                self.log.debug("snap: assembling collage")
+                snapshot = Image.new('RGBA', (w_, h_))
+                for i in range(3):
+                    for j in range(3):
+                        im = Image.open('collage_%d.jpg' % (i * 3 + j))
+                        im = im.resize((w//3, h//3))
+                        snapshot.paste(im, (i * w//3,   j * h//3,  (i + 1) * w // 3, (j + 1) * h // 3))
+                picture_taken = True
+                #paste the collage enveloppe if it exists
 
                 self.status("")
                 snapshot = snapshot.convert('RGB')

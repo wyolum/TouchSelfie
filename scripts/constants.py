@@ -169,11 +169,11 @@ HARDWARE_BUTTONS = {
 #See : http://effbot.org/tkinterbook/tkinter-events-and-bindings.htm
 ACTIONS_KEYS_MAPPING = {
     "snap_None": ["s","S","<F1>"],
-    "snap_Four": ["f","F","<F2>"],
+    "snap_Four": ["f","F","<F4>"],
+    "snap_Nine": ["<F9>"],
     "snap_Animation": ["a","A","<F3>"],
     "send_email":["e","@"],
     "configure":["<Escape>"],
-    #"screenshot":["<F4>"], ### not working
     #"send_print":["P"] #Uncomment if you want to a keyboard shortcut for printing
 }
 
