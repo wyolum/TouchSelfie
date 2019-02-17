@@ -172,8 +172,9 @@ ACTIONS_KEYS_MAPPING = {
     "snap_Four": ["f","F","<F2>"],
     "snap_Animation": ["a","A","<F3>"],
     "send_email":["e","@"],
-    "configure":["<Escape>"]
-    #,"send_print":["P"] #Uncomment if you want to a keyboard shortcut for printing
+    "configure":["<Escape>"],
+    "screenshot":["<F4>"],
+    #"send_print":["P"] #Uncomment if you want to a keyboard shortcut for printing
 }
 
 #Image list for in-preview countdown
