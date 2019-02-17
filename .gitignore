@@ -1,8 +1,19 @@
 # ignore specific files
-scripts/openselfie.conf
-scripts/.credentials
 scripts/*.jpg
-scripts/*.LOG
+scripts/*.log
+
+#ignore launcher
+photobooth.sh
+scripts/configuration.json
+scripts/client_id.json
+scripts/credentials.dat
+
+Photos/*.jpg
+Photos/*.gif
+
+# ignore log and animation frames
+run.log
+scripts/animframe*.*
 
 # ignore compiled python files
 scripts/*.pyc
@@ -10,8 +21,12 @@ scripts/*.pyc
 # ignore emacs backupfiles
 scripts/*.py~
 
+# ignore test image
+scripts/test_image.png
 
-# ignore credentials
-scripts/*.cred
-scripts/*.json
-scripts/*.dat
+# ignore thumnail generation
+scripts/ressources/effects/new_thumbs/
+scripts/ressources/effects/effects_snaps/
+
+# ignore sendmail log
+sendmail.log

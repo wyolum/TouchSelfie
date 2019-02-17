@@ -10,7 +10,7 @@ The Camera mount gets screwed to the back of the top holes in the two stand legs
 
 The pi camera takes 1.5mm screws, and I didn't have any so I just use double stick foam poster tape
 
-##Assembly
+## Assembly
 * plug the pi and the touch screen board cables together
 * insert the standoffs between the touch board and the Pi. Fasten with m2.5x20 screws to the touch screen.
 * plug the camera cable into the pi, and thread through the slot in the camera mount. plug in to the camera, and fix with Poster tape.
