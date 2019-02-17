@@ -34,14 +34,22 @@ SCREEN_H = 480 ## raspi touch
 # None: simple shot
 # Four: Collage of four shots
 # Animation : animated gif
+v2_full_size = (3280,2464)
+v2_half_size = (1640,1232)
+v2_quarter_size = (820,616)
+
+v1_full_size = (2592,1944)
+v1_half_size = (1296,972)
+v1_quarter_size = (648,486)
+
 EFFECTS_PARAMETERS = {
     "None": {
-        'snap_size' : (1640,1232), #(width, height) => preferably use integer division of camera resolution
+        'snap_size' : v2_full_size, #(width, height) => preferably use integer division of camera resolution
         'logo_size' : 128,         # height in pixels of the logo (will be thumbnailed to this size)
         'logo_padding' : 32        # bottom and right padding of the logo (pixels)
     },
     "Four": { 
-        'snap_size' : (820,616),                       #(width, height) of each shots of the 2x2 collage
+        'snap_size' : v2_half_size,                       #(width, height) of each shots of the 2x2 collage
         'foreground_image' : "collage_four_square.png" # Overlay image on top of the collage
     },
     "Animation": {
