@@ -602,12 +602,14 @@ class UserInterface():
                                             self.log.info("Writing snaphshot to %s"%mountpoint)
                                             try:
                                                 dest_dir = os.path.join(mountpoint,"TouchSelfiePhotos")
-                                                os.mkdirs(dest_dir)
+                                                if not os.path.exists(dest_dir)
+                                                    os.mkdirs(dest_dir)
                                                 import shutil
                                                 shutil.copy(self.last_picture_filename,os.path.join(dest_dir,new_filename))
                                                 picture_saved = True
                                             except:
                                                 self.log.warning("Could not write %s to %s mountpoint"%(new_filename,mountpoint))
+                                                self.log.exception("Error")
                                 except:
                                     self.log.warning("Unable to write %s file to usb key"%(new_filename))
 
