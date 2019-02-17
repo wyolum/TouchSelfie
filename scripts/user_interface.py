@@ -529,8 +529,8 @@ class UserInterface():
                 self.log.debug("snap: starting collage of Nine")
                 w = snap_size[0]
                 h = snap_size[1]
-                w_ = w
-                h_ = h
+                w_ = w * 3
+                h_ = h * 3
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
                 for i in range(9):
@@ -543,8 +543,7 @@ class UserInterface():
                 for i in range(3):
                     for j in range(3):
                         im = Image.open('collage_%d.jpg' % (i * 3 + j))
-                        im = im.resize((w//3, h//3))
-                        snapshot.paste(im, (i * w//3,   j * h//3,  (i + 1) * w // 3, (j + 1) * h // 3))
+                        snapshot.paste(im, (i * w,   j * h,  (i + 1) * w, (j + 1) * h))
                 picture_taken = True
                 #paste the collage enveloppe if it exists
 
