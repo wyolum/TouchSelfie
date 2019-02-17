@@ -6,7 +6,11 @@ New interface for the photobooth
 import logging
 log = logging.getLogger(__name__)
 logging.getLogger("PIL").setLevel(logging.WARNING)
-logging.basicConfig(level="INFO")
+logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S',
+            filename='touchselfie.log',
+            filemode='w',
+            level = logging.DEBUG)
 
 from Tkinter import *
 import tkMessageBox
@@ -541,6 +545,7 @@ class UserInterface():
                 self.status("Assembling animation")
                 self.log.debug("snap: assembling animation")
                 command_string = "convert -delay " + str(EFFECTS_PARAMETERS[mode]['gif_period_millis']) + " animframe-*.jpg animation.gif"
+                import os
                 os.system(command_string)
                 picture_taken = True
                 self.status("")
@@ -1027,16 +1032,6 @@ if __name__ == '__main__':
     if args.log_level is None:
         args.log_level = "INFO"
         
-    logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)s',
-                datefmt='%Y-%m-%d %H:%M:%S',
-                filename='touchselfie.log',
-                filemode='w',
-                level = logging.DEBUG)
-    ch = logging.StreamHandler()
-    ch.setLevel(args.log_level)
-    ch.setFormatter(logging.Formatter(fmt='%(levelname)-8s|%(asctime)s| %(message)s', datefmt="%H:%M:%S"))
-    logging.getLogger("").addHandler(ch)
-    log = logging.getLogger("main")
     
     #print args
     import configuration
@@ -1062,6 +1057,10 @@ if __name__ == '__main__':
         log.warning("* Command line argument '--disable-full-screen' takes precedence over configuration")
         config.full_screen = False
 
+    ch = logging.StreamHandler()
+    ch.setLevel(args.log_level)
+    ch.setFormatter(logging.Formatter(fmt='%(levelname)-8s|%(asctime)s| %(message)s', datefmt="%H:%M:%S"))
+    logging.getLogger("").addHandler(ch)
 
     #TODO move every arguments into config file
     ui = UserInterface(config,window_size=(SCREEN_W, SCREEN_H),log_level = logging.DEBUG)
