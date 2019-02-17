@@ -451,16 +451,19 @@ class UserInterface():
                 snapshot = Image.open('snapshot.jpg')
                 picture_taken = True
                 if config.logo_file is not None :
-                    self.log.debug("snap: adding logo")
-                    config.logo = Image.open(config.logo_file)
-                    size = snapshot.size
-                    #resize logo to the wanted size
-                    config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
-                    logo_size = config.logo.size
-                    #put logo on bottom right with padding
-                    yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
-                    xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
-                    snapshot.paste(config.logo,(xoff, yoff), config.logo)
+                    try:
+                        self.log.debug("snap: adding logo")
+                        config.logo = Image.open(config.logo_file)
+                        size = snapshot.size
+                        #resize logo to the wanted size
+                        config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
+                        logo_size = config.logo.size
+                        #put logo on bottom right with padding
+                        yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        snapshot.paste(config.logo,(xoff, yoff), config.logo)
+                    except Exception as e:
+                        self.log.warning("Could not add logo to image : %r"%e)
                 self.log.debug("snap: saving snapshot")
                 snapshot.save('snapshot.jpg')
                 snap_filename = 'snapshot.jpg'
