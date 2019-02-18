@@ -953,7 +953,7 @@ class UserInterface():
                     self.kill_tkkb()
                     self.__send_picture()
 
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, validator = validate_email)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, validator = email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
