@@ -22,6 +22,11 @@ from constants import *
 import time
 import traceback
 
+def argsort(seq):
+    #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
+    #by unutbu
+    return sorted(range(len(seq)), key=seq.__getitem__)
+    
 def shuffle(l, swaps=50):
     import random
     ### perform n swaps
@@ -310,7 +315,10 @@ class UserInterface():
                         self.snap(effect)
                 return snap_fun
 
-            for i, effect in enumerate(SOFTWARE_BUTTONS):
+            effects = SOFTWARE_BUTTONS.keys()
+            orders = [SOFTWARE_BUTTONS[effect].order for effect in effects]
+            for i in argsort(orders):
+                effects = effects[i]
                 #print effect, SOFTWARE_BUTTONS[effect]
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
