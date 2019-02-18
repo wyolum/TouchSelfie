@@ -320,8 +320,7 @@ class UserInterface():
             self.log.warn(str(effects))
             self.log.warn(str(orders))
             for i in argsort(orders):
-                effects = effects[i]
-                #print effect, SOFTWARE_BUTTONS[effect]
+                effect = effects[i]
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
                 Y = self.size[1] - h
