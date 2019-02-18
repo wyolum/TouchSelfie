@@ -29,9 +29,9 @@ def shuffle(l, swaps=50):
         pass
     else:
         for i in range(swaps):
-            y = x = random.choice(0, len(l))
+            y = x = random.randrange(0, len(l))
             while y == x:
-                y = random.choice(0, len(l))
+                y = random.randrange(0, len(l))
             l[x], l[y] = l[y], l[x]
 
 try:
