@@ -317,6 +317,8 @@ class UserInterface():
 
             effects = SOFTWARE_BUTTONS.keys()
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
+            print orders
+            print effects
             for i in argsort(orders):
                 effects = effects[i]
                 #print effect, SOFTWARE_BUTTONS[effect]
