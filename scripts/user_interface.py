@@ -317,8 +317,6 @@ class UserInterface():
 
             effects = SOFTWARE_BUTTONS.keys()
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
-            self.log.warn(str(effects))
-            self.log.warn(str(orders))
             for i in argsort(orders):
                 effect = effects[i]
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])

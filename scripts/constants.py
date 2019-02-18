@@ -60,15 +60,15 @@ EFFECTS_PARAMETERS = {
 SOFTWARE_BUTTONS = {
     "Four": {
         "icon" : os.path.join("ressources","ic_four.png"),
-        "order":0
+        "order":1
         },
     "Nine": {
         "icon" : os.path.join("ressources","ic_nine.png"),
-        "order":1
+        "order":2
         },
     "None": {
         "icon" : os.path.join("ressources","ic_portrait.png"),
-        "order":2
+        "order":0
         },
     "Animation": {
         "icon" : os.path.join("ressources","ic_anim.png"),
