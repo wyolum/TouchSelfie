@@ -1,4 +1,4 @@
-# Thanks to an *amazing* pull request from @laurentalacoque we now have a tone of new features!
+# Thanks to an *amazing* pull request from @laurentalacoque we now have a ton of new features!
 
 Download and check them out!
 
