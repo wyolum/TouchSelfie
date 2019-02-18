@@ -565,6 +565,18 @@ class UserInterface():
                 picture_taken = True
                 #paste the collage enveloppe if it exists
 
+                try:
+                    self.log.debug("snap: Adding  the collage cover")
+                    front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
+                    front = front.resize((w_,h_))
+                    front = front.convert('RGBA')
+                    snapshot = snapshot.convert('RGBA')
+                    #print snapshot
+                    #print front
+                    snapshot=Image.alpha_composite(snapshot,front)
+
+                except Exception, e:
+                    self.log.error("snap: unable to paste collage cover: %s"%repr(e))
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
