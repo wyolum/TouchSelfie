@@ -545,10 +545,10 @@ class UserInterface():
                 self.status("Assembling collage")
                 self.log.debug("snap: assembling collage")
                 snapshot = Image.new('RGBA', (w_, h_))
-                for j in range(3):
-                    for i in range(3):
+                for i in range(3):
+                    for j in range(3):
                         im = Image.open('collage_%d.jpg' % (i * 3 + j))
-                        snapshot.paste(im, (i * w,   j * h,  (i + 1) * w, (j + 1) * h))
+                        snapshot.paste(im, (j * w,   i * h,  (j + 1) * w, (i + 1) * h))
                 picture_taken = True
                 #paste the collage enveloppe if it exists
 
