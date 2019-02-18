@@ -64,6 +64,9 @@ SOFTWARE_BUTTONS = {
     "Four": {
         "icon" : os.path.join("ressources","ic_four.png")
         },
+    "Nine": {
+        "icon" : os.path.join("ressources","ic_nine.png")
+        },
     "Animation": {
         "icon" : os.path.join("ressources","ic_anim.png")
         }
