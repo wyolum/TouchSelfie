@@ -987,8 +987,6 @@ class UserInterface():
         if not self.send_emails:
             return False
         email_address = self.email_addr.get().strip()
-        if not validate_email(email_address): ###TJS: look before you leap
-            return False
         retcode = False
         if self.signed_in:
             self.log.debug("send_picture: sending picture by email")
