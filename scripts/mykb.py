@@ -318,8 +318,8 @@ DEFAULT_STYLESHEET = [
     {    "tag": "keyboard",
         "background": "black",
         "keyboard-height": 400,
-        "key-width": 62,
-        "key-height": 62,
+        "key-width": 65,
+        "key-height": 65,
         "key-padding-horiz":5,
         "key-padding-vert":5
     },
