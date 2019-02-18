@@ -470,8 +470,8 @@ class UserInterface():
                     except Exception as e:
                         self.log.warning("Could not add logo to image : %r"%e)
                 self.log.debug("snap: saving snapshot")
-                snapshot.save('snapshot.jpg')
                 snap_filename = 'snapshot.jpg'
+                snapshot.save(snap_filename)
                 self.last_picture_mime_type = 'image/jpg'
 
             elif mode == 'Four':
@@ -519,8 +519,8 @@ class UserInterface():
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
-                snapshot.save('collage.jpg')
                 snap_filename = 'collage.jpg'
+                snapshot.save(snap_filename)
                 self.last_picture_mime_type = 'image/jpg'
 
             elif mode == 'Nine':
@@ -555,8 +555,8 @@ class UserInterface():
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
-                snapshot.save('collage.jpg')
                 snap_filename = 'collage.jpg'
+                snapshot.save(snap_filename)
                 self.last_picture_mime_type = 'image/jpg'
 
             elif mode == 'Animation':
@@ -628,6 +628,8 @@ class UserInterface():
                             if mode == 'None':
                                 new_filename = "%s-snap.jpg" % self.last_picture_timestamp
                             elif mode == 'Four':
+                                new_filename = "%s-collage.jpg" % self.last_picture_timestamp
+                            elif mode == 'Nine':
                                 new_filename = "%s-collage.jpg" % self.last_picture_timestamp
                             elif mode == 'Animation':
                                 new_filename = "%s-anim.gif" % self.last_picture_timestamp
