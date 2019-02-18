@@ -1,3 +1,7 @@
+# Thanks to an *amazing* pull request from @laurentalacoque we now have a tone of new features!
+
+Download and check them out!
+
 # News! Now fully compatible with Google Photos API
 
 Original version of TouchSelfie was based on the, now deprecated, PICASA web API.
