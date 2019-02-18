@@ -316,7 +316,7 @@ class UserInterface():
                 return snap_fun
 
             effects = SOFTWARE_BUTTONS.keys()
-            orders = [SOFTWARE_BUTTONS[effect].order for effect in effects]
+            orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
             for i in argsort(orders):
                 effects = effects[i]
                 #print effect, SOFTWARE_BUTTONS[effect]
