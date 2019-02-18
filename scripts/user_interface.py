@@ -25,10 +25,10 @@ import traceback
 def shuffle(l, swaps=50):
     import random
     ### perform n swaps
-    if len(l) < 2:
+    if len(l) < 3:
         pass
     else:
-        for i in range(n):
+        for i in range(swaps):
             y = x = random.choice(0, len(l))
             while y == x:
                 y = random.choice(0, len(l))
