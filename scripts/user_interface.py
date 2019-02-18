@@ -22,6 +22,11 @@ from tkImageLabel import ImageLabel
 from constants import *
 import time
 import traceback
+import re
+
+__email_validator = re.compile(r'^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$')
+def validate_email(addr):
+    return __email_validator.match(addr.strip())
 
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
@@ -910,6 +915,7 @@ class UserInterface():
         """Ask for an email address and send the last picture to it
 
         This will popup a touch keyboard
+        TJS: and set_focus on the entry field
         """
         if not self.send_emails:
             return
@@ -980,6 +986,9 @@ class UserInterface():
         """Actual code to send picture self.last_picture_filename by email to the address entered in self.email_addr StringVar"""
         if not self.send_emails:
             return False
+        email_address = self.email_addr.get().strip()
+        if not validate_email(email_address): ### look before you leap
+            return False
         retcode = False
         if self.signed_in:
             #print 'sending photo by email to %s' % self.email_addr.get()
@@ -987,7 +996,7 @@ class UserInterface():
             self.status("Sending Email")
             try:
                 retcode = self.oauth2service.send_message(
-                    self.email_addr.get().strip(),
+                    email_address,
                     config.emailSubject,
                     config.emailMsg,
                     self.last_picture_filename)
