@@ -405,19 +405,11 @@ class TouchKeyboard:
                         padding = int( (width_in_keys-1) * self.padding_horiz)
                     width = int(self.key_width * width_in_keys) + padding
                     #print "kw:",self.key_width," pad:", self.padding_horiz," total width : ",width
-                try:
-                    Xpos += int((self.key_width + self.padding_horiz) * config['x-offset'])
-                except:
-                    pass
-                try:
-                    Ypos += int((self.key_height + self.padding_vert) * config['y-offset'])
-                except:
-                    pass
-                special = "normal_key"
-                try:
-                    special = config['special']
-                except:
-                    pass
+                
+                Xpos += int((self.key_width + self.padding_horiz) * config.get('x-offset', 0))
+                Ypos += int((self.key_height + self.padding_vert) * config.get('y-offset', 0))
+                special = config.get('special', 'normal_key')
+
 
                 bbox = (Xpos, Ypos, width, self.key_height)
                 styles.append(rowtag)
