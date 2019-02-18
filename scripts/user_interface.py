@@ -2,6 +2,7 @@
 New interface for the photobooth
 
 @author: Laurent Alacoque 2o18
+@modifiedby: Justin Shaw 2019
 """
 import logging
 log = logging.getLogger(__name__)
@@ -552,7 +553,8 @@ class UserInterface():
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
                 effects_keys = IMAGE_EFFECTS.keys()
-                shuffle(effects_keys)
+                shuffle(effects_keys[1:])
+                effects_keys.insert(4, 'none')
                 for i in range(9):
                     image_effect = effects_keys[i]
                     self.camera.image_effect = IMAGE_EFFECTS[image_effect]['effect_name']
