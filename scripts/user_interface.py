@@ -22,6 +22,17 @@ from constants import *
 import time
 import traceback
 
+def shuffle(l, swaps=50):
+    import random
+    ### perform n swaps
+    if len(l) < 2:
+        pass
+    else:
+        for i in range(n):
+            y = x = random.choice(0, len(l))
+            while y == x:
+                y = random.choice(0, len(l))
+            l[x], l[y] = l[y], l[x]
 
 try:
     import cups
@@ -534,7 +545,7 @@ class UserInterface():
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
                 effects_keys = IMAGE_EFFECTS.keys()
-                effects_keys.shuffle()
+                shuffle(effects_keys)
                 for i in range(9):
                     image_effect = effects_keys[i]
                     self.camera.image_effect = IMAGE_EFFECTS[image_effect]['effect_name']
