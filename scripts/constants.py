@@ -63,15 +63,15 @@ SOFTWARE_BUTTONS = {
         "order":0
         },
     "Nine": {
-        "icon" : os.path.join("ressources","ic_nine.png")
+        "icon" : os.path.join("ressources","ic_nine.png"),
         "order":1
         },
     "None": {
-        "icon" : os.path.join("ressources","ic_portrait.png")
+        "icon" : os.path.join("ressources","ic_portrait.png"),
         "order":2
         },
     "Animation": {
-        "icon" : os.path.join("ressources","ic_anim.png")
+        "icon" : os.path.join("ressources","ic_anim.png"),
         "order":3
         }
 }
