@@ -319,6 +319,7 @@ class UserInterface():
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
             print orders
             print effects
+            sfdasdfa
             for i in argsort(orders):
                 effects = effects[i]
                 #print effect, SOFTWARE_BUTTONS[effect]
