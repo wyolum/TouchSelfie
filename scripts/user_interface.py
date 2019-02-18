@@ -922,39 +922,37 @@ class UserInterface():
             self.tkkb = Toplevel(self.root)
             keyboard_parent = self.tkkb
             consent_var = IntVar()
+            def onEnter(*args):
+                self.kill_tkkb()
+                res = self.__send_picture()
+                if not res:
+                    self.status("Error sending email")
+                    self.log.error("Error sending email")
+            def onCancel(*args, **kw):
+                self.kill_tkkb()
+                self.log.error("Send email canceled")
+
             if self.config.enable_email_logging:
                 #build consent control
                 main_frame=Frame(self.tkkb)
                 consent_frame = Frame(self.tkkb, bg='white', pady=20)
                 consent_var.set(1)
-                consent_cb = Checkbutton(consent_frame,text="Ok to log my mail address", variable=consent_var, font="Helvetica",bg='white', fg='black')
+                consent_cb = Checkbutton(consent_frame,text="Ok to log my mail address",
+                                         variable=consent_var, font="Helvetica",bg='white', fg='black')
                 consent_cb.pack(fill=X)
                 consent_frame.pack(side=BOTTOM,fill=X)
                 main_frame.pack(side=TOP,fill=Y)
                 keyboard_parent=main_frame
-                def onCancel(*args, **kw):
-                    self.log.error("Send email canceled")
-                    self.kill_tkkb()
 
-                def onEnter(*args):
-                    self.kill_tkkb()
-                    res = self.__send_picture()
-                    if not res:
-                        self.status("Error sending email")
-                        self.log.error("Error sending email")
+                def logOnEnter(*args):
+                    onEnter(*args)
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = email_validator)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = logOnEnter, onCancel = onCancel, validator = email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
 
             else:
-                def onEnter(*args):
-                    self.kill_tkkb()
-                    self.__send_picture()
-                def onCancel(*args, **kw):
-                    self.log.error("Send email canceled")
-                    self.kill_tkkb()
 
                 TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
