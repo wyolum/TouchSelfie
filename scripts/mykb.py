@@ -376,7 +376,7 @@ class TouchKeyboard:
             self.bound_entry = Entry(f,width=40, textvariable = bound_entry, font='Helvetica')
             f.pack()
             self.bound_entry.pack()
-            self.bound_entry.set_focus() ## TJS
+            self.bound_entry.focus() ## TJS
         self.canvas = Canvas(Tkroot, width = self.keyboard_width, height=self.keyboard_height, background = self.keyboard_background)
         self.canvas.pack()
         self.keys = []
