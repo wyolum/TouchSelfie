@@ -189,7 +189,7 @@ class EnterKey(Key):
         
         if not self.valid and new_valid:
             for k in self.keys:
-                self.canvas.itemconfig(self.keys[k],text="send")
+                self.canvas.itemconfig(self.keys[k],text=self.key_states[k])
             self.valid = True
         elif self.valid and not new_valid:
             for k in self.keys:
@@ -203,8 +203,10 @@ class EnterKey(Key):
         return out
     
     def onPress(self):
-        if self.keyboard.onEnter is not None:
+        if self.valid and self.keyboard.onEnter is not None:
             self.keyboard.onEnter()
+        if not self.valid and self.keyboard.onCancel is not None:
+            self.keyboard.onCancel()
             
 class BackSpaceKey(Key):
     """Special Key that inherits from Key class
@@ -386,7 +388,8 @@ DEFAULT_STYLESHEET = [
 
 class TouchKeyboard:
     """a keyboard made out of rows of keys"""
-    def __init__(self, Tkroot, bound_entry, onEnter= None, layout = QWERTY_LAYOUT, stylesheet = DEFAULT_STYLESHEET, validator=None):
+    def __init__(self, Tkroot, bound_entry, onEnter = None, onCancel= None,
+                 layout = QWERTY_LAYOUT, stylesheet = DEFAULT_STYLESHEET, validator=None):
         """Build a keyboard based on a layout and a stylesheet
         
         Arguments:
@@ -394,6 +397,7 @@ class TouchKeyboard:
             bound_entry (TkEntry) or StringVar() : the textbox in which the key presses will be sent
                 if this is a StringVar(), an Entry() will be created above the Keyboard
             onEnter               : callback function to call when Enter key is pressed
+            onCancel               : callback function to call when Cancel key is pressed
             layout                : a list of list of key definitions that consitutes the keyboard layout
             stylesheet            : a list of directives for the keyboard styling
             validator             : changed Entry text to "Cancel" unless validor returns True [optional] #TJS
@@ -401,7 +405,14 @@ class TouchKeyboard:
         self.read_keyboard_stylesheet(stylesheet)
         self.validator = validator
         self.bound_entry = bound_entry
+        if onEnter is None:
+            def onEnter(*args, **kw):
+                pass
+        if onCancel is None:
+            def onCancel(*args, **kw):
+                pass
         self.onEnter = onEnter
+        self.onCancel = onCancel
 
         # create a bound entry if needed
         try:
@@ -473,6 +484,7 @@ class TouchKeyboard:
     
         #install event handler
         self.canvas.bind('<Button-1>', self.dispatch_event)     # bind the click to the dispatcher
+        self.canvas.bind('<Return>', self.onEnter)
         log.info("Keyboard created")
 
     def dispatch_event(self,event):
@@ -548,15 +560,21 @@ class TouchKeyboard:
                 self.canvas.update()
             except Exception, e:
                 log.exception("Error while applying stylesheet")
-            
+
+__email_validator = re.compile(r'^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$')
+def email_validator(addr):
+    return bool(__email_validator.match(addr.strip()))
+
 if __name__ == '__main__':
     r = Tk()
     myres = StringVar()
-    def justin_validator(s):
-        return s == 'justin'
     def onEnter():
         print 'Enter Pressed'
         print "result %s"%myres.get()
+    def onCancel():
+        print 'Cancel Pressed'
+        print "result %s"%myres.get()
 
-    keyboard = TouchKeyboard(r,myres, onEnter = onEnter, validator=justin_validator)
+    keyboard = TouchKeyboard(r,myres, onEnter = onEnter, onCancel=onCancel,
+                             validator=email_validator)
     r.mainloop()

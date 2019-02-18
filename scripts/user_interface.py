@@ -24,10 +24,6 @@ import time
 import traceback
 import re
 
-__email_validator = re.compile(r'^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$')
-def validate_email(addr):
-    return bool(__email_validator.match(addr.strip()))
-
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
     #by unutbu
@@ -936,6 +932,10 @@ class UserInterface():
                 consent_frame.pack(side=BOTTOM,fill=X)
                 main_frame.pack(side=TOP,fill=Y)
                 keyboard_parent=main_frame
+                def onCancel(*args, **kw):
+                    self.log.error("Send email canceled")
+                    self.kill_tkkb()
+
                 def onEnter(*args):
                     self.kill_tkkb()
                     res = self.__send_picture()
@@ -943,7 +943,7 @@ class UserInterface():
                         self.status("Error sending email")
                         self.log.error("Error sending email")
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, validator = validate_email)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = validate_email)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
