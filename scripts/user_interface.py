@@ -26,7 +26,7 @@ import re
 
 __email_validator = re.compile(r'^\w+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}$')
 def validate_email(addr):
-    return __email_validator.match(addr.strip())
+    return bool(__email_validator.match(addr.strip()))
 
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
@@ -943,7 +943,7 @@ class UserInterface():
                         self.status("Error sending email")
                         self.log.error("Error sending email")
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, validator = validate_email)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
@@ -953,7 +953,7 @@ class UserInterface():
                     self.kill_tkkb()
                     self.__send_picture()
 
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, validator = validate_email)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
@@ -987,11 +987,10 @@ class UserInterface():
         if not self.send_emails:
             return False
         email_address = self.email_addr.get().strip()
-        if not validate_email(email_address): ### look before you leap
+        if not validate_email(email_address): ###TJS: look before you leap
             return False
         retcode = False
         if self.signed_in:
-            #print 'sending photo by email to %s' % self.email_addr.get()
             self.log.debug("send_picture: sending picture by email")
             self.status("Sending Email")
             try:

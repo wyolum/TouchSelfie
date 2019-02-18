@@ -95,17 +95,20 @@ class Key:
         canvas = keyboard.canvas
         # Create the bounding box as a rectangle, tag it key.boundaries
         my_boundary = canvas.create_rectangle(bounding_box[0], bounding_box[1], 
-                                 bounding_box[2] + bounding_box[0], 
-                                 bounding_box[3] + bounding_box[1], tags='key.boundaries')
+                                              bounding_box[2] + bounding_box[0], 
+                                              bounding_box[3] + bounding_box[1], tags='key.boundaries')
         for tag in tags:
             canvas.addtag_withtag(tag,my_boundary) # Add all tags passed as arguments
         #print canvas.gettags(my_boundary)
         # also add tags as "key.boundaries.<tag>"
         for tag in tags:
             canvas.addtag_withtag("key.boundaries."+tag,my_boundary)
-        # for each state ('upper', 'lower', 'ctrl', ...) add the corresponding text and tag it 'key.text'    
+        # for each state ('upper', 'lower', 'ctrl', ...) add the corresponding text and tag it 'key.text'
+        self.keys = {}
         for state in key_states:
-            mykey = canvas.create_text(int(bounding_box[0]+bounding_box[2]/2),int(bounding_box[1]+bounding_box[3]/2), text=key_states[state], tags = 'key.text') 
+            mykey = canvas.create_text(int(bounding_box[0]+bounding_box[2]/2),
+                                       int(bounding_box[1]+bounding_box[3]/2), text=key_states[state], tags = ['key.text'])
+            self.keys[state] = mykey
             # also add the state (e.g. 'lower') as tag to this key
             canvas.addtag_withtag(state,mykey)
             # also add all the tags passed as argument to this text
@@ -120,11 +123,13 @@ class Key:
         self.key_states  = key_states
         self.canvas = canvas
         self.current_value = ""
-
+        self.mode = 'lower'
+        
     def set_mode(self,mode):
         """Change current Key mode
         hide every key faces that aren't 'mode' show key face for mode 'mode'
         """
+        self.mode = mode
         self.current_value = ""
         for state in self.key_states.keys():
             if state == mode:
@@ -165,6 +170,38 @@ class EnterKey(Key):
     
     calls the Keyboard onEnter function
     """
+    def __init__(self, keyboard, bound_entry, key_states, tags=None, bounding_box=(0,0,10,10), validator=None, variable=None):
+        Key.__init__(self, keyboard, bound_entry, key_states, tags=tags + ['ENTER'], bounding_box=bounding_box)
+        self.variable = variable
+        self.validator = validator
+        self.last_mode = 'lower'
+        if self.variable is not None:
+            self.variable.trace('w', self.onEntryChange)
+        self.valid = True
+        self.onEntryChange()
+        
+    def onEntryChange(self, *args, **kw):
+        '''
+        Change to normal text if valid
+        '''
+        s = self.entry.get().strip()
+        new_valid = self.validate(s)
+        
+        if not self.valid and new_valid:
+            for k in self.keys:
+                self.canvas.itemconfig(self.keys[k],text="send")
+            self.valid = True
+        elif self.valid and not new_valid:
+            for k in self.keys:
+                self.canvas.itemconfig(self.keys[k],text="cancel")
+            self.valid = False
+
+    def validate(self, addr):
+        out = True
+        if self.validator is not None:
+            out = bool(self.validator(addr))
+        return out
+    
     def onPress(self):
         if self.keyboard.onEnter is not None:
             self.keyboard.onEnter()
@@ -349,7 +386,7 @@ DEFAULT_STYLESHEET = [
 
 class TouchKeyboard:
     """a keyboard made out of rows of keys"""
-    def __init__(self, Tkroot, bound_entry, onEnter= None, layout = QWERTY_LAYOUT, stylesheet = DEFAULT_STYLESHEET):
+    def __init__(self, Tkroot, bound_entry, onEnter= None, layout = QWERTY_LAYOUT, stylesheet = DEFAULT_STYLESHEET, validator=None):
         """Build a keyboard based on a layout and a stylesheet
         
         Arguments:
@@ -359,21 +396,24 @@ class TouchKeyboard:
             onEnter               : callback function to call when Enter key is pressed
             layout                : a list of list of key definitions that consitutes the keyboard layout
             stylesheet            : a list of directives for the keyboard styling
+            validator             : changed Entry text to "Cancel" unless validor returns True [optional] #TJS
         """
         self.read_keyboard_stylesheet(stylesheet)
-        
+        self.validator = validator
         self.bound_entry = bound_entry
         self.onEnter = onEnter
 
         # create a bound entry if needed
         try:
             bound_entry.winfo_class() #Will fail if this isn't a widget
+            self.variable = None
         except:
             #if we fail, this means that this should be a stringvar
             # build an entry and link it to the variable
             log.warning("No bound Entry found: creating entry...")
             f = Frame(Tkroot)
-            self.bound_entry = Entry(f,width=40, textvariable = bound_entry, font='Helvetica')
+            self.variable = bound_entry
+            self.bound_entry = Entry(f,width=40, textvariable = self.variable, font='Helvetica')
             f.pack()
             self.bound_entry.pack()
             self.bound_entry.focus() ## TJS
@@ -410,14 +450,13 @@ class TouchKeyboard:
                 Ypos += int((self.key_height + self.padding_vert) * config.get('y-offset', 0))
                 special = config.get('special', 'normal_key')
 
-
                 bbox = (Xpos, Ypos, width, self.key_height)
                 styles.append(rowtag)
                 #print "width",width
                 if special == "caps-lock":
                     self.keys.append(CapsLockKey(self, self.bound_entry, keydef, styles, bbox))
                 elif special == "enter":
-                    self.keys.append(EnterKey(self, self.bound_entry, keydef, styles, bbox))
+                    self.keys.append(EnterKey(self, self.bound_entry, keydef, styles, bbox, validator=self.validator, variable=self.variable))
                 elif special == "backspace":
                     self.keys.append(BackSpaceKey(self, self.bound_entry, keydef, styles, bbox))
                 else:
@@ -513,9 +552,11 @@ class TouchKeyboard:
 if __name__ == '__main__':
     r = Tk()
     myres = StringVar()
+    def justin_validator(s):
+        return s == 'justin'
     def onEnter():
         print 'Enter Pressed'
         print "result %s"%myres.get()
 
-    keyboard = TouchKeyboard(r,myres, onEnter = onEnter)
+    keyboard = TouchKeyboard(r,myres, onEnter = onEnter, validator=justin_validator)
     r.mainloop()
