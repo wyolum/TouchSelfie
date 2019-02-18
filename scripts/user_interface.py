@@ -952,8 +952,11 @@ class UserInterface():
                 def onEnter(*args):
                     self.kill_tkkb()
                     self.__send_picture()
+                def onCancel(*args, **kw):
+                    self.log.error("Send email canceled")
+                    self.kill_tkkb()
 
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, validator = email_validator)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
