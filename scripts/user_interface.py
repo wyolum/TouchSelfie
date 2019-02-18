@@ -533,8 +533,10 @@ class UserInterface():
                 h_ = h * 3
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
+                effects_keys = IMAGE_EFFECTS.keys()
+                effects_keys.shuffle()
                 for i in range(9):
-                    image_effect = IMAGE_EFFECTS.keys()[i]
+                    image_effect = effects_keys[i]
                     self.camera.image_effect = IMAGE_EFFECTS[image_effect]['effect_name']
                     if 'effect_params' in IMAGE_EFFECTS[image_effect]:
                         self.camera.image_effect_params = IMAGE_EFFECTS[image_effect]['effect_params']
