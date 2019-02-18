@@ -17,7 +17,7 @@ from Tkinter import *
 import tkMessageBox
 from PIL import ImageTk,Image
 #from tkkb import Tkkb
-from mykb import TouchKeyboard
+from mykb import TouchKeyboard, email_validator
 from tkImageLabel import ImageLabel
 from constants import *
 import time
@@ -943,7 +943,7 @@ class UserInterface():
                         self.status("Error sending email")
                         self.log.error("Error sending email")
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = validate_email)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
