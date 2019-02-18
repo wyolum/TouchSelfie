@@ -184,7 +184,10 @@ class EnterKey(Key):
         '''
         Change to normal text if valid
         '''
-        s = self.entry.get().strip()
+        try:
+            s = self.entry.get().strip()
+        except:
+            s = ''
         new_valid = self.validate(s)
         
         if not self.valid and new_valid:
@@ -484,7 +487,8 @@ class TouchKeyboard:
     
         #install event handler
         self.canvas.bind('<Button-1>', self.dispatch_event)     # bind the click to the dispatcher
-        self.canvas.bind('<Return>', self.onEnter)
+        self.Tkroot.bind('<Return>', lambda x: self.onEnter())
+        self.Tkroot.bind('<Escape>', lambda x: self.onCancel())
         log.info("Keyboard created")
 
     def dispatch_event(self,event):
