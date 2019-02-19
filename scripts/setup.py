@@ -128,7 +128,7 @@ class Assistant(Tk):
             def on_use_printer(evt):
                 printer_selected = evt.widget
                 self.want_printer_val = int(printer_selected.curselection()[0])
-                self.config.selected_printer = self.want_printer_val
+                self.config.selected_printer = int(self.want_printer_val)
                 #value = self.want_printer_val.get(index)
                 print 'You selected item %d: ' % (self.want_printer_val)
 
