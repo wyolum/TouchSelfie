@@ -52,5 +52,5 @@ def test():
     cv2.destroyAllWindows()
 
 if __name__ == '__main__':
-    print 'type "q" to quit'
+    print('type "q" to quit')
     test()

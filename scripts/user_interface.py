@@ -13,8 +13,8 @@ logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)
             filemode='w',
             level = logging.DEBUG)
 
-from Tkinter import *
-import tkMessageBox
+from tkinter import *
+import tkinter.messagebox
 from PIL import ImageTk,Image
 #from tkkb import Tkkb
 from mykb import TouchKeyboard, email_validator
@@ -27,7 +27,7 @@ import re
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
     #by unutbu
-    return sorted(range(len(seq)), key=seq.__getitem__)
+    return sorted(list(range(len(seq))), key=seq.__getitem__)
     
 def shuffle(l, swaps=50):
     import random
@@ -51,14 +51,13 @@ except ImportError:
 
 import os
 import subprocess
-
 import oauth2services
 
 try:
     import hardware_buttons as HWB
 except ImportError:
     log.error("Error importing hardware_buttons, using fakehardware instead")
-    print traceback.print_exc()
+    print(traceback.print_exc())
     import fakehardware as HWB
 
 try:
@@ -167,7 +166,7 @@ class UserInterface():
 
         ## Bind keyboard keys to actions
         def install_key_binding(action,function):
-            if action in ACTIONS_KEYS_MAPPING.keys():
+            if action in list(ACTIONS_KEYS_MAPPING.keys()):
                 for key in ACTIONS_KEYS_MAPPING[action]:
                     self.log.debug("Installing keybinding '%s' for action '%s'"%(key,action))
                     self.root.bind(key,function)
@@ -317,7 +316,7 @@ class UserInterface():
                         self.snap(effect)
                 return snap_fun
 
-            effects = SOFTWARE_BUTTONS.keys()
+            effects = list(SOFTWARE_BUTTONS.keys())
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
             for i in argsort(orders):
                 effect = effects[i]
@@ -441,7 +440,7 @@ class UserInterface():
         picture_saved = False
         picture_uploaded = False
 
-        if mode not in EFFECTS_PARAMETERS.keys():
+        if mode not in list(EFFECTS_PARAMETERS.keys()):
             self.log.error("Wrong effectmode %s defaults to 'None'" % mode)
             mode = "None"
 
@@ -532,7 +531,7 @@ class UserInterface():
                     #print front
                     snapshot=Image.alpha_composite(snapshot,front)
 
-                except Exception, e:
+                except Exception as e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
 
 
@@ -553,7 +552,7 @@ class UserInterface():
                 h_ = h * 3
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
-                effects_keys = IMAGE_EFFECTS.keys()
+                effects_keys = list(IMAGE_EFFECTS.keys())
                 shuffle(effects_keys[1:])
                 effects_keys.insert(4, 'none')
                 for i in range(9):
@@ -585,7 +584,7 @@ class UserInterface():
                     #print front
                     snapshot=Image.alpha_composite(snapshot,front)
 
-                except Exception, e:
+                except Exception as e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
                 self.status("")
                 snapshot = snapshot.convert('RGB')
@@ -651,6 +650,7 @@ class UserInterface():
                         self.log.info("Image %s successfully uploaded"%self.last_picture_title)
                         self.status("")
                     except Exception as e:
+                        raise
                         self.status("Error uploading image :(")
                         self.log.exception("snap: Error uploading image")
                 
@@ -727,7 +727,7 @@ class UserInterface():
                 self.status("Snap failed :(")
                 self.log.critical("snap: snapshot file doesn't exists: %s"%snap_filename)
                 self.image.unload()
-        except Exception, e:
+        except Exception as e:
 
             #traceback.print_exc()
             self.log.exception("snap: error during snapshot")
@@ -903,7 +903,6 @@ class UserInterface():
             caption = config.photoCaption
         if config.albumID == 'None':
             config.albumID = None
-
         self.oauth2service.upload_picture(filen, config.albumID, title, caption)
 
 
@@ -965,7 +964,7 @@ class UserInterface():
         try:
             conn = cups.Connection()
             printers = conn.getPrinters()
-            default_printer = printers.keys()[self.selected_printer]#defaults to the first printer installed
+            default_printer = list(printers.keys())[self.selected_printer]#defaults to the first printer installed
             cups.setUser(getpass.getuser())
             conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
             self.log.info('send_print: Sending to printer...')
@@ -998,7 +997,7 @@ class UserInterface():
                     config.emailSubject,
                     config.emailMsg,
                     self.last_picture_filename)
-            except Exception, e:
+            except Exception as e:
                 self.log.exception('send_picture: Mail sending Failed')
                 self.status("Send failed :(")
                 retcode = False
