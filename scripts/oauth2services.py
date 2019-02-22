@@ -21,7 +21,8 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 from googleapiclient.errors import HttpError
-
+import gphoto_upload
+from PIL import Image
 import logging
 log = logging.getLogger(__name__)
 
@@ -57,6 +58,7 @@ class OAuthServices:
         self.scopes = self.scopes.strip()
 
         self.credential_store = file.Storage(credentials_store)
+        self.session = gphoto_upload.get_authorized_session("google_credentials.dat") ### TJS: THIS IS A HACK
         
         log.setLevel(log_level)
         #mask googleapiclient info and debug messages, except in debug mode
@@ -179,8 +181,33 @@ class OAuthServices:
         else:
             #full stuff
             return albums
+    def upload_picture(self, filename, album_id=None , title="photo", caption=None, generate_placeholder_picture=False):
+        """Upload a picture to Google Photos
+        
+        Arguments:
+            filename (str) : path to the file to upload
+            album_id (str) : id string of the destination album (see get_user_albums).
+                if None (default), destination album will be Google Photos Library
+            title (str)  DEPREC  : title for the photo (unused and deprecated)
+            caption (str, opt) : a Caption for the photo
+            generate_placeholder_picture (bool, opt, deflt: False) : 
+                if set to True, <filename> picture won't be used and a 32x32 colored picture will be used instead
+                This is usefull to create an album and upload a random picture to it so that it shows up in google photos
+        """
+        out = False
+        if self.enable_upload:
+            if generate_placeholder_picture:
+                im = Image.new('RGBA', (200, 200))
+                im.save(filename)
+            # filename = '../Photos/img039.jpg'
+            # album_id = 'TouchSelfie'
+            # print(filename, album_id)
+            out = gphoto_upload.upload_photo(self.session, filename, album_id=album_id)
+            if generate_placeholder_picture:
+                os.unlink(filename)
+        return out
 
-    def upload_picture(self, filename, album_id = None , title="photo", caption = None, generate_placeholder_picture = False):
+    def old_upload_picture(self, filename, album_id = None , title="photo", caption = None, generate_placeholder_picture = False):
         """Upload a picture to Google Photos
         
         Arguments:
@@ -251,7 +278,9 @@ class OAuthServices:
             # log.debug("8. upload_picture: referencing picture with id: [%s]\n %s"%(token, json.dumps(media_reference,indent=4)))
             try:
                 try:
-                    media = base64.urlsafe_b64encode(media_reference.encode('UTF-8')).decode('ascii')
+                    print(80 * "=")
+                    print(media_reference)
+                    media = base64.urlsafe_b64encode(media_reference)
                     res = client.mediaItems().batchCreate(body=media).execute()
                     # res = client.mediaItems().batchCreate(body=media_reference).execute()
                 except HttpError as e:
@@ -371,8 +400,8 @@ def test():
     """ test email and uploading """
     logging.basicConfig()
 
-    username = input("Please enter your email address: ")
-    
+    # username = input("Please enter your email address: ")
+    username = "wyojustin@gmail.com"
     # creating test image
     from PIL import Image
     #random color
@@ -383,7 +412,7 @@ def test():
     im.save("test_image.png")
     
     # Connecting to Google
-    gservice = OAuthServices("client_id.json","storage.json",username,log_level=logging.DEBUG)
+    gservice = OAuthServices("google_client_id.json","storage.json",username,log_level=logging.DEBUG)
 
 
     print("\nTesting email sending...")

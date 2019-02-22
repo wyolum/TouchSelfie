@@ -624,9 +624,10 @@ Click the Start button below:
                 self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get())
                 return self.google_service.refresh()
             except Exception as error:
-#                print error
-#                import traceback
-#                traceback.print_exc()
+                #print (error)
+                #import traceback
+                #traceback.print_exc()
+                #raise
                 #We failed to connect
                 self.google_service = None
                 return False
