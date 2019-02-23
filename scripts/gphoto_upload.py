@@ -45,8 +45,6 @@ def create_or_retrieve_album(session, album_title):
 
 def save_cred(cred, auth_file):
     print('cred:', cred)
-    print('dir(cred)', dir(cred))
-    
     cred_dict = {
         'token': cred.token,
         'refresh_token': cred.refresh_token,
@@ -93,7 +91,7 @@ def get_authorized_session(auth_token_file):
         cred = auth(scopes)
 
     session = AuthorizedSession(cred)
-    print('dir(session)', dir(session))
+    print('session', session)
     if auth_token_file:
         try:            
             save_cred(cred, auth_token_file)
