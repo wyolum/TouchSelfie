@@ -85,7 +85,7 @@ class Assistant(Tk):
                     self.config.enable_print = self.want_print_var.get() !=0
                     if self.config.enable_print == True:
                         try:
-                            self.use_print_list = Listbox(self.main_frame)
+                            self.use_print_list = Listbox(self.main_frame, height=5)
                             self.use_print_list.bind('<<ListboxSelect>>', on_use_printer)
                             #self.use_print_list.pack()
                             self.__erase_page()
@@ -1024,7 +1024,7 @@ def console_assistant():
     script = open(script_name,"w")
     script.write("#!/bin/sh\n")
     script.write("cd %s\n"% install_dir)
-    script.write("python user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
+    script.write("python3 user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
     script.close()
     #make the script executable
     import stat
