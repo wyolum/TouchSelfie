@@ -72,8 +72,8 @@ def auth(scopes):
 def get_authorized_session(auth_token_file):
 
     scopes=['https://www.googleapis.com/auth/photoslibrary',
-            'https://www.googleapis.com/auth/photoslibrary.sharing',
-            'https://www.googleapis.com/auth/gmail.send'
+            #'https://www.googleapis.com/auth/photoslibrary.sharing',
+            #'https://www.googleapis.com/auth/gmail.send'
     ]
 
     cred = None
@@ -100,14 +100,12 @@ def get_authorized_session(auth_token_file):
 
     return session
 
-def upload_photo(session, photo_file_name, album_name):
+def upload_photo(session, photo_file_name, album_id):
 
-    album_id = create_or_retrieve_album(session, album_name) if album_name else None
+    #album_id = create_or_retrieve_album(session, album_name) if album_name else None
 
     # interrupt upload if an upload was requested but could not be created
     out = False
-    if album_name and not album_id:
-        return out
 
     session.headers["Content-type"] = "application/octet-stream"
     session.headers["X-Goog-Upload-Protocol"] = "raw"
@@ -156,7 +154,7 @@ def upload_photo(session, photo_file_name, album_name):
 def main():
 
     # session = get_authorized_session("auth_file")
-    session = get_authorized_session("google_credentials.dat")
+    session = get_authorized_session("gphoto_credentials.dat")
 
     print(upload_photo(session, "img039.jpg", "TouchSelfie"))
 

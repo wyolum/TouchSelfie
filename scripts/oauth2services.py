@@ -58,7 +58,7 @@ class OAuthServices:
         self.scopes = self.scopes.strip()
 
         self.credential_store = file.Storage(credentials_store)
-        self.session = gphoto_upload.get_authorized_session("google_credentials.dat") ### TJS: THIS IS A HACK
+        self.session = gphoto_upload.get_authorized_session("gphoto_credentials.dat") ### TJS: THIS IS A HACK
         
         log.setLevel(log_level)
         #mask googleapiclient info and debug messages, except in debug mode
@@ -327,12 +327,15 @@ class OAuthServices:
         message = self.__createMessage(self.username, to, subject, body, body, attachment_file=attachment_file)
         
         try:
+            print("... Sending message ...")
             log.debug("sending message")
             sent_message = (service.users().messages().send(userId="me", body=message).execute())
+            print('YAY!!! msg')
             log.info('send_message: successfully sent message with id: %s' % sent_message['id'])
             return True
         except errors.HttpError as error:
             log.error("send_message: An error occurred during send mail: %s" % error)
+            raise
             return False
         return True
 
