@@ -412,7 +412,8 @@ def test():
     im.save("test_image.png")
     
     # Connecting to Google
-    gservice = OAuthServices("google_client_id.json","storage.json",username,log_level=logging.DEBUG)
+    # gservice = OAuthServices("google_client_id.json","storage.json",username,log_level=logging.DEBUG)
+    gservice = OAuthServices("google_client_id.json","google_credentials.dat",username,log_level=logging.DEBUG)
 
 
     print("\nTesting email sending...")
