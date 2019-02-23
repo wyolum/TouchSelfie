@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 """
     Unification of email sending and album uploading using OAuth2Login
     Code for Google Photos / Picasa taken from "credentials.py" at https://github.com/wyolum/TouchSelfie
@@ -21,8 +22,7 @@ from googleapiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
 from googleapiclient.errors import HttpError
-import gphoto_upload
-from PIL import Image
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -58,7 +58,6 @@ class OAuthServices:
         self.scopes = self.scopes.strip()
 
         self.credential_store = file.Storage(credentials_store)
-        self.session = gphoto_upload.get_authorized_session("gphoto_credentials.dat") ### TJS: THIS IS A HACK
         
         log.setLevel(log_level)
         #mask googleapiclient info and debug messages, except in debug mode
@@ -181,33 +180,8 @@ class OAuthServices:
         else:
             #full stuff
             return albums
-    def upload_picture(self, filename, album_id=None , title="photo", caption=None, generate_placeholder_picture=False):
-        """Upload a picture to Google Photos
-        
-        Arguments:
-            filename (str) : path to the file to upload
-            album_id (str) : id string of the destination album (see get_user_albums).
-                if None (default), destination album will be Google Photos Library
-            title (str)  DEPREC  : title for the photo (unused and deprecated)
-            caption (str, opt) : a Caption for the photo
-            generate_placeholder_picture (bool, opt, deflt: False) : 
-                if set to True, <filename> picture won't be used and a 32x32 colored picture will be used instead
-                This is usefull to create an album and upload a random picture to it so that it shows up in google photos
-        """
-        out = False
-        if self.enable_upload:
-            if generate_placeholder_picture:
-                im = Image.new('RGBA', (200, 200))
-                im.save(filename)
-            # filename = '../Photos/img039.jpg'
-            # album_id = 'TouchSelfie'
-            # print(filename, album_id)
-            out = gphoto_upload.upload_photo(self.session, filename, album_id=album_id)
-            if generate_placeholder_picture:
-                os.unlink(filename)
-        return out
 
-    def old_upload_picture(self, filename, album_id = None , title="photo", caption = None, generate_placeholder_picture = False):
+    def upload_picture(self, filename, album_id = None , title="photo", caption = None, generate_placeholder_picture = False):
         """Upload a picture to Google Photos
         
         Arguments:
@@ -220,16 +194,16 @@ class OAuthServices:
                 if set to True, <filename> picture won't be used and a 32x32 colored picture will be used instead
                 This is usefull to create an album and upload a random picture to it so that it shows up in google photos
         """
-        log.debug("1. upload_picture(%s, album_id = %s , title='%s', caption = %s, generate_placeholder_picture = %s)"%(filename,str(album_id),str(title), str(caption), str(generate_placeholder_picture)))
+        log.debug("upload_picture(%s, album_id = %s , title='%s', caption = %s, generate_placeholder_picture = %s)"%(filename,str(album_id),str(title), str(caption), str(generate_placeholder_picture)))
         if not self.enable_upload:
-            log.debug("2. upload_picture: Canceled (service not configured)")
+            log.debug("upload_picture: Canceled (service not configured)")
             return False
             
         client = self.__get_photo_client()
         creds = self.__oauth_login()
         
         # Step I: post file binary and get Token
-        log.debug("3. upload_picture: Step I: uploading picture %s"%filename)
+        log.debug("upload_picture: Step I: uploading picture %s"%filename)
         file = os.path.basename(filename)
         url = 'https://photoslibrary.googleapis.com/v1/uploads'
         authorization = 'Bearer ' + creds.access_token
@@ -244,7 +218,7 @@ class OAuthServices:
         
         try:
             if generate_placeholder_picture:
-                log.debug("4. upload_picture: generating placeholder picture")
+                log.debug("upload_picture: generating placeholder picture")
                 from PIL import Image
                 from random import randint
                 # creating test image
@@ -257,13 +231,15 @@ class OAuthServices:
             else:
                 with open(filename, "rb") as image_file:
                     filecontent=image_file.read()
-            log.debug("5. upload_picture: uploading picture %s (%d bytes)"%
-                      (filename,len(filecontent)))
+            log.debug("upload_picture: uploading picture %s (%d bytes)"%(filename,len(filecontent)))
             (response,token) = http.request(url,method="POST",body=filecontent,headers=headers)
+            #token is bytes, let's assume utf8
+            token=token.decode("utf-8")
             if response.status != 200:
-                log.warning("6. upload_picture: response code for upload %d != 200"%response.status)
+                log.warning("upload_picture: response code for upload %d != 200"%response.status)
                 raise IOError("Error connecting to %s"%url)
-            log.debug("7. upload_picture: Successfully uploaded image with id:[%s]"%token)
+            log.debug("upload_picture: Successfully uploaded image with id:[%s]"%token)
+            log.debug("%r"%response)
 
             # Step II: reference file Item
             if isinstance(caption,str):
@@ -274,35 +250,29 @@ class OAuthServices:
             media_reference = dict(newMediaItems = [photo_item])
             if album_id is not None:
                 media_reference["albumId"] = album_id
-            # import json
-            # log.debug("8. upload_picture: referencing picture with id: [%s]\n %s"%(token, json.dumps(media_reference,indent=4)))
+            
+            import json;log.debug("upload_picture: referencing picture with id: [%s]\n %s"%(token, json.dumps(media_reference,indent=4)))
             try:
                 try:
-                    print(80 * "=")
-                    print(media_reference)
-                    media = base64.urlsafe_b64encode(media_reference)
-                    res = client.mediaItems().batchCreate(body=media).execute()
-                    # res = client.mediaItems().batchCreate(body=media_reference).execute()
+                    res = client.mediaItems().batchCreate(body=media_reference).execute()
                 except HttpError as e:
                     if "Invalid album ID" in str(e):
-                        log.error("9. upload_picture: album_id (%s) is not a valid album"%album_id)
-                        log.warning("10. upload_picture: retrying to reference uploaded image without an album")
+                        log.error("upload_picture: album_id (%s) is not a valid album"%album_id)
+                        log.warning("upload_picture: retrying to reference uploaded image without an album")
                         #Album is invalid, try to upload to user stream instead
                         res = client.mediaItems().batchCreate(body=dict(newMediaItems=[{"simpleMediaItem": {"uploadToken": token}}])).execute()
                 if res["newMediaItemResults"][0]["status"]["message"] == "OK":
-                    log.info("11. upload_picture: successfully uploaded image %s"%filename)
+                    log.info("upload_picture: successfully uploaded image %s"%filename)
                     return True
                 else:
-                    log.warning("12. upload_picture: Unrecognized response")
+                    log.warning("upload_picture: Unrecognized response")
                     return False
 
             except Exception as e:
-                log.error("13. upload_picture: Error while referencing picture with id: %s (%s)"%(token,str(e)))
-                raise
+                log.error("upload_picture: Error while referencing picture with id: %s (%s)"%(token,str(e)))
                 return False
         except Exception as e:
-            log.error("14. upload_picture: Error while uploading picture: (%s)"%str(e))
-            raise
+            log.error("upload_picture: Error while uploading picture: (%s)"%str(e))
             return False
         return False
  
@@ -327,15 +297,12 @@ class OAuthServices:
         message = self.__createMessage(self.username, to, subject, body, body, attachment_file=attachment_file)
         
         try:
-            print("... Sending message ...")
             log.debug("sending message")
             sent_message = (service.users().messages().send(userId="me", body=message).execute())
-            print('YAY!!! msg')
             log.info('send_message: successfully sent message with id: %s' % sent_message['id'])
             return True
         except errors.HttpError as error:
             log.error("send_message: An error occurred during send mail: %s" % error)
-            raise
             return False
         return True
 
@@ -395,16 +362,15 @@ class OAuthServices:
             filename = os.path.basename(attachment_file)
             msg.add_header('Content-Disposition', 'attachment', filename=filename)
             message.attach(msg)
-        v = message.as_string()
-        return {'raw': base64.urlsafe_b64encode(v.encode('UTF-8')).decode('ascii')}
-        return {'raw': base64.urlsafe_b64encode(message.as_bytes())}
+
+        return {'raw': base64.urlsafe_b64encode(message.as_string().encode('UTF-8')).decode('ascii')}
 
 def test():
     """ test email and uploading """
     logging.basicConfig()
 
-    # username = input("Please enter your email address: ")
-    username = "wyojustin@gmail.com"
+    username = input("Please enter your email address: ")
+    
     # creating test image
     from PIL import Image
     #random color
@@ -415,22 +381,21 @@ def test():
     im.save("test_image.png")
     
     # Connecting to Google
-    # gservice = OAuthServices("google_client_id.json","storage.json",username,log_level=logging.DEBUG)
-    gservice = OAuthServices("google_client_id.json","google_credentials.dat",username,log_level=logging.DEBUG)
+    gservice = OAuthServices("google_client_id.json","storage.json",username,log_level=logging.DEBUG)
 
 
     print("\nTesting email sending...")
-    print(gservice.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png"))
+    print((gservice.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")))
     print("\nTesting album list retrieval...")
     albums = gservice.get_user_albums()
     for i, album in enumerate(albums):
-        print("\t title: %s, id: %s"%(album['title'],album['id']))
+        print(("\t title: %s, id: %s"%(album['title'],album['id'])))
         if i >= 10:
             print("skipping the remaining albums...")
             break
     print("\nTesting album creation and image upload")
     album_id = gservice.create_album(album_name="Test", add_placeholder_picture = True)
-    print("New album id:",album_id)
+    print(("New album id:",album_id))
     print("Uploading to a bogus album")
     print((gservice.upload_picture("testfile.png",album_id = "BOGUS STRING" , caption="In bogus album", generate_placeholder_picture = True)))
     

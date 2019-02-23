@@ -150,6 +150,7 @@ class Assistant(Tk):
             #PAGE 1 google credentials
             self.user_mail_label = Label(self.main_frame,text="Google Account", font='Helvetica', anchor=W)
             self.user_mail_var  = StringVar()
+            self.user_mail_var.set("@gmail.com")
             def on_mail_change(*args):
                 self.config.user_name = self.user_mail_var.get()
 
@@ -746,7 +747,7 @@ Click the Start button below:
         script = open(script_name,"w")
         script.write("#!/bin/sh\n")
         script.write("cd %s\n"% install_dir)
-        script.write("python user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
+        script.write("python3 user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
         script.close()
         #make the script executable
         import stat
