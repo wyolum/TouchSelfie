@@ -14,8 +14,9 @@ import time
 import datetime
 import os
 
-def snap(delay=0):
-    time.sleep(delay)
+def snap(delay=0, fn=None):
+    if delay:
+        time.sleep(delay)
     now = datetime.datetime.now()
     Y = now.year
     M = now.month
@@ -28,10 +29,16 @@ def snap(delay=0):
     pictures = os.path.join(home, 'Pictures')
     if not(os.path.exists(pictures)):
         os.mkdir(pictures)
-    fn = "%4d-%02d-%02d_%02d%02d%02d.jpg" % (Y, M, D, h, m, s)
-    fn = os.path.join(pictures, fn)
+    if fn is None:
+        fn = "%4d-%02d-%02d_%02d%02d%02d.jpg" % (Y, M, D, h, m, s)
+        fn = os.path.join(pictures, fn)
     ImageGrab.grab().save(fn, "JPEG")
     print('saved', fn)
 
 if __name__ == '__main__':
-    snap(delay=5)
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--filename", help="output filename", default=None)
+    parser.add_argument("-d", "--delay", help="delay in seconds prior to snap", default=0, type=int)
+    args = parser.parse_args()
+    snap(args.delay, args.filename)
