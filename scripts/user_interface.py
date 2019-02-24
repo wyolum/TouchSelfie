@@ -93,27 +93,29 @@ class LongPressDetector:
         root.bind("<Button-1>",self.__click)
         root.bind("<ButtonRelease-1>",self.__release)
 
-
     def suspend(self):
         """suspend longpress action"""
         self._suspend = True
-
+        self.root.after_cancel(self.after_press_id)
+        
     def activate(self):
         """reactivate longpress action"""
         self._suspend = False
 
-
     def __click(self,event):
         self.ts = event.time
-
+        if not self._suspend:
+            self.after_press_id = self.root.after(self.long_press_duration,
+                                                  self.__trigger)
     def __release(self,event):
-        if self._suspend:
-            #cancel this event
-            self.ts = event.time
-            return
-        duration = event.time - self.ts
-        if self.call_back != None and duration > self.long_press_duration:
-            self.call_back(duration)
+        self.root.after_cancel(self.after_press_id)
+        
+    def __trigger(self):
+        if self.call_back != None:
+            self.call_back(self.long_press_duration)
+            
+    def __del__(self):
+        self.root.after_cancel(self.after_press_id)
 
 class UserInterface():
     """A User Interface for the photobooth"""
