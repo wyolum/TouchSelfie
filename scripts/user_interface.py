@@ -90,6 +90,7 @@ class LongPressDetector:
         self.call_back = call_back
         self._suspend = False
         self.long_press_duration = long_press_duration
+        self.after_press_id = None
         root.bind("<Button-1>",self.__click)
         root.bind("<ButtonRelease-1>",self.__release)
 
@@ -115,7 +116,8 @@ class LongPressDetector:
             self.call_back(self.long_press_duration)
             
     def __del__(self):
-        self.root.after_cancel(self.after_press_id)
+        if self.after_press_id is not None:
+            self.root.after_cancel(self.after_press_id)
 
 class UserInterface():
     """A User Interface for the photobooth"""
@@ -372,7 +374,7 @@ class UserInterface():
 
 
         self.long_press_cb= long_press_cb
-        self.longpress_obj= LongPressDetector(self.root,long_press_cb)
+        self.longpress_obj= LongPressDetector(self.image,long_press_cb)
 
     def __change_services(self,email,upload):
         """Called whenever we should change the state of oauth2services"""
@@ -435,6 +437,7 @@ class UserInterface():
         """
         self.log.info("Snaping photo (mode=%s)" % mode)
         self.suspend_poll = True
+        # self.longpress_obj.suspend() ### tkinter misses the button release!
         # clear status
         self.status("")
         # keep track of what's happening
@@ -740,6 +743,7 @@ class UserInterface():
             self.log.critical("Error! picture was taken but not saved or uploaded")
             self.status("ERROR: Picture was not saved!")
             return None
+        # self.longpress_obj.activate() ## reactivate long press
         return snap_filename
 
     def __countdown_set_led(self,state):
