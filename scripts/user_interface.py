@@ -97,7 +97,8 @@ class LongPressDetector:
     def suspend(self):
         """suspend longpress action"""
         self._suspend = True
-        self.root.after_cancel(self.after_press_id)
+        if self.after_press_id is not None:
+            self.root.after_cancel(self.after_press_id)
         
     def activate(self):
         """reactivate longpress action"""
@@ -109,7 +110,8 @@ class LongPressDetector:
             self.after_press_id = self.root.after(self.long_press_duration,
                                                   self.__trigger)
     def __release(self,event):
-        self.root.after_cancel(self.after_press_id)
+        if self.after_press_id is not None:
+            self.root.after_cancel(self.after_press_id)
         
     def __trigger(self):
         if self.call_back != None:
