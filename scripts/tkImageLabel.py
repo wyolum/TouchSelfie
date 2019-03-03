@@ -21,11 +21,11 @@ class ImageLabel(Label):
             size    tupple(w,h) : image max dimensions
         """
         Label.__init__(self,Tk_root)
-        self.size=size
+        self.size = size
         self.root = Tk_root # for update()
         log.debug("Created ImageLabel with size %s"%repr(size))
         
-    def load(self, im):
+    def load(self, im, greyscale=False):
         """Load a new image in the ImageLabel
         
         Arguments:
@@ -34,17 +34,21 @@ class ImageLabel(Label):
         log.debug("Loading image %s",repr(im))
         if isinstance(im, str):
             im = Image.open(im)
+        if greyscale:
+            im = im.convert('LA')
+        self.im = im
         self.loc = 0
         self.frames = []
         w,h = im.size
         #compute resize ratio (fit image to size)
-        ratio = 1.0
+        self.ratio = 1.0
         if self.size is not None:
-            ratio = max([ float(w)/self.size[0], float(h)/self.size[1]])
+            self.ratio = max([ float(w)/self.size[0], float(h)/self.size[1]])
         try:
             for i in count(1):
                 temp_frame = im.copy()
-                temp_frame = temp_frame.resize(( int(w/ratio), int(h/ratio) ))
+                temp_frame = temp_frame.resize(
+                    ( int(w/self.ratio), int(h/self.ratio) ))
                 self.frames.append(ImageTk.PhotoImage(temp_frame))
                 if i == 1:
                     #immediately load first frame
@@ -80,7 +84,12 @@ class ImageLabel(Label):
             self.root.update()
             self.after(self.delay, self.next_frame)
             
-            
+    def set_greyscale(self, value=True):
+        out = self.im
+        self.unload()
+        self.load(self.im, greyscale=value)
+        return out
+    
 if __name__ == '__main__':
 
     root = Tk()

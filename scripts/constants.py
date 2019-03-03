@@ -208,6 +208,8 @@ COUNTDOWN_IMAGE_MAX_HEIGHT_RATIO = 0.2 #[0. - 1.] range
 # Path to button icon ressources
 EMAIL_BUTTON_IMG  = os.path.join("ressources","ic_email.png")
 PRINT_BUTTON_IMG  = os.path.join("ressources","ic_print.png")
+IMAGE_OVERLAY_BUTTON = os.path.join("ressources","ic_overlay.png")
+TEXT_OVERLAY_BUTTON = os.path.join("ressources","ic_text.png")
 EFFECTS_BUTTON_IMG = os.path.join("ressources","ic_effects.png")
 
 # Interval in ms between two authentication tokens refreshing
