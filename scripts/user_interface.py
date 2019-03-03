@@ -28,9 +28,9 @@ import re
 import numpy
 
 IMAGE_FONTSIZE = 64
-assert os.path.exists('ressources/fonts/tomsonwrites.ttf')
+assert os.path.exists('ressources/fonts/tomsontalks.ttf')
 annotation_image_font = ImageFont.truetype(
-    "ressources/fonts/tomsonwrites.ttf",
+    "ressources/fonts/tomsontalks.ttf",
     IMAGE_FONTSIZE,
     encoding="unic")
 
