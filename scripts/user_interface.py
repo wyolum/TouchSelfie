@@ -13,11 +13,9 @@ logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)
             filemode='w',
             level = logging.DEBUG)
 
-import os
 from tkinter import *
 import tkinter.messagebox
-import tkinter.filedialog
-from PIL import ImageTk,Image, ImageDraw, ImageFont
+from PIL import ImageTk,Image
 #from tkkb import Tkkb
 from mykb import TouchKeyboard, email_validator
 from tkImageLabel import ImageLabel
@@ -25,16 +23,16 @@ from constants import *
 import time
 import traceback
 import re
-import numpy
+#hack in dslr support
+import gphoto2 as gp
 
-IMAGE_FONTSIZE = 64
-assert os.path.exists('ressources/fonts/tomsontalks.ttf')
-annotation_image_font = ImageFont.truetype(
-    "ressources/fonts/tomsontalks.ttf",
-    IMAGE_FONTSIZE,
-    encoding="unic")
-
-
+def list_files(camera, path='/'):
+        result = []
+        # get files
+        for name, value in gp.check_result(
+                gp.gp_camera_folder_list_files(camera, path)):
+            result.append(os.path.join(path, name))
+        return result
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
     #by unutbu
@@ -60,6 +58,7 @@ except ImportError:
     log.warning("Cups not installed. removing option")
     printer_selection_enable = False
 
+import os
 import subprocess
 import oauth2services
 
@@ -69,6 +68,8 @@ except ImportError:
     log.error("Error importing hardware_buttons, using fakehardware instead")
     print(traceback.print_exc())
     import fakehardware as HWB
+camera = gp.check_result(gp.gp_camera_new())
+gp.check_result(gp.gp_camera_init(camera))
 
 try:
     import picamera as mycamera
@@ -86,174 +87,47 @@ except ImportError:
 # Helper class to launch function after a long-press
 class LongPressDetector:
     """Helper class that calls a callback after a long press/click"""
-# callback will get the long_click duration as parameter
-    def __init__(self, root, longpress_callback, longpress_duration=1000,
-                 shortpress_callback=None):
+# call_back will get the long_click duration as parameter
+    def __init__(self, root, call_back, long_press_duration = 1000 ):
         """Creates the LongPressDetector
 
         Arguments:
             root (Tk Widget): parent element for the event binding
-            longpress_callback       : a callback function with prototype callback(press_duration_ms)
-            longpress_duration : amount of milliseconds after which we consider this press is long
-            shortpress_callback: callback for normal clicks
+            call_back       : a callback function with prototype callback(press_duration_ms)
+            long_press_duration : amount of milliseconds after which we consider this press is long
         """
         self.ts=0
         self.root = root
-        self.longpress_callback = longpress_callback
-        self.longpress_duration = longpress_duration
+        self.call_back = call_back
         self._suspend = False
-        self.shortpress_callback = shortpress_callback
-        self.after_press_id = None
+        self.long_press_duration = long_press_duration
         root.bind("<Button-1>",self.__click)
         root.bind("<ButtonRelease-1>",self.__release)
-        
+
+
     def suspend(self):
         """suspend longpress action"""
         self._suspend = True
-        if self.after_press_id is not None:
-            self.root.after_cancel(self.after_press_id)
+
     def activate(self):
         """reactivate longpress action"""
         self._suspend = False
-        
-    def add_shortpress_callback(self, callback):
-        self.shortpress_callback = callback
-    def del_shortpress_callback(self):
-        self.shortpress_callback = None
+
 
     def __click(self,event):
         self.ts = event.time
-        if not self._suspend:
-            self.after_press_id = self.root.after(self.longpress_duration,
-                                                  self.__trigger)
+
     def __release(self,event):
-        if self.after_press_id is not None:
-            self.root.after_cancel(self.after_press_id)
-            ### press was short click
-            self.__on_shortpress(event)
-    def __trigger(self):
-        if self.longpress_callback != None:
-            self.longpress_callback(self.longpress_duration)
-    def __on_shortpress(self, event):
-        if not self._suspend and self.shortpress_callback is not None:
-            self.shortpress_callback(event)
-    def __del__(self):
-        if self.after_press_id is not None:
-            self.root.after_cancel(self.after_press_id)
+        if self._suspend:
+            #cancel this event
+            self.ts = event.time
+            return
+        duration = event.time - self.ts
+        if self.call_back != None and duration > self.long_press_duration:
+            self.call_back(duration)
 
 class UserInterface():
     """A User Interface for the photobooth"""
-    MODES = ['normal', ## normal state
-             'annotate', ## for use in annotate mode
-             ]
-    ### MODES are synonomous with key name
-    def set_normal_mode(self):
-        self.mode = 'normal'
-    def set_annotate_mode(self):
-        self.mode = 'annotate'
-    def place_text(self, draw, img_x, img_y, row, text,
-                   match_color, minwidth=1):
-        i = img_x
-        ## look backwards for color in change
-
-        font = annotation_image_font
-        
-        while i > 0:
-            colors = row[:,i]
-            if numpy.amax(abs(colors - match_color)) > 0:
-                break
-            i = i - 1
-        starting_x = i + 1
-        i = img_x
-        ## look forwards for color in change
-        while i < row.shape[1]:
-            colors = row[:,i]
-            if numpy.amax(abs(colors - match_color)) > 0:
-                break
-            i = i + 1
-        ending_x = i - 1
-        if False:
-            import pylab
-            pylab.pcolormesh(numpy.arange(row.shape[1]),
-                             numpy.arange(row.shape[0]) + img_y,
-                             row[:,:,0])
-            pylab.plot([starting_x, ending_x], [img_y, img_y], 'ro')
-            pylab.plot(img_x, img_y, 'b.')
-            pylab.gca().invert_yaxis()
-            pylab.show()
-        length = ending_x - starting_x
-        #draw.rectangle(((starting_x, img_y),
-        #              (ending_x, img_y -
-        #               IMAGE_FONTSIZE * 2 // 3)),
-        #             fill=(64, 128, 128))
-
-        set_text = ''
-        words = text.split()
-        for i in range(len(words)):
-            if font.getsize(' '.join(words[:i]))[0] >= length:
-                i = i - 1
-                break
-        if i < 1: ### get at least one word
-            i = 1
-        set_text = ' '.join(words[:i])
-        rest = ' '.join(words[i:])
-        set_text_length = font.getsize(set_text)[0]
-        ### center
-        center_x = (starting_x + ending_x) // 2
-        starting_x = center_x - set_text_length // 2
-        #draw.rectangle(((starting_x, img_y),
-        #               (starting_x + set_text_length, img_y -
-        #               IMAGE_FONTSIZE * 2 // 3)),
-        #             fill=(128, 128, 128))
-        draw.text((starting_x, img_y - IMAGE_FONTSIZE * 2 // 3), set_text,
-                  (0, 0, 0), font=font)
-        #draw.ellipse(((img_x - 10, img_y - 10), (img_x + 10, img_y + 10)),
-        #             fill=(255, 0, 0))
-        return rest, center_x
-    
-    def put_annotation(self, event):
-        print('Put annotation')
-        text = self.annotation_box.get("1.0", END).strip()
-        self.annotation_box.index("1.0")
-        x = self.annotation_pos[0]
-        y = self.annotation_pos[1]
-        draw = ImageDraw.Draw(self.image.im)
-        #img_x = (x * self.image.im.size[0]) // self.size[0]
-        #img_y = (y * self.image.im.size[1]) // self.size[1]
-        ### busted above, try hard coding
-        img_x = (x - 81) * 1640 // 640
-        img_y = (y -  0) * 1232 // 480
-        
-        arr = numpy.array(self.image.im)
-        match_color = arr[img_y, img_x]
-        row_i = 0
-        while len(text) > 0:
-            row = arr[img_y - IMAGE_FONTSIZE * 2 // 3:img_y,:]
-            if numpy.size(row) == 0:
-                break
-            text, img_x = self.place_text(draw, img_x,
-                                          img_y,
-                                          row, text, match_color, 8)
-            row_i += 1
-            img_y += IMAGE_FONTSIZE * 2 // 3
-            text = text.strip()
-
-        # self.image.unload()
-        self.image.load(self.image.im)
-        if os.path.exists(self.last_picture_filename):
-            self.image.im.save(self.last_picture_filename)
-        
-        self.reset_annotation()
-        
-    def cancel_annotation(self, event):
-        print('Cancel annotation')
-        self.reset_annotation()
-
-    def reset_annotation(self):
-        self.annotation_box.delete("1.0", END)
-        self.annotation_box.place_forget()
-        self.root.after(0, self.set_normal_mode)
-        
     def __init__(self, config, window_size=None, poll_period=HARDWARE_POLL_PERIOD, log_level=logging.WARNING):
         """Constructor for the UserInterface object
 
@@ -263,7 +137,6 @@ class UserInterface():
             poll_period : polling period for hardware buttons changes (ms)
             log_level : amount of log (see python module 'logging')
         """
-        self.mode = 'normal'
         self.log = logging.getLogger("user_interface")
         self.log_level = log_level
         self.log.setLevel(self.log_level)
@@ -273,10 +146,9 @@ class UserInterface():
         send_prints = config.enable_print
         image_effects = config.enable_effects
         selected_printer = config.selected_printer
-        self.overlay_png = None
 
         self.root = Tk()
-        
+
         ## Auto hide Mouse cursor
 
         #Events to enable/disable cursor based on motion
@@ -308,10 +180,7 @@ class UserInterface():
             if action in list(ACTIONS_KEYS_MAPPING.keys()):
                 for key in ACTIONS_KEYS_MAPPING[action]:
                     self.log.debug("Installing keybinding '%s' for action '%s'"%(key,action))
-                    self.root.bind(
-                        key,
-                        self.callback_wrapper('normal', function)
-                    )
+                    self.root.bind(key,function)
             else:
                 self.log.warning("install_key_binding: no action '%s'"%action)
 
@@ -327,7 +196,7 @@ class UserInterface():
         install_key_binding("snap_Nine",safe_execute_factory(lambda *args: self.snap("Nine")))
         install_key_binding("snap_Animation",safe_execute_factory(lambda *args: self.snap("Animation")))
         install_key_binding("send_email",safe_execute_factory(lambda *args: self.send_email()))
-        install_key_binding("configure",safe_execute_factory(lambda *args: self.longpress_cb(self)))
+        install_key_binding("configure",safe_execute_factory(lambda *args: self.long_press_cb(self)))
         install_key_binding("send_print",safe_execute_factory(lambda *args: self.send_print()))
         ## Bind keyboard keys to actions
         
@@ -354,37 +223,6 @@ class UserInterface():
         self.image.place(x=0, y=0, relwidth = 1, relheight=1)
         self.image.configure(background='black')
 
-        #### to speed test and dev
-        # self.image.load("../Photos/2019-03-03_16-20-46-snap.jpg")
-        # self.last_picture_filename = "../Photos/2019-03-03_16-20-46-snap.jpg"
-
-        ## dh = (H - 72) // 3
-        ### h0 = 36
-        ### h1 = h0 + 1 * dh
-        ### h2 = h0 + 2 * dh
-        ### h3 = h0 + 3 * dh
-        if config.enable_overlays:
-            h0 = 36
-            dh = (SCREEN_H - 72) // 3
-            overlay_image = Image.open(IMAGE_OVERLAY_BUTTON)
-            w,h = overlay_image.size
-            self.overlay_imagetk = ImageTk.PhotoImage(overlay_image)
-            self.overlay_btn = Button(self.root, image=self.overlay_imagetk,
-                                      height=h, width=w, command=self.select_overlay)
-            self.overlay_btn.place(x=2, y=h0+dh-h//2)
-            self.overlay_btn.configure(background= 'black')
-
-            ## text
-            overlay_text = Image.open(TEXT_OVERLAY_BUTTON)
-            w,h = overlay_text.size
-            self.overlay_texttk = ImageTk.PhotoImage(overlay_text)
-            self.overlay_btn = Button(self.root, image=self.overlay_texttk,
-                                      height=h, width=w,
-                                      command=self.callback_wrapper(
-                                          'normal', self.annotate))
-            self.overlay_btn.place(x=2, y=h0+2*dh-h//2)
-            self.overlay_btn.configure(background= 'black')
-            
 
         #Create sendprint button
         self.send_prints = send_prints
@@ -392,8 +230,7 @@ class UserInterface():
             print_image = Image.open(PRINT_BUTTON_IMG)
             w,h=print_image.size
             self.print_imagetk = ImageTk.PhotoImage(print_image)
-            self.print_btn = Button(self.root, image=self.print_imagetk,
-                                    height=h, width=w, command= self.send_print)
+            self.print_btn = Button(self.root, image = self.print_imagetk, height=h, width=w, command= self.send_print)
             self.print_btn.place(x=2, y=0)
             self.print_btn.configure(background= 'black')
 
@@ -510,20 +347,9 @@ class UserInterface():
         self.camera.annotate_text_size = 160 # Maximum size
         self.camera.annotate_foreground = Color('white')
         self.camera.annotate_background = Color('black')
-        ### set up invisible annotation box
-        self.annotation_box = Text(self.root, width=15, height=5,
-                                   font=('Tomson Talks', 14))
-        self.annotation_pos = (0, 0) ## default, gets overwritten on click
-        self.annotation_box.bind(
-            '<Return>',
-            self.callback_wrapper('annotate', self.put_annotation))
-        self.annotation_box.bind(
-            '<Escape>',
-            self.callback_wrapper('annotate', self.cancel_annotation))
-
 
         #Callback for long-press on screen
-        def longpress_cb(time):
+        def long_press_cb(time):
             #Create a toplevel window with checkboxes and a "Quit application button"
             top = Toplevel(self.root)
             qb = Button(top,text="Quit Application",command=self.root.destroy)
@@ -545,6 +371,8 @@ class UserInterface():
                 enable_email = (mail_enable.get() != 0)
                 enable_upload = (upload_enable.get() != 0)
                 self.__change_services(enable_email,enable_upload)
+                gp.check_result(gp.gp_camera_exit(camera))
+
                 top.destroy()
 
             b=Button(top, text="OK", command=ok)
@@ -554,8 +382,8 @@ class UserInterface():
 
 
 
-        self.longpress_cb= longpress_cb
-        self.longpress_obj= LongPressDetector(self.image,longpress_cb)
+        self.long_press_cb= long_press_cb
+        self.longpress_obj= LongPressDetector(self.root,long_press_cb)
 
     def __change_services(self,email,upload):
         """Called whenever we should change the state of oauth2services"""
@@ -578,13 +406,7 @@ class UserInterface():
             self.camera.close()
         except:
             pass
-    def callback_wrapper(self, modes, function):
-        if type(modes) == type(''):
-            modes = [modes] ## expects a list of modes
-        def out(*args, **kw):
-            if self.mode in modes:
-                return function(*args, **kw)
-        return out
+
     def status(self, status_text):
         """Update the application status line with status_text"""
         self.status_lbl['text'] = status_text
@@ -595,6 +417,7 @@ class UserInterface():
         self.auth_after_id = self.root.after(100, self.refresh_auth)
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
         self.root.mainloop()
+
 
     def run_periodically(self):
         """hardware poll function launched by start_ui"""
@@ -608,6 +431,7 @@ class UserInterface():
             elif btn_state == 3:
                 self.snap("Animation")
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
+
     def snap(self,mode="None"):
         """Snap a shot in given mode
 
@@ -622,7 +446,6 @@ class UserInterface():
         """
         self.log.info("Snaping photo (mode=%s)" % mode)
         self.suspend_poll = True
-        # self.longpress_obj.suspend() ### tkinter misses the button release!
         # clear status
         self.status("")
         # keep track of what's happening
@@ -658,16 +481,23 @@ class UserInterface():
             # 3. Take snaps and combine them
             if mode == 'None':
                 self.log.debug("snap: single picture")
-                self.__show_countdown(config.countdown1,annotate_size = 160,
-                                      show_overlay=True)
+                self.__show_countdown(config.countdown1,annotate_size = 160)
                 # simple shot with logo
-                self.camera.capture('snapshot.jpg')
-                self.camera.stop_preview()
+                #hack in dslr
+                file_path = gp.check_result(gp.gp_camera_capture(
+                    camera, gp.GP_CAPTURE_IMAGE))
+                self.log.info(list_files(camera))
+                self.log.info('Camera file path: {0}/{1}'.format(file_path.folder, file_path.name))
+                import os
+                target= os.path.join('/home/pi/TouchSelfie/scripts','snapshot.jpg')
+
+                self.log.info('Copying image to '+ target)
+                camera_file = gp.check_result(gp.gp_camera_file_get(
+                    camera, file_path.folder, file_path.name, gp.GP_FILE_TYPE_NORMAL))
+                gp.check_result(gp.gp_file_save(camera_file,target ))
                 
-                if (hasattr(self, 'cloud_overlay_image') and
-                    self.cloud_overlay_image is not None):
-                    self.camera.remove_overlay(self.cloud_overlay_image)
-                    self.cloud_overlay_image = None
+#                self.camera.capture('snapshot.jpg')
+                self.camera.stop_preview()
 
                 snapshot = Image.open('snapshot.jpg')
                 picture_taken = True
@@ -684,15 +514,6 @@ class UserInterface():
                         snapshot.paste(config.logo,(xoff, yoff), config.logo)
                     except Exception as e:
                         self.log.warning("Could not add logo to image : %r"%e)
-                if (self.overlay_png is not None and
-                    os.path.exists(self.overlay_png)):
-                    size = snapshot.size
-                    front = Image.open(self.overlay_png)
-                    front = front.resize(size)
-                    front = front.convert('RGBA')
-                    snapshot = snapshot.convert('RGBA')
-                    
-                    snapshot = Image.alpha_composite(snapshot, front)
                 self.log.debug("snap: saving snapshot")
                 snap_filename = 'snapshot.jpg'
                 snapshot.save(snap_filename)
@@ -820,28 +641,25 @@ class UserInterface():
                 # Assemble images using image magick
                 self.status("Assembling animation")
                 self.log.debug("snap: assembling animation")
-                command_string = ("convert -delay " +
-                                  str(EFFECTS_PARAMETERS[mode]['gif_period_millis']) +
-                                  " animframe-*.jpg animation.gif")
+                command_string = "convert -delay " + str(EFFECTS_PARAMETERS[mode]['gif_period_millis']) + " animframe-*.jpg animation.gif"
+                import os
                 os.system(command_string)
                 picture_taken = True
                 self.status("")
                 snap_filename = 'animation.gif'
                 self.last_picture_mime_type = 'image/gif'
-                ### add a thought bubble
+            
             # cancel image_effect (hotfix: effect was not reset to 'none' after each shot)
             self.selected_image_effect = 'none'
 
             # Here, the photo or animation is in snap_filename
-            self.last_snap_filename = snap_filename
+            import os
             if os.path.exists(snap_filename):
                 self.last_picture_filename = snap_filename
                 self.last_picture_time = time.time()
                 import datetime
-                self.last_picture_timestamp = (datetime.datetime.fromtimestamp(time.time()).
-                                               strftime("%Y-%m-%d_%H-%M-%S"))
-                self.last_picture_title = (datetime.datetime.fromtimestamp(time.time()).
-                                           strftime("%d-%m-%Y %H:%M:%S"))  #TODO add event name
+                self.last_picture_timestamp = datetime.datetime.fromtimestamp(time.time()).strftime("%Y-%m-%d_%H-%M-%S")
+                self.last_picture_title = datetime.datetime.fromtimestamp(time.time()).strftime("%d-%m-%Y %H:%M:%S")  #TODO add event name
                 # 1. Display
                 self.log.debug("snap: displaying image")
                 self.image.load(snap_filename)
@@ -882,6 +700,7 @@ class UserInterface():
                                 self.log.info("Archiving to USB keys")
                                 try:
                                     usb_mount_point_root = "/media/pi/"
+                                    import os
                                     root, dirs, files = next(os.walk(usb_mount_point_root))
                                     for directory in dirs:
                                         mountpoint = os.path.join(root,directory)
@@ -945,7 +764,6 @@ class UserInterface():
             self.log.critical("Error! picture was taken but not saved or uploaded")
             self.status("ERROR: Picture was not saved!")
             return None
-        # self.longpress_obj.activate() ## reactivate long press
         return snap_filename
 
     def __countdown_set_led(self,state):
@@ -955,12 +773,12 @@ class UserInterface():
         except:
             pass
 
-    def __show_countdown(self,countdown, **kw):
+    def __show_countdown(self,countdown,annotate_size=160):
         '''wrapper function to select between overlay and text countdowns'''
-        #self.__show_text_countdown(countdown,**kw)
-        self.__show_overlay_countdown(countdown, **kw)
+        #self.__show_text_countdown(countdown,annotate_size=annotate_size)
+        self.__show_overlay_countdown(countdown)
 
-    def __show_text_countdown(self,countdown,annotate_size=160, **kw):
+    def __show_text_countdown(self,countdown,annotate_size=160):
         ''' display countdown. the camera should have a preview active and the resolution must be set'''
         led_state = False
         self.__countdown_set_led(led_state)
@@ -987,7 +805,7 @@ class UserInterface():
                     self.__countdown_set_led(led_state)
         self.camera.annotate_text = ""
 
-    def __show_overlay_countdown(self,countdown, show_overlay=False, **kw):
+    def __show_overlay_countdown(self,countdown):
         """Display countdown as images overlays"""
         #COUNTDOWN_OVERLAY_IMAGES
         led_state = False
@@ -1025,37 +843,16 @@ class UserInterface():
             im.thumbnail((preview_width,overlay_height))
 
             #overlays should be padded to 32 (width) and 16 (height)
-
-            # Paste the original image into the padded one (centered)
             pad_width = int((preview_width + 31) / 32) * 32
             pad_height = int((preview_height + 15) / 16) * 16
+
             padded_overlay = Image.new('RGBA', (pad_width, pad_height))
+            # Paste the original image into the padded one (centered)
             padded_overlay.paste(im, ( int((preview_width-im.size[0])/2.0), int((preview_height-im.size[1])/2.0)))
             overlay_images.append(padded_overlay)
         ## All images loaded at the right resolution
 
         #Change overlay every second and blink led
-        last_overlay = None
-        ##### testing overlays thought bubbles
-        if config.enable_overlays and show_overlay:
-            if self.overlay_png is None:
-                pass
-            elif not os.path.exists(self.overlay_png):
-                self.log.error("%s overlay file does not exist" % self.overlay_png)
-            else:
-                cloud_padded_overlay = Image.new('RGBA', (pad_width, pad_height))
-                # Paste the original image into the padded one (centered)
-                cloud_im = Image.open(self.overlay_png).resize(
-                    (preview_width - 144, preview_height)
-                )
-                cloud_padded_overlay.paste(cloud_im,
-                                           (72, 0))
-                self.cloud_overlay_image = self.camera.add_overlay(cloud_padded_overlay.tobytes(),
-                                                                   size=cloud_padded_overlay.size,
-                                                                   layer=4,
-                                                                   alpha=255)
-                self.cloud_overlay_image.hflip = True
-
         for i in range(countdown):
             #what overlay image to select:
             overlay_image = None
@@ -1077,24 +874,22 @@ class UserInterface():
                 overlay.alpha = 128
                 #flip it horizontally (because preview is flipped)
                 #overlay.hflip = True
-                if last_overlay is not None:
-                    self.camera.remove_overlay(last_overlay)
 
-            time_scaler = .8 ### allow for processing time
             if i < countdown - 2:
             # slow blink until -2s
-                time.sleep(1 * time_scaler)
+                time.sleep(1)
                 led_state = not led_state
                 self.__countdown_set_led(led_state)
             else:
             # fast blink until the end
                 for j in range(5):
-                    time.sleep(.2 * time_scaler)
+                    time.sleep(.2)
                     led_state = not led_state
                     self.__countdown_set_led(led_state)
-            last_overlay = overlay
-        if last_overlay is not None:
-            self.camera.remove_overlay(last_overlay)
+            if overlay != None:
+                self.camera.remove_overlay(overlay)
+
+
 
     def refresh_auth(self):
         """ refresh the oauth2 service (regularly called)"""
@@ -1136,30 +931,7 @@ class UserInterface():
             config.albumID = None
         self.oauth2service.upload_picture(filen, config.albumID, title, caption)
 
-    def select_overlay(self):
-        self.log.info("Selecting overlay")
-        self.overlay_png = tkinter.filedialog.askopenfilename(initialdir='../overlays',
-                                                              title="Choose overlay",
-                                                              filetypes=(('Overlay', '*.png'),))
-        self.log.info("%s selected as overlay" % self.overlay_png);
 
-    def annotate(self):
-        self.log.info("Annotating image")
-        orig = self.image.set_greyscale(True)
-        self.mode = 'annotate'
-
-        ### click callback
-        def insert_text(event):
-            print ('INSERT TEXT', event.x, event.y)            
-            self.annotation_pos = (event.x, event.y)
-            self.annotation_box.place(x=event.x, y=event.y)
-            self.annotation_box.focus()
-            ### put GUI into 
-            
-            self.longpress_obj.del_shortpress_callback()
-            self.image.load(orig)
-            
-        self.longpress_obj.add_shortpress_callback(insert_text)
     def send_email(self):
         """Ask for an email address and send the last picture to it
 

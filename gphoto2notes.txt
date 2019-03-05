@@ -1,0 +1,8 @@
+# I may not have remembered all
+
+sudo apt-get install libgphoto2
+#if you want to try the command line
+sudo apt-get install gphoto2
+pip install python-gphoto2
+#kill background gphoto2 processes to get rid of "could not clain the USB device" error
+pkill -f gphoto2 
