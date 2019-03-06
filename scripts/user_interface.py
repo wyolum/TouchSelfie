@@ -283,6 +283,7 @@ class UserInterface():
             log_level : amount of log (see python module 'logging')
         """
         self.mode = 'normal'
+        self.cloud_overlay_image = None
         self.log = logging.getLogger("user_interface")
         self.log_level = log_level
         self.log.setLevel(self.log_level)
