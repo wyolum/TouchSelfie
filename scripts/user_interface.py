@@ -1189,7 +1189,8 @@ class UserInterface():
         self.overlay_png = tkinter.filedialog.askopenfilename(initialdir='../overlays',
                                                               title="Choose overlay",
                                                               filetypes=(('Overlay', '*.png'),))
-        self.log.info("%s selected as overlay" % self.overlay_png);
+        if self.overlay_png:
+            self.log.info("%s selected as overlay" % self.overlay_png);
 
     def annotate(self):
         self.log.info("Annotating image")
