@@ -492,7 +492,6 @@ class UserInterface():
 
             self.software_buttons_images = {}
             self.software_buttons = []
-            X_ = 0
             total_width = 0
             # first, open images and load them + compute the total width
             for i, effect in enumerate(SOFTWARE_BUTTONS):
@@ -519,8 +518,8 @@ class UserInterface():
                    (len(effects) - 1)) ### float
             dy = gap + BUTTON_SIZE
             for i in argsort(orders):
-                X = self.size[0] - BUTTON_SIZE
-                Y = i * dy
+                xx = self.size[0] - BUTTON_SIZE
+                yy = i * dy
                 effect = effects[orders[i]]
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
@@ -529,7 +528,7 @@ class UserInterface():
                 btn = Button(self.root, image=tkimage, width=w, height=h,
                              command=snap_factory(effect))
                 self.software_buttons.append(btn)
-                btn.place(x=X,y=Y)
+                btn.place(x=xx,y=yy)
                 btn.configure(background = 'black')
 
         #Camera
