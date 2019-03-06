@@ -28,12 +28,14 @@ import re
 import numpy
 
 IMAGE_FONTSIZE = 64
+IMAGE_FONTSIZE = 48
 assert os.path.exists('ressources/fonts/tomsontalks.ttf')
 annotation_image_font = ImageFont.truetype(
     "ressources/fonts/tomsontalks.ttf",
     IMAGE_FONTSIZE,
     encoding="unic")
 
+BUTTON_SIZE = 72
 
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
@@ -221,7 +223,7 @@ class UserInterface():
         #img_x = (x * self.image.im.size[0]) // self.size[0]
         #img_y = (y * self.image.im.size[1]) // self.size[1]
         ### busted above, try hard coding
-        img_x = (x - 81) * 1640 // 640
+        img_x = (x - BUTTON_SIZE) * 1640 // 640
         img_y = (y -  0) * 1232 // 480
         
         arr = numpy.array(self.image.im)
@@ -238,11 +240,28 @@ class UserInterface():
             img_y += IMAGE_FONTSIZE * 2 // 3
             text = text.strip()
 
-        # self.image.unload()
+        ### Display new image
         self.image.load(self.image.im)
         if os.path.exists(self.last_picture_filename):
             self.image.im.save(self.last_picture_filename)
-        
+
+        ### Upload new image
+        if self.signed_in:
+            self.status("Uploading image")
+            self.log.debug("Uploading image")
+            try:
+                self.googleUpload(
+                    self.last_picture_filename,
+                    title= self.last_picture_title,
+                    caption = config.photoCaption + " " + self.last_picture_title)
+                picture_uploaded = True
+                self.log.info("Image %s successfully uploaded"%self.last_picture_title)
+                self.status("")
+            except Exception as e:
+                raise
+                self.status("Error uploading image :(")
+                self.log.exception("snap: Error uploading image")
+            
         self.reset_annotation()
         
     def cancel_annotation(self, event):
@@ -358,14 +377,14 @@ class UserInterface():
         # self.image.load("../Photos/2019-03-03_16-20-46-snap.jpg")
         # self.last_picture_filename = "../Photos/2019-03-03_16-20-46-snap.jpg"
 
-        ## dh = (H - 72) // 3
+        ## dh = (H - BUTTON_SIZE) // 3
         ### h0 = 36
         ### h1 = h0 + 1 * dh
         ### h2 = h0 + 2 * dh
         ### h3 = h0 + 3 * dh
         if config.enable_overlays:
             h0 = 36
-            dh = (SCREEN_H - 72) // 3
+            dh = (SCREEN_H - BUTTON_SIZE) // 3
             overlay_image = Image.open(IMAGE_OVERLAY_BUTTON)
             w,h = overlay_image.size
             self.overlay_imagetk = ImageTk.PhotoImage(overlay_image)
@@ -394,7 +413,7 @@ class UserInterface():
             self.print_imagetk = ImageTk.PhotoImage(print_image)
             self.print_btn = Button(self.root, image=self.print_imagetk,
                                     height=h, width=w, command= self.send_print)
-            self.print_btn.place(x=2, y=0)
+            self.print_btn.place(x=2, y=BUTTON_SIZE) # was (2, 0)
             self.print_btn.configure(background= 'black')
 
         self.send_emails = send_emails
@@ -404,8 +423,9 @@ class UserInterface():
             mail_image = Image.open(EMAIL_BUTTON_IMG)
             w,h = mail_image.size
             self.mail_imagetk = ImageTk.PhotoImage(mail_image)
-            self.mail_btn  = Button(self.root,image = self.mail_imagetk, height=h, width=w, command=self.send_email )
-            self.mail_btn.place(x=SCREEN_W-w-2, y=0)
+            self.mail_btn  = Button(self.root, image=self.mail_imagetk,
+                                    height=h, width=w, command=self.send_email)
+            self.mail_btn.place(x=2, y=0) # was (SCREEN_W-w-2, 0)
             self.mail_btn.configure(background = 'black')
             
         #Create image_effects button
@@ -415,8 +435,11 @@ class UserInterface():
             effects_image = Image.open(EFFECTS_BUTTON_IMG)
             w,h = effects_image.size
             self.effects_imagetk = ImageTk.PhotoImage(effects_image)
-            self.effects_btn = Button(self.root, image = self.effects_imagetk, height=h, width=w, command=self.__choose_effect)
-            self.effects_btn.place(x=SCREEN_W-w-2,y=int((SCREEN_H-h)/2))
+            self.effects_btn = Button(self.root, image=self.effects_imagetk,
+                                      height=h, width=w,
+                                      command=self.__choose_effect)
+            # self.effects_btn.place(x=SCREEN_W-w-2,y=int((SCREEN_H-h)/2))
+            self.effects_btn.place(x=2,y=self.size[1] - BUTTON_SIZE)
             self.effects_btn.configure(background = 'black')
             
         #Create status line
@@ -492,18 +515,22 @@ class UserInterface():
 
             effects = list(SOFTWARE_BUTTONS.keys())
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
+            gap = ((self.size[1] - len(effects) * BUTTON_SIZE) /
+                   (len(effects) - 1)) ### float
+            dy = gap + BUTTON_SIZE
             for i in argsort(orders):
+                X = self.size[0] - BUTTON_SIZE
+                Y = i * dy
                 effect = effects[i]
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
-                Y = self.size[1] - h
                 tkimage = self.software_buttons_images[effect]['image']
 
-                btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
+                btn = Button(self.root, image=tkimage, width=w, height=h,
+                             command=snap_factory(effect))
                 self.software_buttons.append(btn)
-                btn.place(x=X_,y=Y)
+                btn.place(x=X,y=Y)
                 btn.configure(background = 'black')
-                X_ = X_ + w + padding
 
         #Camera
         self.camera = mycamera.PiCamera()
@@ -707,14 +734,31 @@ class UserInterface():
                 w_ = w * 2
                 h_ = h * 2
                 # take 4 photos and merge into one image.
-                self.__show_countdown(config.countdown1,annotate_size = 80)
+                self.__show_countdown(config.countdown1, NW)
                 self.camera.capture('collage_1.jpg')
-                self.__show_countdown(config.countdown2,annotate_size = 80)
+                if self.cloud_overlay_image is not None:
+                    self.camera.remove_overlay(self.cloud_overlay_image)
+                    self.cloud_overlay_image = None
+                
+                
+                self.__show_countdown(config.countdown2, NE)
                 self.camera.capture('collage_2.jpg')
-                self.__show_countdown(config.countdown2,annotate_size = 80)
+                if self.cloud_overlay_image is not None:
+                    self.camera.remove_overlay(self.cloud_overlay_image)
+                    self.cloud_overlay_image = None
+                
+                self.__show_countdown(config.countdown2, SW)
                 self.camera.capture('collage_3.jpg')
-                self.__show_countdown(config.countdown2,annotate_size = 80)
+                if self.cloud_overlay_image is not None:
+                    self.camera.remove_overlay(self.cloud_overlay_image)
+                    self.cloud_overlay_image = None
+                
+                self.__show_countdown(config.countdown2, SE)
                 self.camera.capture('collage_4.jpg')
+                if self.cloud_overlay_image is not None:
+                    self.camera.remove_overlay(self.cloud_overlay_image)
+                    self.cloud_overlay_image = None
+                
                 # Assemble collage
                 self.camera.stop_preview()
                 self.status("Assembling collage")
@@ -728,7 +772,8 @@ class UserInterface():
                 #paste the collage enveloppe if it exists
                 try:
                     self.log.debug("snap: Adding  the collage cover")
-                    front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
+                    front = Image.open(
+                        EFFECTS_PARAMETERS[mode]['foreground_image'])
                     front = front.resize((w_,h_))
                     front = front.convert('RGBA')
                     snapshot = snapshot.convert('RGBA')
@@ -737,8 +782,17 @@ class UserInterface():
                     snapshot=Image.alpha_composite(snapshot,front)
 
                 except Exception as e:
-                    self.log.error("snap: unable to paste collage cover: %s"%repr(e))
+                    self.log.error("snap: unable to paste collage cover: %s"%
+                                   repr(e))
 
+                if (self.overlay_png is not None and
+                    os.path.exists(self.overlay_png)):
+                    size = snapshot.size
+                    front = Image.open(self.overlay_png)
+                    front = front.resize(size)
+                    front = front.convert('RGBA')
+                    snapshot = snapshot.convert('RGBA')
+                    snapshot = Image.alpha_composite(snapshot, front)
 
                 self.status("")
                 snapshot = snapshot.convert('RGB')
@@ -955,39 +1009,7 @@ class UserInterface():
         except:
             pass
 
-    def __show_countdown(self,countdown, **kw):
-        '''wrapper function to select between overlay and text countdowns'''
-        #self.__show_text_countdown(countdown,**kw)
-        self.__show_overlay_countdown(countdown, **kw)
-
-    def __show_text_countdown(self,countdown,annotate_size=160, **kw):
-        ''' display countdown. the camera should have a preview active and the resolution must be set'''
-        led_state = False
-        self.__countdown_set_led(led_state)
-
-        self.camera.annotate_text = "" # Remove annotation
-        self.camera.annotate_text_size = annotate_size
-        #self.camera.preview.window = (0, 0, SCREEN_W, SCREEN_H)
-        self.camera.preview.fullscreen = True
-
-        #Change text every second and blink led
-        for i in range(countdown):
-            # Annotation text
-            self.camera.annotate_text = "  " + str(countdown - i) + "  "
-            if i < countdown - 2:
-            # slow blink until -2s
-                time.sleep(1)
-                led_state = not led_state
-                self.__countdown_set_led(led_state)
-            else:
-            # fast blink until the end
-                for j in range(5):
-                    time.sleep(.2)
-                    led_state = not led_state
-                    self.__countdown_set_led(led_state)
-        self.camera.annotate_text = ""
-
-    def __show_overlay_countdown(self,countdown, show_overlay=False, **kw):
+    def __show_countdown(self,countdown, show_overlay=False, **kw):
         """Display countdown as images overlays"""
         #COUNTDOWN_OVERLAY_IMAGES
         led_state = False
@@ -1041,19 +1063,45 @@ class UserInterface():
             if self.overlay_png is None:
                 pass
             elif not os.path.exists(self.overlay_png):
-                self.log.error("%s overlay file does not exist" % self.overlay_png)
+                self.log.error("%s overlay file does not exist" %
+                               self.overlay_png)
             else:
-                cloud_padded_overlay = Image.new('RGBA', (pad_width, pad_height))
+                selected_overlay_image = Image.open(self.overlay_png)
+                ww, hh = selected_overlay_image.size
+                print('overlay countdown', show_overlay, NW)
+                print(ww, hh)
+                if show_overlay == NW:
+                    selected_overlay_image = selected_overlay_image.crop(
+                        (0, 0, ww//2, hh//2)
+                        )
+                elif show_overlay == NE:
+                    selected_overlay_image = selected_overlay_image.crop(
+                        (ww//2, 0, ww, hh//2)
+                        )
+                elif show_overlay == SW:
+                    selected_overlay_image = selected_overlay_image.crop(
+                        (0, hh//2, ww//2, hh)
+                        )
+                elif show_overlay == SE:
+                    selected_overlay_image = selected_overlay_image.crop(
+                        (ww//2, hh/2, ww, hh)
+                        )
+                else:
+                    pass
+                selected_padded_overlay = Image.new('RGBA',
+                                                    (pad_width, pad_height))
                 # Paste the original image into the padded one (centered)
-                cloud_im = Image.open(self.overlay_png).resize(
-                    (preview_width - 144, preview_height)
+                selected_overlay_image = selected_overlay_image.resize(
+                    (preview_width - 2 * BUTTON_SIZE, preview_height)
                 )
-                cloud_padded_overlay.paste(cloud_im,
-                                           (72, 0))
-                self.cloud_overlay_image = self.camera.add_overlay(cloud_padded_overlay.tobytes(),
-                                                                   size=cloud_padded_overlay.size,
-                                                                   layer=4,
-                                                                   alpha=255)
+                
+                selected_padded_overlay.paste(selected_overlay_image,
+                                           (BUTTON_SIZE, 0))
+                self.cloud_overlay_image = self.camera.add_overlay(
+                    selected_padded_overlay.tobytes(),
+                    size=selected_padded_overlay.size,
+                    layer=4,
+                    alpha=255)
                 self.cloud_overlay_image.hflip = True
 
         for i in range(countdown):
