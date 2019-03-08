@@ -446,7 +446,7 @@ class UserInterface():
         #Create status line
         self.status_lbl = Label(self.root, text="", font=("Helvetica", 20))
         self.status_lbl.config(background='black', foreground='white')
-        self.status_lbl.place(x=0 + 10, y=0)
+        self.status_lbl.place(x=72, y=0)
 
         #State variables
         self.signed_in = False
@@ -520,8 +520,9 @@ class UserInterface():
             dy = gap + BUTTON_SIZE
             for i in argsort(orders):
                 xx = self.size[0] - BUTTON_SIZE
-                yy = i * dy
-                effect = effects[orders[i]]
+                yy = orders[i] * dy
+                effect = effects[i]
+                print('button order', i, orders[i], effect)
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
                 tkimage = self.software_buttons_images[effect]['image']
