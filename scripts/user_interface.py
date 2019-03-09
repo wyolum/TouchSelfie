@@ -446,7 +446,7 @@ class UserInterface():
         #Create status line
         self.status_lbl = Label(self.root, text="", font=("Helvetica", 20))
         self.status_lbl.config(background='black', foreground='white')
-        self.status_lbl.place(x=72, y=0)
+        self.status_lbl.place(x=72 + 10, y=0)
 
         #State variables
         self.signed_in = False
@@ -614,8 +614,13 @@ class UserInterface():
                 return function(*args, **kw)
         return out
     def status(self, status_text):
-        """Update the application status line with status_text"""
-        self.status_lbl['text'] = status_text
+        if status_text == '':
+            ## hide status
+            self.status_lbl.lower(self.image)
+        else:
+            """Update the application status line with status_text"""
+            self.status_lbl['text'] = status_text
+            self.status_lbl.lift(self.image)
         self.root.update()
 
     def start_ui(self):
