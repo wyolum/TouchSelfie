@@ -47,7 +47,8 @@ sudo apt-get update
 
 # Install ImageTk, Image from PIL
 sudo apt-get install python-imaging
-sudo apt-get install python-imaging-tk
+sudo apt-get install python3-pil.imagetk
+#sudo apt-get install python-imaging-tk
 
 # Install google data api and upgrade it
 sudo apt-get install python-gdata
@@ -59,15 +60,16 @@ sudo apt-get install imagemagick
 
 # Install CUPS for the Printing function(optional)
 sudo apt-get install cups
-sudo apt-get install python-cups
+sudo apt-get install python3-cups
 
 # Setting up  CUPS/printer(optional)
 https://www.techradar.com/how-to/computing/how-to-turn-the-raspberry-pi-into-a-wireless-printer-server-1312717
-```
+
 $ sudo usermod -a -G lpadmin pi
 ```
 Easiest way to setup the printer is through the web interface on the device:
 http://localhost:631
+
 Test device:
 Canon Selphy CP1300 with the Canon SELPHY CP900 - CUPS+Gutenprint v5.2.11  driver over USB
 

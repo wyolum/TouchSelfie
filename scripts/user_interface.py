@@ -283,6 +283,7 @@ class UserInterface():
             log_level : amount of log (see python module 'logging')
         """
         self.mode = 'normal'
+        self.cloud_overlay_image = None
         self.log = logging.getLogger("user_interface")
         self.log_level = log_level
         self.log.setLevel(self.log_level)
@@ -382,15 +383,15 @@ class UserInterface():
         ### h1 = h0 + 1 * dh
         ### h2 = h0 + 2 * dh
         ### h3 = h0 + 3 * dh
+        left_gap = (self.size[1] - 5 * BUTTON_SIZE) / 4
+        LEFT_DY = BUTTON_SIZE + left_gap
         if config.enable_overlays:
-            h0 = 36
-            dh = (SCREEN_H - BUTTON_SIZE) // 3
             overlay_image = Image.open(IMAGE_OVERLAY_BUTTON)
             w,h = overlay_image.size
             self.overlay_imagetk = ImageTk.PhotoImage(overlay_image)
             self.overlay_btn = Button(self.root, image=self.overlay_imagetk,
                                       height=h, width=w, command=self.select_overlay)
-            self.overlay_btn.place(x=2, y=h0+dh-h//2)
+            self.overlay_btn.place(x=2, y=2 * LEFT_DY)
             self.overlay_btn.configure(background= 'black')
 
             ## text
@@ -401,7 +402,7 @@ class UserInterface():
                                       height=h, width=w,
                                       command=self.callback_wrapper(
                                           'normal', self.annotate))
-            self.overlay_btn.place(x=2, y=h0+2*dh-h//2)
+            self.overlay_btn.place(x=2, y=3 * LEFT_DY)
             self.overlay_btn.configure(background= 'black')
             
 
@@ -413,7 +414,7 @@ class UserInterface():
             self.print_imagetk = ImageTk.PhotoImage(print_image)
             self.print_btn = Button(self.root, image=self.print_imagetk,
                                     height=h, width=w, command= self.send_print)
-            self.print_btn.place(x=2, y=BUTTON_SIZE) # was (2, 0)
+            self.print_btn.place(x=2, y=1 * LEFT_DY) # was (2, 0)
             self.print_btn.configure(background= 'black')
 
         self.send_emails = send_emails
@@ -425,7 +426,7 @@ class UserInterface():
             self.mail_imagetk = ImageTk.PhotoImage(mail_image)
             self.mail_btn  = Button(self.root, image=self.mail_imagetk,
                                     height=h, width=w, command=self.send_email)
-            self.mail_btn.place(x=2, y=0) # was (SCREEN_W-w-2, 0)
+            self.mail_btn.place(x=2, y=0 * LEFT_DY) # was (SCREEN_W-w-2, 0)
             self.mail_btn.configure(background = 'black')
             
         #Create image_effects button
@@ -445,7 +446,7 @@ class UserInterface():
         #Create status line
         self.status_lbl = Label(self.root, text="", font=("Helvetica", 20))
         self.status_lbl.config(background='black', foreground='white')
-        self.status_lbl.place(x=0 + 10, y=0)
+        self.status_lbl.place(x=72 + 10, y=0)
 
         #State variables
         self.signed_in = False
@@ -492,7 +493,6 @@ class UserInterface():
 
             self.software_buttons_images = {}
             self.software_buttons = []
-            X_ = 0
             total_width = 0
             # first, open images and load them + compute the total width
             for i, effect in enumerate(SOFTWARE_BUTTONS):
@@ -519,9 +519,10 @@ class UserInterface():
                    (len(effects) - 1)) ### float
             dy = gap + BUTTON_SIZE
             for i in argsort(orders):
-                X = self.size[0] - BUTTON_SIZE
-                Y = i * dy
+                xx = self.size[0] - BUTTON_SIZE
+                yy = orders[i] * dy
                 effect = effects[i]
+                print('button order', i, orders[i], effect)
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
                 tkimage = self.software_buttons_images[effect]['image']
@@ -529,7 +530,7 @@ class UserInterface():
                 btn = Button(self.root, image=tkimage, width=w, height=h,
                              command=snap_factory(effect))
                 self.software_buttons.append(btn)
-                btn.place(x=X,y=Y)
+                btn.place(x=xx,y=yy)
                 btn.configure(background = 'black')
 
         #Camera
@@ -613,8 +614,13 @@ class UserInterface():
                 return function(*args, **kw)
         return out
     def status(self, status_text):
-        """Update the application status line with status_text"""
-        self.status_lbl['text'] = status_text
+        if status_text == '':
+            ## hide status
+            self.status_lbl.lower(self.image)
+        else:
+            """Update the application status line with status_text"""
+            self.status_lbl['text'] = status_text
+            self.status_lbl.lift(self.image)
         self.root.update()
 
     def start_ui(self):
@@ -1189,7 +1195,8 @@ class UserInterface():
         self.overlay_png = tkinter.filedialog.askopenfilename(initialdir='../overlays',
                                                               title="Choose overlay",
                                                               filetypes=(('Overlay', '*.png'),))
-        self.log.info("%s selected as overlay" % self.overlay_png);
+        if self.overlay_png:
+            self.log.info("%s selected as overlay" % self.overlay_png);
 
     def annotate(self):
         self.log.info("Annotating image")
