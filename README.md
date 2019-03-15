@@ -21,7 +21,6 @@ This version of TouchSelfie handles the new API with the following conditions:
 
 
 # TouchSelfie
-Open Source Photobooth forked and improved from [wyolum/TouchSelfie](https://github.com/wyolum/TouchSelfie)
 
 For hardware construction, see [Make Magazine article](https://makezine.com/projects/raspberry-pi-photo-booth/)
 
@@ -52,8 +51,8 @@ sudo apt-get install python-imaging-tk
 
 # Install google data api and upgrade it
 sudo apt-get install python-gdata
-sudo pip install --upgrade google-api-python-client
-sudo pip install --upgrade oauth2client
+sudo pip3 install --upgrade google-api-python-client
+sudo pip3 install --upgrade oauth2client
 
 # Install ImageMagick for the 'Animation' mode
 sudo apt-get install imagemagick
@@ -64,6 +63,11 @@ sudo apt-get install python-cups
 
 # Setting up  CUPS/printer(optional)
 https://www.techradar.com/how-to/computing/how-to-turn-the-raspberry-pi-into-a-wireless-printer-server-1312717
+```
+$ sudo usermod -a -G lpadmin pi
+```
+Easiest way to setup the printer is through the web interface on the device:
+http://localhost:631
 Test device:
 Canon Selphy CP1300 with the Canon SELPHY CP900 - CUPS+Gutenprint v5.2.11  driver over USB
 
