@@ -1,0 +1,17 @@
+﻿"Symbol";"Value";"Unit";
+"SUPPLIER_NAME";"RS Components";"";
+"TraceParts.PartVersion";"1.0.2";"";
+"SUPPLIER";"Raspberry PI";"";
+"TraceParts.PartStatus";"Published";"";
+"TRACEPARTS";"TRACEPARTS";"";
+"RS_STOCK_NUMBER";"8968660";"";
+"REVISION";"A";"";
+"DESIGN";"Raspberry Pi 3 Model B SBC";"";
+"TraceParts.InstanceId";"10-26052016-1048611D1ZJWEUJ99NDJPBZ6FOEX0B9";"";
+"TraceParts.PartLanguage";"en";"";
+"TraceParts.PartTitle";"Raspberry Pi 3 Model B SBC";"";
+"REFERENCE";"Raspberry Pi 3 Model B";"";
+"TIMESTAMP";"20/05/2016 10:10";"";
+"TraceParts.PartNumber";"10-26052016-104861";"";
+"TraceParts.PartStatusId";"";"";
+"TraceParts.ClassPath";"RS_COMPONENTS:/F_RS_COMPONENTS/PSSS_430741/PSS_430756/PSF_431027/10-26052016-104861";"";
