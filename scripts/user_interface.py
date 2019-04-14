@@ -298,7 +298,6 @@ class UserInterface():
         self.root = Tk()
         
         ## Auto hide Mouse cursor
-
         #Events to enable/disable cursor based on motion
         #on_motion() is called on mouse motion and sets a boolean
         #enable_cursor is a fast loop that checks this boolean and enable the cursor
@@ -460,7 +459,6 @@ class UserInterface():
 
         self.tkkb = None
         self.email_addr = StringVar()
-
         self.suspend_poll = False
 
         self.upload_images = upload_images
@@ -584,6 +582,7 @@ class UserInterface():
 
         self.longpress_cb= longpress_cb
         self.longpress_obj= LongPressDetector(self.image,longpress_cb)
+        self.root.bind('<Button-3>', longpress_cb)
 
     def __change_services(self,email,upload):
         """Called whenever we should change the state of oauth2services"""
@@ -1255,14 +1254,14 @@ class UserInterface():
                 def logOnEnter(*args):
                     onEnter(*args)
                     self.__log_email_address(self.email_addr.get(),consent_var.get()!=0, res, self.last_picture_filename)
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = logOnEnter, onCancel = onCancel, validator = email_validator)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = logOnEnter, onCancel = onCancel, validator=email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
 
             else:
 
-                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator = email_validator)
+                TouchKeyboard(keyboard_parent,self.email_addr, onEnter = onEnter, onCancel = onCancel, validator=email_validator)
                 self.tkkb.wm_attributes("-topmost", 1)
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)

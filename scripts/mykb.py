@@ -188,6 +188,9 @@ class EnterKey(Key):
             s = self.entry.get().strip()
         except:
             s = ''
+        if "@@" in s:
+            s = s.replace("@@", "@") ## remove double at signs in email addr
+            self.variable.set(s)
         new_valid = self.validate(s)
         
         if not self.valid and new_valid:

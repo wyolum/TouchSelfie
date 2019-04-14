@@ -114,6 +114,7 @@ def upload_photo(session, photo_file_name, album_id):
         photo_file = open(photo_file_name, mode='rb')
         photo_bytes = photo_file.read()
     except OSError as err:
+        print(err)
         return False
 
     session.headers["X-Goog-Upload-File-Name"] = os.path.basename(photo_file_name)
@@ -121,7 +122,6 @@ def upload_photo(session, photo_file_name, album_id):
     logging.info("Uploading photo -- \'{}\'".format(photo_file_name))
 
     upload_token = session.post('https://photoslibrary.googleapis.com/v1/uploads', photo_bytes)
-
     if (upload_token.status_code == 200) and (upload_token.content):
 
         create_body = json.dumps({"albumId":album_id,
@@ -131,7 +131,6 @@ def upload_photo(session, photo_file_name, album_id):
         resp = session.post('https://photoslibrary.googleapis.com/v1/mediaItems:batchCreate', create_body).json()
 
         logging.debug("Server response: {}".format(resp))
-
         if "newMediaItemResults" in resp:
             status = resp["newMediaItemResults"][0]["status"]
             if status.get("code") and (status.get("code") > 0):
@@ -153,10 +152,10 @@ def upload_photo(session, photo_file_name, album_id):
     return True
 def main():
 
-    # session = get_authorized_session("auth_file")
-    session = get_authorized_session("gphoto_credentials.dat")
-
-    print(upload_photo(session, "img039.jpg", "TouchSelfie"))
+    session = get_authorized_session("google_credentials.dat")
+    #session = get_authorized_session("gphoto_credentials.dat")
+    print(upload_photo(session, "../Photos/2019-04-14_13-43-00-snap.jpg",
+                       "TouchSelfie"))
 
 if __name__ == '__main__':
   main()
