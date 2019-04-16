@@ -565,7 +565,7 @@ class TouchKeyboard:
             except Exception, e:
                 log.exception("Error while applying stylesheet")
 
-__email_validator = re.compile(r'^.+@([?)[a-zA-Z0-9-.]+.([a-zA-Z]{2,3}|[0-9]{1,3})(]?)$')
+__email_validator = re.compile(r'^[^@]+@[^@]+\.[^@]+$')
 def email_validator(addr):
     return bool(__email_validator.match(addr.strip()))
 
