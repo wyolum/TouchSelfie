@@ -26,6 +26,7 @@ class Configuration():
     enable_hardware_buttons = False #Enable hardware buttons
     enable_email_logging = False # Should we log outgoing emails?
     enable_overlays = True
+    enable_annotations = True
 
     #init
     def __init__(self,configuration_file_name):
@@ -78,6 +79,7 @@ class Configuration():
         if "enable_hardware_buttons" in list(config.keys()):  self.enable_hardware_buttons = config["enable_hardware_buttons"]
         if "enable_email_logging" in list(config.keys()): self.enable_email_logging = config["enable_email_logging"]
         if "enable_overlays" in list(config.keys()): self.enable_overlays = config["enable_overlays"]
+        if "enable_annotations" in list(config.keys()): self.enable_annotations = config["enable_annotations"]
 
 
         return self.is_valid
@@ -107,6 +109,7 @@ class Configuration():
             "enable_hardware_buttons": self.enable_hardware_buttons,
             "enable_email_logging" : self.enable_email_logging,
             "enable_overlays" : self.enable_overlays,
+            "enable_annotations" : self.enable_annotations,
         }
         try:
             with open(self.config_file,'w') as config:

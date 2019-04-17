@@ -72,6 +72,13 @@ class Assistant(Tk):
                 self.config.enable_overlays = self.want_overlays_var.get() != 0
             self.want_overlays_var.trace("w",on_want_overlays_change)
 
+            self.want_annotations_var = IntVar()
+            self.want_annotations_var.set(config.enable_annotations == True)
+            def on_want_annotations_change(*args):
+                new_value = self.want_annotations_var.get() != 0
+                self.config.enable_annotations = new_value
+            self.want_annotations_var.trace("w",on_want_annotations_change)
+
             self.want_upload_var = IntVar()
             self.want_upload_var.set(config.enable_upload == True)
             def on_want_upload_change(*args):
@@ -96,10 +103,15 @@ class Assistant(Tk):
                             #self.use_print_list.pack()
                             self.__erase_page()
                             self.widgets.pop(0)
-                            self.widgets.insert(0,[self.want_email_cb, self.want_overlays_cb,
-                                                   self.want_upload_cb, self.want_effects_cb,
-                                                   self.want_print_cb, self.use_soft_keyboard_cb,
-                                                   self.use_print_list])
+                            self.widgets.insert(
+                                0,[self.want_email_cb,
+                                   self.want_overlays_cb,
+                                   self.want_annotations_cb,
+                                   self.want_upload_cb,
+                                   self.want_effects_cb,
+                                   self.want_print_cb,
+                                   self.use_soft_keyboard_cb,
+                                   self.use_print_list])
 
                             conn = cups.Connection()
                             printers = conn.getPrinters()
@@ -112,9 +124,13 @@ class Assistant(Tk):
                             tkinter.messagebox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
                             self.__erase_page()
                             self.widgets.pop(0)
-                            self.widgets.insert(0,[self.want_email_cb, self.want_overlays_cb,
-                                                   self.want_upload_cb, self.want_effects_cb,
-                                                   self.use_soft_keyboard_cb])
+                            self.widgets.insert(
+                                0,[self.want_email_cb,
+                                   self.want_overlays_cb,
+                                   self.want_annotations_cb,
+                                   self.want_upload_cb,
+                                   self.want_effects_cb,
+                                   self.use_soft_keyboard_cb])
                             self.__draw_page()
                             self.enable_print = False;
                             self.config.enable_print = False; #Fix printing enabled even on error
@@ -127,14 +143,21 @@ class Assistant(Tk):
 
             if printer_selection_enable == True:self.want_print_var.trace("w",on_want_print_change)
 
-            self.want_email_cb  = Checkbutton(self.main_frame, text="Enable Email sending",
-                                              variable=self.want_email_var, anchor=W, font='Helvetica')
-            self.want_overlays_cb  = Checkbutton(self.main_frame, text="Enable  overlays",
-                                                 variable=self.want_overlays_var, anchor=W, font='Helvetica')
-            self.want_upload_cb  = Checkbutton(self.main_frame, text="Enable photo upload",
-                                               variable=self.want_upload_var, anchor=W, font='Helvetica')
-            self.want_effects_cb  = Checkbutton(self.main_frame, text="Enable image effects",
-                                                variable=self.want_effects_var, anchor=W, font='Helvetica')
+            self.want_email_cb  = Checkbutton(
+                self.main_frame, text="Enable Email sending",
+                variable=self.want_email_var, anchor=W, font='Helvetica')
+            self.want_overlays_cb  = Checkbutton(
+                self.main_frame, text="Enable  overlays",
+                variable=self.want_overlays_var, anchor=W, font='Helvetica')
+            self.want_annotations_cb  = Checkbutton(
+                self.main_frame, text="Enable  annotations",
+                variable=self.want_annotations_var, anchor=W, font='Helvetica')
+            self.want_upload_cb  = Checkbutton(
+                self.main_frame, text="Enable photo upload",
+                variable=self.want_upload_var, anchor=W, font='Helvetica')
+            self.want_effects_cb  = Checkbutton(
+                self.main_frame, text="Enable image effects",
+                variable=self.want_effects_var, anchor=W, font='Helvetica')
 
             if printer_selection_enable == True:
                 self.want_print_cb = Checkbutton(self.main_frame, text="Enable photo print",
@@ -160,12 +183,19 @@ class Assistant(Tk):
 
             self.use_soft_keyboard_cb = Checkbutton(self.main_frame, text="Enable software keyboard (for this configuration)", variable=self.use_soft_keyboard_var, anchor=W, font='Helvetica')
             if self.printer_selection_enable == True:
-                self.widgets.append([self.want_email_cb, self.want_overlays_cb,
-                                     self.want_upload_cb, self.want_effects_cb,
-                                     self.want_print_cb,self.use_soft_keyboard_cb])
+                self.widgets.append([self.want_email_cb,
+                                     self.want_overlays_cb,
+                                     self.want_annotations_cb,
+                                     self.want_upload_cb,
+                                     self.want_effects_cb,
+                                     self.want_print_cb,
+                                     self.use_soft_keyboard_cb])
             else:
-                self.widgets.append([self.want_email_cb, self.want_overlays_cb,
-                                     self.want_upload_cb,self.want_effects_cb,
+                self.widgets.append([self.want_email_cb,
+                                     self.want_overlays_cb,
+                                     self.want_annotations_cb,
+                                     self.want_upload_cb,
+                                     self.want_effects_cb,
                                      self.use_soft_keyboard_cb])
 
             #PAGE 1 google credentials
@@ -747,7 +777,9 @@ Click the Start button below:
 
         if self.page >= len(self.widgets)-1:
             self.page = len(self.widgets)-1
-            self.b_next.configure(text="Save",command=self.__save_and_exit, bg=self.BUTTONS_BG_ACTION)
+            self.b_next.configure(text="Save",
+                                  command=self.__save_and_exit,
+                                  bg=self.BUTTONS_BG_ACTION)
         else:
             self.b_next.config(state=NORMAL)
             self.b_next.configure(text="Next",command=self.__increment, bg=self.BUTTONS_BG)
@@ -768,7 +800,8 @@ Click the Start button below:
         script = open(script_name,"w")
         script.write("#!/bin/sh\n")
         script.write("cd %s\n"% install_dir)
-        script.write("python3 user_interface.py $* > %s\n"%(os.path.join(install_dir,"..","photobooth.log")))
+        script.write("python3 user_interface.py $* > %s\n" %
+                     (os.path.join(install_dir,"..","photobooth.log")))
         script.close()
         #make the script executable
         import stat
@@ -838,14 +871,19 @@ def console_assistant():
 
     #try to read configuration
     config = configuration.Configuration(constants.CONFIGURATION_FILE)
-    config.enable_email = ask_boolean("Do you want the 'send photo by email' feature?",config.enable_email)
+    config.enable_email = ask_boolean(
+        "Do you want the 'send photo by email' feature?",config.enable_email)
     print("")
-    config.enable_upload = ask_boolean("Do you want the 'auto-upload photos' feature?",config.enable_upload)
+    config.enable_upload = ask_boolean(
+        "Do you want the 'auto-upload photos' feature?",config.enable_upload)
     print("")
-    config.enable_effects = ask_boolean("Do you want the 'Photos effects' feature?",config.enable_effects)
+    config.enable_effects = ask_boolean(
+        "Do you want the 'Photos effects' feature?",config.enable_effects)
     print("")
     if printer_selection_enable == True:
-        config.enable_print = ask_boolean("Do you want the 'Send photo to printer' feature?", config.enable_print)
+        config.enable_print = ask_boolean(
+            "Do you want the 'Send photo to printer' feature?",
+            config.enable_print)
         print("")
         if config.enable_print == True:
             conn = cups.Connection()
@@ -859,8 +897,11 @@ def console_assistant():
                 else:
                     print('[ ] ['+str(index)+'] '+printer)
                 index = index + 1
-            config.selected_printer = input("Seleted printer: [%s] confirm or change =>" % config.selected_printer)
-            if config.selected_printer is "": config.selected_printer = selectedindex
+            config.selected_printer = input(
+                "Seleted printer: [%s] confirm or change =>" %
+                config.selected_printer)
+            if config.selected_printer is "":
+                config.selected_printer = selectedindex
 
     want_email  = config.enable_email
     want_upload = config.enable_upload
@@ -874,7 +915,8 @@ def console_assistant():
     config.write()
     if need_credentials:
         # Check for user account
-        _username = input("Google account: [%s] confirm or change => " % config.user_name)
+        _username = input("Google account: [%s] confirm or change => " %
+                          config.user_name)
         if _username != "":
             config.user_name = _username.strip()
             config.write()
@@ -883,7 +925,8 @@ def console_assistant():
         app_id     = os.path.join(install_dir,constants.APP_ID_FILE)
 
         if os.path.exists(app_id):
-            print("\n** found %s application file, will use it (remove in case of problems)"%
+            print("""
+** found %s application file, will use it (remove in case of problems)""" %
                   constants.APP_ID_FILE)
         else:
             print("""

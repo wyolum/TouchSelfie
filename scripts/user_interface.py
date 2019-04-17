@@ -27,9 +27,12 @@ import traceback
 import re
 import numpy
 
-IMAGE_FONTSIZE = 64
-IMAGE_FONTSIZE = 48
+LARGE_IMAGE_FONTSIZE = 64
+SMALL_IMAGE_FONTSIZE = 48
+
+IMAGE_FONTSIZE = SMALL_IMAGE_FONTSIZE
 assert os.path.exists('ressources/fonts/tomsontalks.ttf')
+
 annotation_image_font = ImageFont.truetype(
     "ressources/fonts/tomsontalks.ttf",
     IMAGE_FONTSIZE,
@@ -88,7 +91,7 @@ except ImportError:
 # Helper class to launch function after a long-press
 class LongPressDetector:
     """Helper class that calls a callback after a long press/click"""
-# callback will get the long_click duration as parameter
+    # callback will get the long_click duration as parameter
     def __init__(self, root, longpress_callback, longpress_duration=1000,
                  shortpress_callback=None):
         """Creates the LongPressDetector
@@ -125,6 +128,7 @@ class LongPressDetector:
 
     def __click(self,event):
         self.ts = event.time
+        self.event = event
         if not self._suspend:
             self.after_press_id = self.root.after(self.longpress_duration,
                                                   self.__trigger)
@@ -135,7 +139,7 @@ class LongPressDetector:
             self.__on_shortpress(event)
     def __trigger(self):
         if self.longpress_callback != None:
-            self.longpress_callback(self.longpress_duration)
+            self.longpress_callback(self.event)
     def __on_shortpress(self, event):
         if not self._suspend and self.shortpress_callback is not None:
             self.shortpress_callback(event)
@@ -214,14 +218,13 @@ class UserInterface():
         return rest, center_x
     
     def put_annotation(self, event):
-        print('Put annotation')
+        self.log.debug('Put annotation')
         text = self.annotation_box.get("1.0", END).strip()
         self.annotation_box.index("1.0")
         x = self.annotation_pos[0]
         y = self.annotation_pos[1]
         draw = ImageDraw.Draw(self.image.im)
-        #img_x = (x * self.image.im.size[0]) // self.size[0]
-        #img_y = (y * self.image.im.size[1]) // self.size[1]
+
         ### busted above, try hard coding
         img_x = (x - BUTTON_SIZE) * 1640 // 640
         img_y = (y -  0) * 1232 // 480
@@ -389,20 +392,23 @@ class UserInterface():
             w,h = overlay_image.size
             self.overlay_imagetk = ImageTk.PhotoImage(overlay_image)
             self.overlay_btn = Button(self.root, image=self.overlay_imagetk,
-                                      height=h, width=w, command=self.select_overlay)
+                                      height=h, width=w,
+                                      command=self.select_overlay)
             self.overlay_btn.place(x=2, y=2 * LEFT_DY)
             self.overlay_btn.configure(background= 'black')
 
-            ## text
-            overlay_text = Image.open(TEXT_OVERLAY_BUTTON)
-            w,h = overlay_text.size
-            self.overlay_texttk = ImageTk.PhotoImage(overlay_text)
-            self.overlay_btn = Button(self.root, image=self.overlay_texttk,
-                                      height=h, width=w,
-                                      command=self.callback_wrapper(
-                                          'normal', self.annotate))
-            self.overlay_btn.place(x=2, y=3 * LEFT_DY)
-            self.overlay_btn.configure(background= 'black')
+            if config.enable_annotations:
+                ## text
+                overlay_text = Image.open(TEXT_OVERLAY_BUTTON)
+                w,h = overlay_text.size
+                self.overlay_texttk = ImageTk.PhotoImage(overlay_text)
+                self.overlay_text_btn = Button(
+                    self.root, image=self.overlay_texttk,
+                    height=h, width=w,
+                    command=self.callback_wrapper(
+                        'normal', self.annotate))
+                self.overlay_text_btn.place(x=2, y=3 * LEFT_DY)
+                self.overlay_text_btn.configure(background= 'black')
             
 
         #Create sendprint button
@@ -520,7 +526,7 @@ class UserInterface():
                 xx = self.size[0] - BUTTON_SIZE
                 yy = orders[i] * dy
                 effect = effects[i]
-                print('button order', i, orders[i], effect)
+                # print('button order', i, orders[i], effect)
                 effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
                 w,h = self.software_buttons_images[effect]['size']
                 tkimage = self.software_buttons_images[effect]['image']
@@ -549,9 +555,10 @@ class UserInterface():
 
 
         #Callback for long-press on screen
-        def longpress_cb(time):
+        def longpress_cb(event):
             #Create a toplevel window with checkboxes and a "Quit application button"
             top = Toplevel(self.root)
+            top.geometry('+%d+%d' % (event.x, event.y))
             qb = Button(top,text="Quit Application",command=self.root.destroy)
             qb.pack(pady=20)
 
