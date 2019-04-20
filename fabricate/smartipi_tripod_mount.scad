@@ -52,7 +52,7 @@ difference(){
 
 //translate([0, 0, -UP])flange_nut(d=7 * inch / 16. * 1.05, D=19 * inch / 32, h=1.5, H=6, UP=UP);
 
-if(false){
+if(true){
   translate([-SEPARATION/2, 0, -3])union(){
     translate([-15/2, -36/2, 0])cube([15, 36, 3]);
     translate([0, 0, -11])rotate([90, 0, 90])gopro_connector("triple");
