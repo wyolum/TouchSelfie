@@ -3,7 +3,7 @@ HEADER;
 FILE_DESCRIPTION(('FreeCAD Model'),'2;1');
 FILE_NAME(
 '/home/anool/projects-git/TouchSelfie/fabricate/enclosure/enclosure_
-step_stl_files/rear_cover_3mm_acrylic.step','2019-04-15T17:15:45',(
+step_stl_files/rear_cover_3mm_acrylic.step','2019-04-20T07:53:47',(
     'Anool'),('Wyolum'),'Open CASCADE STEP processor 7.3','FreeCAD',
   'Unknown');
 FILE_SCHEMA(('AUTOMOTIVE_DESIGN { 1 0 10303 214 1 1 1 1 }'));
