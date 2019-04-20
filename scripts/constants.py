@@ -38,7 +38,7 @@ EFFECTS_PARAMETERS = {
     "None": {
         'snap_size' : (1640,1232), #(width, height) => preferably use integer division of camera resolution
         'logo_size' : 128,         # height in pixels of the logo (will be thumbnailed to this size)
-        'logo_padding' : 32        # bottom and right padding of the logo (pixels)
+        'logo_padding' : 0        # bottom and right padding of the logo (pixels)
     },
     "Four": { 
         'snap_size' : (820,616),                       #(width, height) of each shots of the 2x2 collage
