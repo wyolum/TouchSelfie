@@ -167,6 +167,9 @@ class Assistant(Tk):
             #self.want_printer_val.set(config.selected_printer)
             def on_use_printer(evt):
                 printer_selected = evt.widget
+                if len(printer_selected.curselection()) == 0:
+                    print("No printers found")
+                    return False
                 self.want_printer_val = int(printer_selected.curselection()[0])
                 self.config.selected_printer = self.want_printer_val
                 #value = self.want_printer_val.get(index)

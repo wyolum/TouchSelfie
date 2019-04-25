@@ -268,7 +268,7 @@ class UserInterface():
         self.reset_annotation()
         
     def cancel_annotation(self, event):
-        print('Cancel annotation')
+        self.log.info('Cancel annotation')
         self.reset_annotation()
 
     def reset_annotation(self):
@@ -299,7 +299,7 @@ class UserInterface():
         self.overlay_png = None
 
         self.root = Tk()
-        
+
         ## Auto hide Mouse cursor
         #Events to enable/disable cursor based on motion
         #on_motion() is called on mouse motion and sets a boolean
@@ -558,7 +558,8 @@ class UserInterface():
         def longpress_cb(event):
             #Create a toplevel window with checkboxes and a "Quit application button"
             top = Toplevel(self.root)
-            top.geometry('+%d+%d' % (event.x, event.y))
+            if hasattr(event, 'x'):
+                top.geometry('+%d+%d' % (event.x, event.y))
             qb = Button(top,text="Quit Application",command=self.root.destroy)
             qb.pack(pady=20)
 
@@ -1273,19 +1274,35 @@ class UserInterface():
                 self.tkkb.transient(self.root)
                 self.tkkb.protocol("WM_DELETE_WINDOW", self.kill_tkkb)
 
-
+    def unpause_printing(self):
+        self.print_btn['state'] = 'active'
+    def pause_printing(self, duration):
+        self.print_btn['state'] = 'disabled'
+        self.root.after(1000 * duration, self.unpause_printing)
     def send_print(self):
         self.log.debug("send_print: Printing image")
+        ### DISABLE PRINT BUTTON FOR 10 SECONDS
+        self.pause_printing(10)
         try:
             conn = cups.Connection()
             printers = conn.getPrinters()
-            default_printer = list(printers.keys())[self.selected_printer]#defaults to the first printer installed
+            
+            #defaults to the first printer installed
+            if self.selected_printer is None:
+                raise ValueError("No printer selected")
+            default_printer = list(printers.keys())[self.selected_printer]
             cups.setUser(getpass.getuser())
-            conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
+            printid = conn.printFile(default_printer,
+                                     self.last_picture_filename,
+                                     self.last_picture_title,
+                                     {'fit-to-page':'True'})
+            self.log.info("job-state",
+                          conn.getJobAttributes(printid)['job-state'])
             self.log.info('send_print: Sending to printer...')
+            self.status("Print succeeded :-)")
         except:
             self.log.exception('print failed')
-            self.status("Print failed :(")
+            self.status("Print failed :-(")
         self.log.info("send_print: Image printed")
 
 
