@@ -30,13 +30,8 @@ import numpy
 LARGE_IMAGE_FONTSIZE = 64
 SMALL_IMAGE_FONTSIZE = 48
 
-IMAGE_FONTSIZE = SMALL_IMAGE_FONTSIZE
+IMAGE_FONTSIZE = LARGE_IMAGE_FONTSIZE
 assert os.path.exists('ressources/fonts/tomsontalks.ttf')
-
-annotation_image_font = ImageFont.truetype(
-    "ressources/fonts/tomsontalks.ttf",
-    IMAGE_FONTSIZE,
-    encoding="unic")
 
 BUTTON_SIZE = 72
 
@@ -162,7 +157,16 @@ class UserInterface():
         i = img_x
         ## look backwards for color in change
 
-        font = annotation_image_font
+        if self.last_image_mode == 'four':
+            font = ImageFont.truetype(
+            "ressources/fonts/tomsontalks.ttf",
+            SMALL_IMAGE_FONTSIZE,
+            encoding="unic")
+        else:
+            font = ImageFont.truetype(
+            "ressources/fonts/tomsontalks.ttf",
+            LARGE_IMAGE_FONTSIZE,
+            encoding="unic")
         
         while i > 0:
             colors = row[:,i]
@@ -188,10 +192,10 @@ class UserInterface():
             pylab.gca().invert_yaxis()
             pylab.show()
         length = ending_x - starting_x
-        draw.rectangle(((starting_x, img_y),
-                      (ending_x, img_y -
-                       IMAGE_FONTSIZE * 2 // 3)),
-                     fill=(64, 128, 128))
+        #draw.rectangle(((starting_x, img_y),
+        #              (ending_x, img_y -
+        #               IMAGE_FONTSIZE * 2 // 3)),
+        #             fill=(64, 128, 128))
 
         set_text = ''
         words = text.split()
@@ -285,6 +289,7 @@ class UserInterface():
             log_level : amount of log (see python module 'logging')
         """
         self.mode = 'normal'
+        self.last_image_mode = 'None'
         self.cloud_overlay_image = None
         self.log = logging.getLogger("user_interface")
         self.log_level = log_level
@@ -729,8 +734,9 @@ class UserInterface():
             self.camera.start_preview()
             # 2. Show initial countdown
             # 3. Take snaps and combine them
+            self.last_image_mode = mode
             if mode == 'None':
-                self.overlay_png = config.logo_file
+                #self.overlay_png = config.logo_file
                 self.log.debug("snap: single picture")
                 self.__show_countdown(config.countdown1,annotate_size = 160,
                                       show_overlay=True)
@@ -1164,6 +1170,7 @@ class UserInterface():
                                self.overlay_png)
             else:
                 selected_overlay_image = Image.open(self.overlay_png)
+                print("self.overlay_png", self.overlay_png)
                 ww, hh = selected_overlay_image.size
                 print('overlay countdown', show_overlay, NW)
                 print(ww, hh)
