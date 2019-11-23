@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 
 fn = "/sys/class/backlight/rpi_backlight/brightness"
 
