@@ -502,6 +502,9 @@ class UserInterface():
 
                 except Exception, e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
+                                
+                self.status("")
+                snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: saving snapshot")
                 snap_filename = 'snapshot.jpg'
                 snapshot.save(snap_filename)
