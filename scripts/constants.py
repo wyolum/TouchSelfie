@@ -36,12 +36,11 @@ SCREEN_H = 480 ## raspi touch
 # Animation : animated gif
 EFFECTS_PARAMETERS = {
     "None": {
-        'snap_size' : (1640,1232), #(width, height) => preferably use integer division of camera resolution
-        'logo_size' : 128,         # height in pixels of the logo (will be thumbnailed to this size)
-        'logo_padding' : 32        # bottom and right padding of the logo (pixels)
+        'snap_size' : (3280,2464), #(width, height) => preferably use integer division of camera resolution
+        'foreground_image' : "../logos/single_square_logo.png"
     },
     "Four": { 
-        'snap_size' : (820,616),                       #(width, height) of each shots of the 2x2 collage
+        'snap_size' : (1640,1232),                       #(width, height) of each shots of the 2x2 collage
         'foreground_image' : "../logos/collage_four_square_logo.png" # Overlay image on top of the collage
     },
     "Nine": { 
@@ -69,7 +68,7 @@ SOFTWARE_BUTTONS = {
     "None": {
         "icon" : os.path.join("ressources","ic_portrait.png"),
         "order":0
-        }
+    #     },
     # "Animation": {
     #     "icon" : os.path.join("ressources","ic_anim.png"),
     #     "order":3
