@@ -62,17 +62,17 @@ SOFTWARE_BUTTONS = {
         "icon" : os.path.join("ressources","ic_four.png"),
         "order":1
         },
-    "Nine": {
-        "icon" : os.path.join("ressources","ic_nine.png"),
-        "order":2
-        },
+    # "Nine": {
+    #     "icon" : os.path.join("ressources","ic_nine.png"),
+    #     "order":2
+    #     },
     "None": {
         "icon" : os.path.join("ressources","ic_portrait.png"),
         "order":0
-        },
-    "Animation": {
-        "icon" : os.path.join("ressources","ic_anim.png"),
-        "order":3
+        }
+    # "Animation": {
+    #     "icon" : os.path.join("ressources","ic_anim.png"),
+    #     "order":3
         }
 }
 
