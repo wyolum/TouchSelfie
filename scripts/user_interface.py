@@ -492,6 +492,7 @@ class UserInterface():
                                 #paste the collage enveloppe if it exists
                 try:
                     self.log.debug("snap: Adding  the collage cover")
+                    size = snapshot.size
                     front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
                     front = front.resize((size[0],size[1]))
                     front = front.convert('RGBA')
