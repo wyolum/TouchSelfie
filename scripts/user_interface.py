@@ -493,7 +493,7 @@ class UserInterface():
                 try:
                     self.log.debug("snap: Adding  the collage cover")
                     front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
-                    front = front.resize((w_,h_))
+                    front = front.resize((size[0],size[1]))
                     front = front.convert('RGBA')
                     snapshot = snapshot.convert('RGBA')
                     #print snapshot
