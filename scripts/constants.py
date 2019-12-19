@@ -36,7 +36,7 @@ SCREEN_H = 480 ## raspi touch
 # Animation : animated gif
 EFFECTS_PARAMETERS = {
     "None": {
-        'snap_size' : (6560,4928), #(width, height) => preferably use integer division of camera resolution
+        'snap_size' : (3280,2464), #(width, height) => preferably use integer division of camera resolution
         'foreground_image' : "../logos/single_square_logo.png"
     },
     "Four": { 
