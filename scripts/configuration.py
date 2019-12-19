@@ -7,7 +7,7 @@ class Configuration():
     # default values
     user_name = None
     logo_file = None
-    countdown1  = 5 # seconds of preview before first snap
+    countdown1  = 10 # seconds of preview before first snap
     countdown2  = 3 # seconds of preview between snaps (Four pictures mode)
     photoCaption = "" # Caption in the photo album
     ARCHIVE      = True # Do we archive photos locally
