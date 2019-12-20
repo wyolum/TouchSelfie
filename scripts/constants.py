@@ -36,11 +36,11 @@ SCREEN_H = 480 ## raspi touch
 # Animation : animated gif
 EFFECTS_PARAMETERS = {
     "None": {
-        'snap_size' : (3240,2160), #(width, height) => preferably use integer division of camera resolution
+        'snap_size' : (3280,2464), #(width, height) => preferably use integer division of camera resolution
         'foreground_image' : "../logos/single_square_logo.png"
     },
     "Four": { 
-        'snap_size' : (2160,1440),                       #(width, height) of each shots of the 2x2 collage
+        'snap_size' : (3280,2464),                       #(width, height) of each shots of the 2x2 collage
         'foreground_image' : "../logos/collage_four_square_logo.png" # Overlay image on top of the collage
     },
     "Nine": { 
