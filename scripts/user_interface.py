@@ -489,6 +489,23 @@ class UserInterface():
                         snapshot.paste(config.logo,(xoff, yoff), config.logo)
                     except Exception as e:
                         self.log.warning("Could not add logo to image : %r"%e)
+                                #paste the collage enveloppe if it exists
+                try:
+                    self.log.debug("snap: Adding  the collage cover")
+                    size = snapshot.size
+                    front = Image.open(EFFECTS_PARAMETERS[mode]['foreground_image'])
+                    front = front.resize((size[0],size[1]))
+                    front = front.convert('RGBA')
+                    snapshot = snapshot.convert('RGBA')
+                    #print snapshot
+                    #print front
+                    snapshot=Image.alpha_composite(snapshot,front)
+
+                except Exception, e:
+                    self.log.error("snap: unable to paste collage cover: %s"%repr(e))
+                                
+                self.status("")
+                snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: saving snapshot")
                 snap_filename = 'snapshot.jpg'
                 snapshot.save(snap_filename)
