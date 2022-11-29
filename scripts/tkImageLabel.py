@@ -5,7 +5,7 @@ This is borrowed (and adapted) from Novel code here:
 https://stackoverflow.com/questions/43770847/play-an-animated-gif-in-python-with-tkinter
 Thanks!
 '''
-from Tkinter import *
+from tkinter import *
 from PIL import ImageTk,Image
 from itertools import count
 import logging
