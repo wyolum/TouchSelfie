@@ -965,7 +965,8 @@ class UserInterface():
         try:
             conn = cups.Connection()
             printers = conn.getPrinters()
-            default_printer = list(printers.keys())[self.selected_printer]#defaults to the first printer installed
+            printer_index = int(self.selected_printer) #defaults to the first printer installed
+            default_printer = list(printers.keys())[printer_index]
             cups.setUser(getpass.getuser())
             conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
             self.log.info('send_print: Sending to printer...')
