@@ -60,18 +60,22 @@ EFFECTS_PARAMETERS = {
 SOFTWARE_BUTTONS = {
     "Four": {
         "icon" : os.path.join("ressources","ic_four.png"),
+        "enabled": True,
         "order":1
         },
     "Nine": {
         "icon" : os.path.join("ressources","ic_nine.png"),
+        "enabled": True,
         "order":2
         },
     "None": {
         "icon" : os.path.join("ressources","ic_portrait.png"),
+        "enabled": True,
         "order":0
         },
     "Animation": {
         "icon" : os.path.join("ressources","ic_anim.png"),
+        "enabled": True,
         "order":3
         }
 }

@@ -21,6 +21,8 @@ class Configuration():
     full_screen  = True #Start application in full screen
     enable_email  = True #Enable the 'send email" feature
     enable_upload = True #Enable the upload feature
+    enable_nine_button = True #Enable the nine photo collage feature
+    enable_anim_button = True #Enable the animation feature
     enable_print = False #Enable the printer feature
     enable_effects = True
     selected_printer = None #No printer select
@@ -73,6 +75,8 @@ class Configuration():
         if "full_screen" in list(config.keys()):  self.full_screen = config["full_screen"]
         if "enable_email" in list(config.keys()):  self.enable_email = config["enable_email"]
         if "enable_upload" in list(config.keys()):  self.enable_upload = config["enable_upload"]
+        if "enable_nine_button" in list(config.keys()):  self.enable_nine_button = config["enable_nine_button"]
+        if "enable_anim_button" in list(config.keys()):  self.enable_anim_button = config["enable_anim_button"]
         if "enable_print" in list(config.keys()): self.enable_print = config["enable_print"]
         if "enable_effects" in list(config.keys()): self.enable_effects = config["enable_effects"]
         if "selected_printer" in list(config.keys()): self.selected_printer = config["selected_printer"]
@@ -102,6 +106,8 @@ class Configuration():
             "full_screen": self.full_screen,
             "enable_email": self.enable_email,
             "enable_upload": self.enable_upload,
+            "enable_nine_button": self.enable_nine_button,
+            "enable_anim_button": self.enable_anim_button,
             "enable_print": self.enable_print,
             "enable_effects": self.enable_effects,
             "selected_printer": self.selected_printer,

@@ -136,7 +136,13 @@ class UserInterface():
         send_prints = config.enable_print
         image_effects = config.enable_effects
         selected_printer = config.selected_printer
-
+        nine_button_enabled = config.enable_nine_button
+        anim_button_enabled = config.enable_anim_button
+        
+        ## Enable/Disable software buttons
+        SOFTWARE_BUTTONS['Nine']['enabled'] = nine_button_enabled
+        SOFTWARE_BUTTONS['Animation']['enabled'] = anim_button_enabled
+        
         self.root = Tk()
 
         ## Auto hide Mouse cursor
@@ -300,14 +306,15 @@ class UserInterface():
             total_width = 0
             # first, open images and load them + compute the total width
             for i, effect in enumerate(SOFTWARE_BUTTONS):
-                self.log.debug("    adding %s" % effect)
-                effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
-                w,h = effect_image.size
-                tkimage = ImageTk.PhotoImage(effect_image)
-                self.software_buttons_images[effect] = {}
-                self.software_buttons_images[effect]['image'] = tkimage
-                self.software_buttons_images[effect]['size'] = (w,h)
-                total_width = total_width + w
+                if SOFTWARE_BUTTONS[effect]['enabled']:
+                    self.log.debug("    adding %s" % effect)
+                    effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
+                    w,h = effect_image.size
+                    tkimage = ImageTk.PhotoImage(effect_image)
+                    self.software_buttons_images[effect] = {}
+                    self.software_buttons_images[effect]['image'] = tkimage
+                    self.software_buttons_images[effect]['size'] = (w,h)
+                    total_width = total_width + w
             #we have the total size, compute padding
             padding = int((self.size[0] - total_width) / (len(SOFTWARE_BUTTONS) - 1))
             # decurrying of callback parameter
@@ -319,18 +326,19 @@ class UserInterface():
 
             effects = list(SOFTWARE_BUTTONS.keys())
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
-            for i in argsort(orders):
+            for i in argsort(orders):                
                 effect = effects[i]
-                effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
-                w,h = self.software_buttons_images[effect]['size']
-                Y = self.size[1] - h
-                tkimage = self.software_buttons_images[effect]['image']
+                if SOFTWARE_BUTTONS[effect]['enabled']:
+                    effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
+                    w,h = self.software_buttons_images[effect]['size']
+                    Y = self.size[1] - h
+                    tkimage = self.software_buttons_images[effect]['image']
 
-                btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
-                self.software_buttons.append(btn)
-                btn.place(x=X_,y=Y)
-                btn.configure(background = 'black')
-                X_ = X_ + w + padding
+                    btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
+                    self.software_buttons.append(btn)
+                    btn.place(x=X_,y=Y)
+                    btn.configure(background = 'black')
+                    X_ = X_ + w + padding
 
         #Camera
         self.camera = mycamera.PiCamera()
