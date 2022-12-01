@@ -672,10 +672,9 @@ class UserInterface():
                             # Try to write the picture we've just taken to ALL plugged-in usb keys
                             if config.archive_to_all_usb_drives:
                                 self.log.info("Archiving to USB keys")
-                                try:
-                                    usb_mount_point_root = "/media/pi/"
+                                try:                                    
                                     import os
-                                    root, dirs, files = next(os.walk(usb_mount_point_root))
+                                    root, dirs, files = next(os.walk(config.usb_mount_point_root))
                                     for directory in dirs:
                                         mountpoint = os.path.join(root,directory)
                                         if mountpoint.find("SETTINGS") != -1:

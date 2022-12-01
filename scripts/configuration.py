@@ -13,6 +13,7 @@ class Configuration():
     ARCHIVE      = True # Do we archive photos locally
     archive_dir  = os.path.join("..","Photos") # Where do we archive photos
     archive_to_all_usb_drives  = True
+    usb_mount_point_root = "/media/pi/"
     albumID      = None #  use install_credentials.py to create 'album.id'
     album_name   = "Drop Box"
     emailSubject = "Here's your photo!" # subject line of the email sent from the photobooth
@@ -62,6 +63,7 @@ class Configuration():
         if "snap_caption" in list(config.keys()):  self.photoCaption = config["snap_caption"]
         if "local_archive" in list(config.keys()):  self.ARCHIVE = config["local_archive"]
         if "archive_to_all_usb_drives" in list(config.keys()):  self.archive_to_all_usb_drives = config["archive_to_all_usb_drives"]
+        if "usb_mount_point_root" in list(config.keys()):  self.usb_mount_point_root = config["usb_mount_point_root"]
         if "local_archive_dir" in list(config.keys()):  self.archive_dir = config["local_archive_dir"]
         if "google_photo_album_id" in list(config.keys()):  self.albumID = config["google_photo_album_id"]
         if "google_photo_album_name" in list(config.keys()): self.album_name = config["google_photo_album_name"]
@@ -90,6 +92,7 @@ class Configuration():
             "snap_caption": self.photoCaption,
             "local_archive" : self.ARCHIVE,
             "archive_to_all_usb_drives" : self.archive_to_all_usb_drives,
+            "usb_mount_point_root" : self.usb_mount_point_root,
             "local_archive_dir" : self.archive_dir,
             "google_photo_album_id" : self.albumID,
             "google_photo_album_name" : self.album_name,
