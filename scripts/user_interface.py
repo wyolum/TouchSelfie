@@ -13,8 +13,8 @@ logging.basicConfig(format='%(asctime)s|%(name)-16s| %(levelname)-8s| %(message)
             filemode='w',
             level = logging.DEBUG)
 
-from Tkinter import *
-import tkMessageBox
+from tkinter import *
+import tkinter.messagebox
 from PIL import ImageTk,Image
 #from tkkb import Tkkb
 from mykb import TouchKeyboard, email_validator
@@ -27,7 +27,7 @@ import re
 def argsort(seq):
     #http://stackoverflow.com/questions/3382352/equivalent-of-numpy-argsort-in-basic-python/3382369#3382369
     #by unutbu
-    return sorted(range(len(seq)), key=seq.__getitem__)
+    return sorted(list(range(len(seq))), key=seq.__getitem__)
     
 def shuffle(l, swaps=50):
     import random
@@ -58,7 +58,7 @@ try:
     import hardware_buttons as HWB
 except ImportError:
     log.error("Error importing hardware_buttons, using fakehardware instead")
-    print traceback.print_exc()
+    print(traceback.print_exc())
     import fakehardware as HWB
 
 try:
@@ -136,7 +136,13 @@ class UserInterface():
         send_prints = config.enable_print
         image_effects = config.enable_effects
         selected_printer = config.selected_printer
-
+        nine_button_enabled = config.enable_nine_button
+        anim_button_enabled = config.enable_anim_button
+        
+        ## Enable/Disable software buttons
+        SOFTWARE_BUTTONS['Nine']['enabled'] = nine_button_enabled
+        SOFTWARE_BUTTONS['Animation']['enabled'] = anim_button_enabled
+        
         self.root = Tk()
 
         ## Auto hide Mouse cursor
@@ -167,7 +173,7 @@ class UserInterface():
 
         ## Bind keyboard keys to actions
         def install_key_binding(action,function):
-            if action in ACTIONS_KEYS_MAPPING.keys():
+            if action in list(ACTIONS_KEYS_MAPPING.keys()):
                 for key in ACTIONS_KEYS_MAPPING[action]:
                     self.log.debug("Installing keybinding '%s' for action '%s'"%(key,action))
                     self.root.bind(key,function)
@@ -300,14 +306,15 @@ class UserInterface():
             total_width = 0
             # first, open images and load them + compute the total width
             for i, effect in enumerate(SOFTWARE_BUTTONS):
-                self.log.debug("    adding %s" % effect)
-                effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
-                w,h = effect_image.size
-                tkimage = ImageTk.PhotoImage(effect_image)
-                self.software_buttons_images[effect] = {}
-                self.software_buttons_images[effect]['image'] = tkimage
-                self.software_buttons_images[effect]['size'] = (w,h)
-                total_width = total_width + w
+                if SOFTWARE_BUTTONS[effect]['enabled']:
+                    self.log.debug("    adding %s" % effect)
+                    effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
+                    w,h = effect_image.size
+                    tkimage = ImageTk.PhotoImage(effect_image)
+                    self.software_buttons_images[effect] = {}
+                    self.software_buttons_images[effect]['image'] = tkimage
+                    self.software_buttons_images[effect]['size'] = (w,h)
+                    total_width = total_width + w
             #we have the total size, compute padding
             padding = int((self.size[0] - total_width) / (len(SOFTWARE_BUTTONS) - 1))
             # decurrying of callback parameter
@@ -317,20 +324,21 @@ class UserInterface():
                         self.snap(effect)
                 return snap_fun
 
-            effects = SOFTWARE_BUTTONS.keys()
+            effects = list(SOFTWARE_BUTTONS.keys())
             orders = [SOFTWARE_BUTTONS[effect]["order"] for effect in effects]
-            for i in argsort(orders):
+            for i in argsort(orders):                
                 effect = effects[i]
-                effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
-                w,h = self.software_buttons_images[effect]['size']
-                Y = self.size[1] - h
-                tkimage = self.software_buttons_images[effect]['image']
+                if SOFTWARE_BUTTONS[effect]['enabled']:
+                    effect_image = Image.open(SOFTWARE_BUTTONS[effect]['icon'])
+                    w,h = self.software_buttons_images[effect]['size']
+                    Y = self.size[1] - h
+                    tkimage = self.software_buttons_images[effect]['image']
 
-                btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
-                self.software_buttons.append(btn)
-                btn.place(x=X_,y=Y)
-                btn.configure(background = 'black')
-                X_ = X_ + w + padding
+                    btn = Button(self.root, image=tkimage, width = w, height= h, command=snap_factory(effect))
+                    self.software_buttons.append(btn)
+                    btn.place(x=X_,y=Y)
+                    btn.configure(background = 'black')
+                    X_ = X_ + w + padding
 
         #Camera
         self.camera = mycamera.PiCamera()
@@ -419,7 +427,22 @@ class UserInterface():
             elif btn_state == 3:
                 self.snap("Animation")
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
-
+   
+    def insert_logo(self, config, snapshot):
+         if config.enable_logo and config.logo is not None :
+                    try:
+                        size = snapshot.size
+                        ### resize logo to the wanted size### TJS: I like to make logos the correct size to start with.
+                        # config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
+                        logo_size = config.logo.size
+                        #put logo on bottom right with padding
+                        yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        self.log.debug("snap: adding logo '%s @ (%d, %d)'" % (config.logo_file, xoff, yoff))
+                        snapshot.paste(config.logo,(xoff, yoff), config.logo)
+                    except Exception as e:
+                        self.log.warning("Could not add logo to image : %r"%e)
+                        
     def snap(self,mode="None"):
         """Snap a shot in given mode
 
@@ -441,7 +464,7 @@ class UserInterface():
         picture_saved = False
         picture_uploaded = False
 
-        if mode not in EFFECTS_PARAMETERS.keys():
+        if mode not in list(EFFECTS_PARAMETERS.keys()):
             self.log.error("Wrong effectmode %s defaults to 'None'" % mode)
             mode = "None"
 
@@ -476,19 +499,8 @@ class UserInterface():
 
                 snapshot = Image.open('snapshot.jpg')
                 picture_taken = True
-                if config.logo is not None :
-                    try:
-                        size = snapshot.size
-                        ### resize logo to the wanted size### TJS: I like to make logos the correct size to start with.
-                        # config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
-                        logo_size = config.logo.size
-                        #put logo on bottom right with padding
-                        yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
-                        xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
-                        self.log.debug("snap: adding logo '%s @ (%d, %d)'" % (config.logo_file, xoff, yoff))
-                        snapshot.paste(config.logo,(xoff, yoff), config.logo)
-                    except Exception as e:
-                        self.log.warning("Could not add logo to image : %r"%e)
+                self.insert_logo(config, snapshot)
+                
                 self.log.debug("snap: saving snapshot")
                 snap_filename = 'snapshot.jpg'
                 snapshot.save(snap_filename)
@@ -532,10 +544,10 @@ class UserInterface():
                     #print front
                     snapshot=Image.alpha_composite(snapshot,front)
 
-                except Exception, e:
+                except Exception as e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
 
-
+                self.insert_logo(config, snapshot)
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
@@ -553,7 +565,7 @@ class UserInterface():
                 h_ = h * 3
                 # take 9 photos and merge into one image.
                 self.__show_countdown(config.countdown1,annotate_size = 80)
-                effects_keys = IMAGE_EFFECTS.keys()
+                effects_keys = list(IMAGE_EFFECTS.keys())
                 shuffle(effects_keys[1:])
                 effects_keys.insert(4, 'none')
                 for i in range(9):
@@ -585,8 +597,10 @@ class UserInterface():
                     #print front
                     snapshot=Image.alpha_composite(snapshot,front)
 
-                except Exception, e:
+                except Exception as e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
+                
+                self.insert_logo(config, snapshot)
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
@@ -672,10 +686,9 @@ class UserInterface():
                             # Try to write the picture we've just taken to ALL plugged-in usb keys
                             if config.archive_to_all_usb_drives:
                                 self.log.info("Archiving to USB keys")
-                                try:
-                                    usb_mount_point_root = "/media/pi/"
+                                try:                                    
                                     import os
-                                    root, dirs, files = next(os.walk(usb_mount_point_root))
+                                    root, dirs, files = next(os.walk(config.usb_mount_point_root))
                                     for directory in dirs:
                                         mountpoint = os.path.join(root,directory)
                                         if mountpoint.find("SETTINGS") != -1:
@@ -727,7 +740,7 @@ class UserInterface():
                 self.status("Snap failed :(")
                 self.log.critical("snap: snapshot file doesn't exists: %s"%snap_filename)
                 self.image.unload()
-        except Exception, e:
+        except Exception as e:
 
             #traceback.print_exc()
             self.log.exception("snap: error during snapshot")
@@ -965,7 +978,8 @@ class UserInterface():
         try:
             conn = cups.Connection()
             printers = conn.getPrinters()
-            default_printer = printers.keys()[self.selected_printer]#defaults to the first printer installed
+            printer_index = int(self.selected_printer) #defaults to the first printer installed
+            default_printer = list(printers.keys())[printer_index]
             cups.setUser(getpass.getuser())
             conn.printFile(default_printer, self.last_picture_filename, self.last_picture_title, {'fit-to-page':'True'})
             self.log.info('send_print: Sending to printer...')
@@ -998,7 +1012,7 @@ class UserInterface():
                     config.emailSubject,
                     config.emailMsg,
                     self.last_picture_filename)
-            except Exception, e:
+            except Exception as e:
                 self.log.exception('send_picture: Mail sending Failed')
                 self.status("Send failed :(")
                 retcode = False
@@ -1092,7 +1106,8 @@ class UserInterface():
         top.rowconfigure(NROWS+1, weight=1)
         
         self.root.wait_window(top)
-        
+     
+                        
 if __name__ == '__main__':
 
     import argparse
