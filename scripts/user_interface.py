@@ -427,7 +427,22 @@ class UserInterface():
             elif btn_state == 3:
                 self.snap("Animation")
         self.poll_after_id = self.root.after(self.poll_period, self.run_periodically)
-
+   
+    def insert_logo(self, config, snapshot):
+         if config.enable_logo and config.logo is not None :
+                    try:
+                        size = snapshot.size
+                        ### resize logo to the wanted size### TJS: I like to make logos the correct size to start with.
+                        # config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
+                        logo_size = config.logo.size
+                        #put logo on bottom right with padding
+                        yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
+                        self.log.debug("snap: adding logo '%s @ (%d, %d)'" % (config.logo_file, xoff, yoff))
+                        snapshot.paste(config.logo,(xoff, yoff), config.logo)
+                    except Exception as e:
+                        self.log.warning("Could not add logo to image : %r"%e)
+                        
     def snap(self,mode="None"):
         """Snap a shot in given mode
 
@@ -484,19 +499,8 @@ class UserInterface():
 
                 snapshot = Image.open('snapshot.jpg')
                 picture_taken = True
-                if config.logo is not None :
-                    try:
-                        size = snapshot.size
-                        ### resize logo to the wanted size### TJS: I like to make logos the correct size to start with.
-                        # config.logo.thumbnail((EFFECTS_PARAMETERS['None']['logo_size'],EFFECTS_PARAMETERS['None']['logo_size']))
-                        logo_size = config.logo.size
-                        #put logo on bottom right with padding
-                        yoff = size[1] - logo_size[1] - EFFECTS_PARAMETERS['None']['logo_padding']
-                        xoff = size[0] - logo_size[0] - EFFECTS_PARAMETERS['None']['logo_padding']
-                        self.log.debug("snap: adding logo '%s @ (%d, %d)'" % (config.logo_file, xoff, yoff))
-                        snapshot.paste(config.logo,(xoff, yoff), config.logo)
-                    except Exception as e:
-                        self.log.warning("Could not add logo to image : %r"%e)
+                self.insert_logo(config, snapshot)
+                
                 self.log.debug("snap: saving snapshot")
                 snap_filename = 'snapshot.jpg'
                 snapshot.save(snap_filename)
@@ -543,7 +547,7 @@ class UserInterface():
                 except Exception as e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
 
-
+                self.insert_logo(config, snapshot)
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
@@ -595,6 +599,8 @@ class UserInterface():
 
                 except Exception as e:
                     self.log.error("snap: unable to paste collage cover: %s"%repr(e))
+                
+                self.insert_logo(config, snapshot)
                 self.status("")
                 snapshot = snapshot.convert('RGB')
                 self.log.debug("snap: Saving collage")
@@ -1100,7 +1106,8 @@ class UserInterface():
         top.rowconfigure(NROWS+1, weight=1)
         
         self.root.wait_window(top)
-        
+     
+                        
 if __name__ == '__main__':
 
     import argparse

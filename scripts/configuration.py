@@ -6,7 +6,8 @@ class Configuration():
     """Configuration class acts as configuration keys/values holder"""
     # default values
     user_name = None
-    logo_file = None
+    logo_file = "../logos/wyo_logo.png"
+    enable_logo = True
     countdown1  = 5 # seconds of preview before first snap
     countdown2  = 3 # seconds of preview between snaps (Four pictures mode)
     photoCaption = "" # Caption in the photo album
@@ -72,6 +73,7 @@ class Configuration():
         if "email_subject" in list(config.keys()):  self.emailSubject = config["email_subject"]
         if "email_body" in list(config.keys()):  self.emailMsg = config["email_body"]
         if "logo_file" in list(config.keys()):  self.logo_file = config["logo_file"]
+        if "enable_logo" in list(config.keys()):  self.enable_logo = config["enable_logo"]
         if "full_screen" in list(config.keys()):  self.full_screen = config["full_screen"]
         if "enable_email" in list(config.keys()):  self.enable_email = config["enable_email"]
         if "enable_upload" in list(config.keys()):  self.enable_upload = config["enable_upload"]
@@ -103,6 +105,7 @@ class Configuration():
             "email_subject": self.emailSubject,
             "email_body":self.emailMsg,
             "logo_file": self.logo_file,
+            "enable_logo": self.enable_logo,
             "full_screen": self.full_screen,
             "enable_email": self.enable_email,
             "enable_upload": self.enable_upload,

@@ -42,11 +42,11 @@ EFFECTS_PARAMETERS = {
     },
     "Four": { 
         'snap_size' : (820,616),                       #(width, height) of each shots of the 2x2 collage
-        'foreground_image' : "../logos/collage_four_square_logo.png" # Overlay image on top of the collage
+        'foreground_image' : "../logos/collage_four_square.png" # Overlay image on top of the collage
     },
     "Nine": { 
         'snap_size' : (546,410),                       #(width, height) of each shots of the 2x2 collage
-        'foreground_image' : "../logos/collage_nine_square_logo.png" # Overlay image on top of the collage
+        'foreground_image' : "../logos/collage_nine_square.png" # Overlay image on top of the collage
     },
     "Animation": {
         'snap_size' : (500, 500),   #(width, height) => Caution, gif animation can be huge, keep this small
