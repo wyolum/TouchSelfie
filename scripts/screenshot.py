@@ -31,7 +31,7 @@ def snap(delay=0):
     fn = "%4d-%02d-%02d_%02d%02d%02d.jpg" % (Y, M, D, h, m, s)
     fn = os.path.join(pictures, fn)
     ImageGrab.grab().save(fn, "JPEG")
-    print 'saved', fn
+    print('saved', fn)
 
 if __name__ == '__main__':
     snap(delay=5)

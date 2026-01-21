@@ -17,16 +17,16 @@ try:
     import cups
     printer_selection_enable = True
 except ImportError:
-    print "Cups not installed. removing option"
+    print("Cups not installed. removing option")
     printer_selection_enable = False
 
 VALID_ICON_FILE = os.path.join("ressources","ic_valid.png")
 INVALID_ICON_FILE = os.path.join("ressources","ic_invalid.png")
 from PIL import Image as _Image
 from PIL import ImageTk as _ImageTk
-from Tkinter import *
-import tkFileDialog
-import tkMessageBox
+from tkinter import *
+import tkinter.filedialog
+import tkinter.messagebox
 import oauth2services
 
 #URL of the Google console developer assistant to create App_id file
@@ -100,7 +100,7 @@ class Assistant(Tk):
                                 self.use_print_list.insert(END, printer)
                             self.__draw_page()
                         except:
-                            tkMessageBox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
+                            tkinter.messagebox.showerror("Missing Driver","""You need CUPS installed and a printer setup. Please look in the Readme file for a link on how to setup CUPS on your system. The printer option will be disabled for this setup.""")
                             self.__erase_page()
                             self.widgets.pop(0)
                             self.widgets.insert(0,[self.want_email_cb, self.want_upload_cb,self.want_effects_cb, self.use_soft_keyboard_cb])
@@ -130,7 +130,7 @@ class Assistant(Tk):
                 self.want_printer_val = int(printer_selected.curselection()[0])
                 self.config.selected_printer = int(self.want_printer_val)
                 #value = self.want_printer_val.get(index)
-                print 'You selected item %d: ' % (self.want_printer_val)
+                print('You selected item %d: ' % (self.want_printer_val))
 
 
             #checkbutton to choose to use soft keyboard
@@ -256,14 +256,14 @@ class Assistant(Tk):
 
             def select_album():
                 """Popup control to select albums"""
-                print "Album selection"
+                print("Album selection")
                 connected=False
                 try:
                     connected = self.google_service.refresh()
                 except:
                     pass
                 if not connected:
-                    print "Error: impossible to connect to Google\n"
+                    print("Error: impossible to connect to Google\n")
                     return
                 #Create an album selection control
                 top = Toplevel(self,bg='white')
@@ -322,7 +322,7 @@ class Assistant(Tk):
                     #print cursel
                     #print displayed_list_ids
                     #print displayed_list_names
-                    print "selected album '%s' with id '%s'"%(displayed_list_names[cursel],displayed_list_ids[cursel])
+                    print("selected album '%s' with id '%s'"%(displayed_list_names[cursel],displayed_list_ids[cursel]))
                     if displayed_list_names[cursel] == "<Create New>":
                         try:
                             #No album found, create one
@@ -382,9 +382,9 @@ class Assistant(Tk):
             self.archive_dir_entry = Entry(self.main_frame, textvariable=self.archive_dir_var, width = 40, font='Helvetica')
             self.__install_soft_keyboard(self.archive_dir_entry,self.archive_dir_var)
             def change_dir():
-                directory = tkFileDialog.askdirectory(initialdir=self.archive_dir_var.get(), title="Choose directory for snapshots archive")
+                directory = tkinter.filedialog.askdirectory(initialdir=self.archive_dir_var.get(), title="Choose directory for snapshots archive")
                 self.archive_dir_var.set(directory)
-                print "changed dir to %s"%directory
+                print("changed dir to %s"%directory)
 
             self.choose_archive_dir_button = Button(self.main_frame, text="Choose directory", fg='white',bg=self.BUTTONS_BG, font='Helvetica', command=change_dir)
 
@@ -427,11 +427,11 @@ class Assistant(Tk):
         return self.email_body_var.get()
 
     def __remove_app_id(self):
-        print "removing %s"%constants.APP_ID_FILE
+        print("removing %s"%constants.APP_ID_FILE)
         self.__ask_for_removal(constants.APP_ID_FILE,"Are you sure you want to remove the App ID file?\nYou'll need to download it again from your developer's console.")
 
     def __remove_cred_store(self):
-        print "removing %s"%constants.CREDENTIALS_STORE_FILE
+        print("removing %s"%constants.CREDENTIALS_STORE_FILE)
         self.__ask_for_removal(constants.CREDENTIALS_STORE_FILE,"Are you sure you want to remove the credentials storage file?\nYou'll need to authorize your application again.")
 
     def __install_soft_keyboard(self,entry,stringvar):
@@ -447,7 +447,7 @@ class Assistant(Tk):
                     self.soft_keyboard.destroy()
                     self.soft_keyboard = None
             def onEnter(*args):
-                print "updating value"
+                print("updating value")
                 if entry.winfo_class() == 'Text':
                     #copy the content of stringvar that just got modified into the text
                     text_content = stringvar.get()
@@ -462,7 +462,7 @@ class Assistant(Tk):
         entry.bind('<Button-1>',launch_keyboard)
 
     def __get_app_id(self):
-        print "Getting App ID"
+        print("Getting App ID")
         message="""    ________________________________________________________________
 
     Photo upload or email sending requires that you create a
@@ -517,7 +517,7 @@ class Assistant(Tk):
         self.__check_credentials_files()
 
     def __connect_app(self):
-        print "Connecting App"
+        print("Connecting App")
 
         #Create a graphical handler for the authorization
         def auth_handler(URI):
@@ -571,31 +571,31 @@ Click the Start button below:
 
             self.wait_window(top)
             #update displayed
-            print "returning code %s"%auth_code.get()
+            print("returning code %s"%auth_code.get())
             return auth_code.get()
-        print "Trying the connexion"
+        print("Trying the connexion")
         #try to connect
         try:
 
             self.google_service = oauth2services.OAuthServices(constants.APP_ID_FILE,constants.CREDENTIALS_STORE_FILE,self.user_mail_var.get() )
-            print self.google_service.refresh()
+            print(self.google_service.refresh())
         except Exception as error:
             self.google_service = None
-            print error
+            print(error)
             import traceback
             traceback.print_exc()
         self.__check_credentials_files()
 
     def __ask_for_removal(self,file,message):
-        result = tkMessageBox.askquestion("Delete File", message, icon='warning')
+        result = tkinter.messagebox.askquestion("Delete File", message, icon='warning')
         if result == 'yes':
             try:
                 os.remove(file)
-                print "%s deleted"%file
+                print("%s deleted"%file)
             except:
                 pass
         else:
-            print "Canceled"
+            print("Canceled")
         #repaint the control
         self.__check_credentials_files()
 
@@ -737,7 +737,7 @@ Click the Start button below:
             self.packed_widgets.append(w)
 
     def __save_and_exit(self):
-        print "bye!"
+        print("bye!")
         #finally create a personalized script to run the photobooth
         install_dir = os.path.split(os.path.abspath(__file__))[0]
         script_name = os.path.join(os.path.abspath(".."),"photobooth.sh")
@@ -761,7 +761,7 @@ Click the Start button below:
             return
         username = self.user_mail_var.get()
         if self.google_service is None:
-            print "Unable to test service: no connection"
+            print("Unable to test service: no connection")
             return False
 
         # creating test image (a 32x32 image with random color)
@@ -773,10 +773,10 @@ Click the Start button below:
         im = Image.new("RGB", (32, 32), (r,g,b))
         im.save("test_image.png")
         if test_email:
-            print "\nSending a test message to %s"%username
+            print("\nSending a test message to %s"%username)
             self.google_service.send_message(username,self.config.emailSubject,self.config.emailMsg,attachment_file="test_image.png")
         if test_upload:
-            print "\nTesting picture upload in %s's album with id %s:"%(username,self.config.albumID)
+            print("\nTesting picture upload in %s's album with id %s:"%(username,self.config.albumID))
 
             self.google_service.upload_picture("test_image.png", album_id = self.config.albumID)
 
@@ -799,7 +799,7 @@ def graphical_assistant():
 def console_assistant():
     """Launches the text-based interface"""
 
-    print """
+    print("""
     ________________________________________________________________
 
     Welcome to the installation assistant!
@@ -807,7 +807,7 @@ def console_assistant():
     credentials
     ________________________________________________________________
 
-    """
+    """)
     install_dir = os.path.split(os.path.abspath(__file__))[0]
 
 
@@ -817,14 +817,14 @@ def console_assistant():
 
 
     config.enable_email = ask_boolean("Do you want the 'send photo by email' feature?",config.enable_email)
-    print ""
+    print("")
     config.enable_upload = ask_boolean("Do you want the 'auto-upload photos' feature?",config.enable_upload)
-    print ""
+    print("")
     config.enable_effects = ask_boolean("Do you want the 'Photos effects' feature?",config.enable_effects)
-    print ""
+    print("")
     if printer_selection_enable == True:
         config.enable_print = ask_boolean("Do you want the 'Send photo to printer' feature?", config.enable_print)
-        print ""
+        print("")
         if config.enable_print == True:
             conn = cups.Connection()
             printers = conn.getPrinters()
@@ -832,13 +832,13 @@ def console_assistant():
             selectedindex = 0
             for printer in printers:
                 if config.selected_printer == str(index):
-                    print '[*] ['+str(index)+'] '+printer
+                    print('[*] ['+str(index)+'] '+printer)
                     selectedindex = index
                 else:
-                    print '[ ] ['+str(index)+'] '+printer
+                    print('[ ] ['+str(index)+'] '+printer)
                 index = index + 1
-            config.selected_printer = raw_input("Seleted printer: [%s] confirm or change =>" % config.selected_printer)
-            if config.selected_printer is "": config.selected_printer = selectedindex
+            config.selected_printer = input("Seleted printer: [%s] confirm or change =>" % config.selected_printer)
+            if config.selected_printer == "": config.selected_printer = selectedindex
 
     want_email  = config.enable_email
     want_upload = config.enable_upload
@@ -852,7 +852,7 @@ def console_assistant():
     config.write()
     if need_credentials:
         # Check for user account
-        _username = raw_input("Google account: [%s] confirm or change => " % config.user_name)
+        _username = input("Google account: [%s] confirm or change => " % config.user_name)
         if _username != "":
             config.user_name = _username.strip()
             config.write()
@@ -860,9 +860,9 @@ def console_assistant():
         app_id     = os.path.join(install_dir,constants.APP_ID_FILE)
 
         if os.path.exists(app_id):
-            print "\n** found %s application file, will use it (remove in case of problems)"%constants.APP_ID_FILE
+            print("\n** found %s application file, will use it (remove in case of problems)"%constants.APP_ID_FILE)
         else:
-            print """
+            print("""
     ________________________________________________________________
 
     Photo upload or email sending requires that you create a
@@ -889,79 +889,79 @@ def console_assistant():
 
     The installation program will now exit.
     Run it again once this is done
-    """%(app_id)
+    """%(app_id))
             sys.exit()
 
         # We do have the client_id !
 
         cred_store = os.path.join(install_dir,constants.CREDENTIALS_STORE_FILE)
         if os.path.exists(cred_store):
-            print "\n** Found %s credential store"%constants.CREDENTIALS_STORE_FILE
-            remove_file = to_boolean(raw_input("If you have troubles connecting you may want to remove this file\nRemove ? [N/y] => "),False)
+            print("\n** Found %s credential store"%constants.CREDENTIALS_STORE_FILE)
+            remove_file = to_boolean(input("If you have troubles connecting you may want to remove this file\nRemove ? [N/y] => "),False)
             if remove_file:
                 try:
                     os.remove(cred_store)
                 except:
                     import traceback
                     traceback.print_exc()
-                    print "\n==> Problem removing %s file, please do it on your side and run this assistant again\n"%cred_store
+                    print("\n==> Problem removing %s file, please do it on your side and run this assistant again\n"%cred_store)
                     sys.exit()
 
         # prepare the validation callback in case of missing or invalid credential store
         import webbrowser
         def auth_callback(authorization_uri):
-            print "\n%s file is missing or invalid"%cred_store
-            print """
+            print("\n%s file is missing or invalid"%cred_store)
+            print("""
     _________________________________________________________________
 
     You must authorize this application to access your data
     I will now open a web browser to complete the validation process
     Once this is done, you will get a validation key that you must
     paste below
-    _________________________________________________________________"""
-            raw_input("Press a key when ready...")
+    _________________________________________________________________""")
+            input("Press a key when ready...")
             webbrowser.open(authorization_uri)
-            mycode = raw_input('\n[validation code]: ').strip()
+            mycode = input('\n[validation code]: ').strip()
             return mycode
 
 
         import oauth2services
         try:
-            print "\n** Connecting..."
+            print("\n** Connecting...")
             service = oauth2services.OAuthServices(app_id,cred_store,config.user_name)
             connected = service.refresh() # will call 'auth_callback' if needed
-            print "... Done"
+            print("... Done")
         except Exception as error:
-            print error
-            print "\n==> Connection failed :("
+            print(error)
+            print("\n==> Connection failed :(")
             sys.exit()
 
         if not connected:
-            print "\nThere was an error during the connection"
-            print "Please check your network connection and/or reauthorize this application"
-            print "Exiting..."
+            print("\nThere was an error during the connection")
+            print("Please check your network connection and/or reauthorize this application")
+            print("Exiting...")
             sys.exit()
 
 
        
         if config.albumID != None:
-            keep_album = to_boolean(raw_input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
+            keep_album = to_boolean(input("Photo Album is configured (%s), do you want to keep it? [Y/n] => "%config.album_name))
             change_album_id = not keep_album
         else:
-            print "\nNo photo album selected, images will be uploaded to\nGoogle Photo Library (No Album)"
-            change_album_id = to_boolean(raw_input("\nDo you want to select another album for upload? [N/y] => "))
+            print("\nNo photo album selected, images will be uploaded to\nGoogle Photo Library (No Album)")
+            change_album_id = to_boolean(input("\nDo you want to select another album for upload? [N/y] => "))
 
         if change_album_id:
             try:
-                print "\nDownloading %s albums list..."% config.user_name
+                print("\nDownloading %s albums list..."% config.user_name)
                 albums = service.get_user_albums()
-                print "... %d albums found"%(len(albums))
+                print("... %d albums found"%(len(albums)))
                 candidates    = []
                 candidates_id = []
                 album_title = None
                 album_id    = None
                 while True:
-                    search_string = raw_input("Type a part of an existing album name (or return for all): ")
+                    search_string = input("Type a part of an existing album name (or return for all): ")
                     search_string = search_string.lower()
                     candidates    = ["<No Album>","<Create New>"]
                     candidates_id = ["","<New>"]
@@ -973,21 +973,21 @@ def console_assistant():
                             candidates.append(title)
                             candidates_id.append(id)
                     if len(candidates) == 0:
-                        print "Sorry: no match\n"
+                        print("Sorry: no match\n")
                     else:
                         break
-                print "Here's the album that match:"
+                print("Here's the album that match:")
                 for i, title in enumerate(candidates):
-                    print "[%3d] %s"%(i,title)
+                    print("[%3d] %s"%(i,title))
 
                 while True:
-                    album_num = raw_input("Type album number => ")
+                    album_num = input("Type album number => ")
                     try:
                         album_title = candidates[int(album_num)]
                         album_id = candidates_id[int(album_num)]
                         break
                     except:
-                        print "Bad album number!"
+                        print("Bad album number!")
                 if album_id == "":
                     config.albumID = None
                 elif album_id == "<New>":
@@ -997,21 +997,21 @@ def console_assistant():
                     config.albumID = album_id
                 config.album_name = album_title
                 config.write()
-                print "\nAlbum '%s' with id '%s' successfully selected!\n"%(album_title, album_id)
+                print("\nAlbum '%s' with id '%s' successfully selected!\n"%(album_title, album_id))
             except:
                 import traceback
                 traceback.print_exc()
-                print "\n==> Error while fetching user albums, try to re-authenticate the application :("
+                print("\n==> Error while fetching user albums, try to re-authenticate the application :(")
 
 
     # Optional tests for connection
     if config.enable_email:
         config.enable_email_logging = ask_boolean("Do you want to log outgoing email addresses?",config.enable_email_logging)
         config.write()
-        test_email = to_boolean(raw_input("Do you want to test email sending? [N/y] => "),False)
+        test_email = to_boolean(input("Do you want to test email sending? [N/y] => "),False)
 
     if config.enable_upload:
-        test_upload = to_boolean(raw_input("Do you want to test image upload? [N/y] => "),False)
+        test_upload = to_boolean(input("Do you want to test image upload? [N/y] => "),False)
 
     test_connection(service, config, test_email, test_upload)
 
@@ -1027,7 +1027,7 @@ def console_assistant():
     st = os.stat(script_name)
     os.chmod(script_name, st.st_mode | stat.S_IEXEC)
 
-    print """
+    print("""
 
     ________________________________________________________________
 
@@ -1036,7 +1036,7 @@ def console_assistant():
     => %s
     You can tune configuration parameters in scripts/%s
     You can adapt your hardware configuration in scripts/constants.py
-    """% (script_name, constants.CONFIGURATION_FILE)
+    """% (script_name, constants.CONFIGURATION_FILE))
 
 
 def to_boolean(answer, default=True):
@@ -1057,7 +1057,7 @@ def ask_boolean(prompt, current_value):
         choice = "[Y/n]"
     else:
         choice = "[N/y]"
-    return to_boolean(raw_input("%s %s => "%(prompt,choice)),current_value)
+    return to_boolean(input("%s %s => "%(prompt,choice)),current_value)
 
 def test_connection(service,config,test_email,test_upload):
     """Tests email sending and/or image uploading"""
@@ -1071,10 +1071,10 @@ def test_connection(service,config,test_email,test_upload):
     im = Image.new("RGB", (32, 32), "red")
     im.save("test_image.png")
     if test_email:
-        print "\nSending a test message to %s"%username
+        print("\nSending a test message to %s"%username)
         service.send_message(username,"oauth2 message sending works!","Here's the Message body",attachment_file="test_image.png")
     if test_upload:
-        print "\nTesting picture upload in %s's album"%username
+        print("\nTesting picture upload in %s's album"%username)
         service.upload_picture("test_image.png", album_id = config.albumID)
 
 
@@ -1091,10 +1091,10 @@ if __name__ == '__main__':
         try:
             graphical_assistant()
         except Exception as error:
-            print error
+            print(error)
             #import traceback
             #traceback.print_exc()
             import time
             time.sleep(2)
-            print "\nError loading graphical assistant, default to console based\n"
+            print("\nError loading graphical assistant, default to console based\n")
             console_assistant()

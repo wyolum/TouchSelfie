@@ -105,15 +105,15 @@ if __name__ == '__main__':
     buttons = Buttons()
     last = 0
     if buttons.has_buttons():
-        print "Press hardware buttons to see change, ctrl+C to exit"
+        print("Press hardware buttons to see change, ctrl+C to exit")
     else:
-        print "No button configured (no access to GPIO or empty button list)"
-        print "Number of buttons is %d" % buttons.buttons_number()
+        print("No button configured (no access to GPIO or empty button list)")
+        print("Number of buttons is %d" % buttons.buttons_number())
         sys.exit()
         
     while True:
         state = buttons.state()
         if last != state:
-            print "new state: %d"%state
+            print("new state: %d"%state)
             last = state
         time.sleep(0.1)
