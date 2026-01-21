@@ -36,12 +36,11 @@ SCREEN_H = 480 ## raspi touch
 # Animation : animated gif
 EFFECTS_PARAMETERS = {
     "None": {
-        'snap_size' : (1640,1232), #(width, height) => preferably use integer division of camera resolution
-        'logo_size' : 128,         # height in pixels of the logo (will be thumbnailed to this size)
-        'logo_padding' : 32        # bottom and right padding of the logo (pixels)
+        'snap_size' : (3280,2464), #(width, height) => preferably use integer division of camera resolution
+        'foreground_image' : "../logos/single_square_logo.png"
     },
     "Four": { 
-        'snap_size' : (820,616),                       #(width, height) of each shots of the 2x2 collage
+        'snap_size' : (3280,2464),                       #(width, height) of each shots of the 2x2 collage
         'foreground_image' : "../logos/collage_four_square_logo.png" # Overlay image on top of the collage
     },
     "Nine": { 
@@ -62,17 +61,17 @@ SOFTWARE_BUTTONS = {
         "icon" : os.path.join("ressources","ic_four.png"),
         "order":1
         },
-    "Nine": {
-        "icon" : os.path.join("ressources","ic_nine.png"),
-        "order":2
-        },
+    # "Nine": {
+    #     "icon" : os.path.join("ressources","ic_nine.png"),
+    #     "order":2
+    #     },
     "None": {
         "icon" : os.path.join("ressources","ic_portrait.png"),
         "order":0
-        },
-    "Animation": {
-        "icon" : os.path.join("ressources","ic_anim.png"),
-        "order":3
+    #     },
+    # "Animation": {
+    #     "icon" : os.path.join("ressources","ic_anim.png"),
+    #     "order":3
         }
 }
 
@@ -201,6 +200,11 @@ COUNTDOWN_OVERLAY_IMAGES=[
     os.path.join("ressources","count_down_3.png"),
     os.path.join("ressources","count_down_4.png"),
     os.path.join("ressources","count_down_5.png"),
+    os.path.join("ressources","count_down_6.png"),
+    os.path.join("ressources","count_down_7.png"),
+    os.path.join("ressources","count_down_8.png"),
+    os.path.join("ressources","count_down_9.png"),
+    os.path.join("ressources","count_down_10.png"),
     os.path.join("ressources","count_down_ready.png")]
 # this defines the height ratio of the countdown images wrt. the preview size
 COUNTDOWN_IMAGE_MAX_HEIGHT_RATIO = 0.2 #[0. - 1.] range
